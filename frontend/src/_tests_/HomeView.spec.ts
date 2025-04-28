@@ -20,6 +20,12 @@ describe('HomeView.vue', () => {
       'v-card-title': { template: '<div class="v-card-title"><slot /></div>' },
       'v-card-subtitle': { template: '<div><slot /></div>' },
       'v-card-text': { template: '<div><slot /></div>' },
+      'v-text-field': { 
+        template: '<input class="v-text-field" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />', 
+        props: ['modelValue'] 
+      },
+      'v-alert': { template: '<div class="v-alert"><slot /></div>' },
+      'v-progress-circular': { template: '<div class="v-progress-circular"></div>' }
     },
   };
 
@@ -41,7 +47,8 @@ describe('HomeView.vue', () => {
 
     await flushPromises();
 
-    const cols = wrapper.findAll('.v-col');
+    // Nur die v-cols für Pokémon, nicht die zusätzlichen v-cols
+    const cols = wrapper.findAll('.v-col:has(.v-card-title)');
     expect(cols.length).toBe(3);
   });
 
@@ -55,5 +62,50 @@ describe('HomeView.vue', () => {
     expect(titles[0].text()).toBe('Pikachu');
     expect(titles[1].text()).toBe('Glumanda');
     expect(titles[2].text()).toBe('Schiggy');
+  });
+  
+  it('filters Pokémon based on search query', async () => {
+    const wrapper = mount(HomeView, { global: globalConfig });
+    await flushPromises();
+    
+    // Überprüfen, dass anfangs alle Pokémon angezeigt werden
+    let cols = wrapper.findAll('.v-col:has(.v-card-title)');
+    expect(cols.length).toBe(3);
+    
+    // Nach "Pika" suchen (client-side filtering)
+    const searchField = wrapper.find('.v-text-field');
+    await searchField.setValue('Pika');
+    await wrapper.vm.$nextTick();
+    
+    // Überprüfen, dass nur Pikachu angezeigt wird
+    cols = wrapper.findAll('.v-col:has(.v-card-title)');
+    expect(cols.length).toBe(1);
+    expect(wrapper.find('.v-card-title').text()).toBe('Pikachu');
+    
+    // Suche zurücksetzen
+    await searchField.setValue('');
+    await wrapper.vm.$nextTick();
+    
+    // Überprüfen, dass wieder alle Pokémon angezeigt werden
+    cols = wrapper.findAll('.v-col:has(.v-card-title)');
+    expect(cols.length).toBe(3);
+  });
+  
+  it('shows alert when no Pokémon match the search', async () => {
+    const wrapper = mount(HomeView, { global: globalConfig });
+    await flushPromises();
+    
+    // Nach nicht existierendem Pokémon suchen
+    const searchField = wrapper.find('.v-text-field');
+    await searchField.setValue('Nicht existierendes Pokémon');
+    await wrapper.vm.$nextTick();
+    
+    // Überprüfen, dass keine Pokémon angezeigt werden
+    const cols = wrapper.findAll('.v-col:has(.v-card-title)');
+    expect(cols.length).toBe(0);
+    
+    // Überprüfen, dass die Meldung "Keine Pokémon gefunden" angezeigt wird
+    const alert = wrapper.find('.v-alert');
+    expect(alert.exists()).toBe(true);
   });
 });
