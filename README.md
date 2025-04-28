@@ -1,6 +1,6 @@
-# CelinePokedex
+# CeLinePokedex
 
-Willkommen zu **CelinePokedex** – einer einfachen Pokédex-Webanwendung! 🧡
+Willkommen zu **CeLinePokedex** – einer einfachen Pokédex-Webanwendung! 🧡
 
 Dieses Projekt besteht aus:
 - **Frontend**: Vue 3 + Vite + Vuetify
@@ -22,26 +22,25 @@ Dieses Projekt besteht aus:
 - Maven
 
 ### Starten des Frontends
-```bash
-cd frontend
-npm install
+
+cd frontend  
+npm install  
 npm run dev
 
 ### Starten des Backends
-```bash
+
 ./mvnw spring-boot:run
 
-Das Frontend läuft dann auf http://localhost:5173
-
-Das Backend läuft auf http://localhost:8080
+Das Frontend läuft auf: [http://localhost:5173](http://localhost:5173)  
+Das Backend läuft auf: [http://localhost:8080](http://localhost:8080)
 
 ### Tests
-```bash
-cd frontend
+
+cd frontend  
 npm run test:unit
 
-### Status
-✅ Frontend- und Backend-Grundstruktur fertig
-✅ Erste API-Endpunkte bereit
-❌ Anbindung einer kostenlosen Open Source-Datenbank
-❌ Deployment (bald)
+## Status
+- ✅ Frontend- und Backend-Grundstruktur fertig
+- ✅ Erste API-Endpunkte bereit
+- ❌ Anbindung einer kostenlosen Open Source-Datenbank
+- ❌ Deployment (bald)
