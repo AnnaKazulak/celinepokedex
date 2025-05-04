@@ -9,7 +9,12 @@ export const API_BASE_URL = 'http://localhost:8080/api';
 export const API_ENDPOINTS = {
   POKEMONS: `${API_BASE_URL}/pokemons`,
   POKEMON_BY_ID: (id: number | string) => `${API_BASE_URL}/pokemons/${id}`,
-  SEARCH_POKEMONS: (query: string) => `${API_BASE_URL}/pokemons/search?q=${query}`
+  SEARCH_POKEMONS: (query: string) => `${API_BASE_URL}/pokemons/search?q=${query}`,
+  // Fantasy Character Endpoints
+  FANTASY_CHARACTERS: `${API_BASE_URL}/characters`,
+  FANTASY_CHARACTER_BY_ID: (id: number) => `${API_BASE_URL}/characters/${id}`,
+  GENERATE_IMAGE: `${API_BASE_URL}/images/generate`,
+  SAVE_CHARACTER: `${API_BASE_URL}/characters/save`
 };
 
 // Externe Pokémon API (PokeAPI)

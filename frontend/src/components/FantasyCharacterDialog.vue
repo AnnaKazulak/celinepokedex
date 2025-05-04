@@ -138,9 +138,19 @@
           </v-btn>
           <v-btn 
             color="white" 
+            variant="text" 
+            @click="saveCharacter"
+            class="save-btn"
+            :loading="isSaving"
+          >
+            <v-icon start>mdi-content-save</v-icon>
+            Speichern
+          </v-btn>
+          <v-btn 
+            color="white" 
             variant="elevated" 
             @click="downloadImage"
-            class="save-btn"
+            class="download-btn"
           >
             <v-icon start>mdi-download</v-icon>
             Download
@@ -155,6 +165,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../utils/constants';
+import { eventBus } from '../utils/eventBus';
+import type { FantasyCharacter } from '../types/pokemon';
 
 // Props and emits
 const props = defineProps<{
@@ -163,6 +176,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:dialog': [value: boolean];
+  'character-created': [character: FantasyCharacter];
 }>();
 
 // Reactive variables
@@ -172,6 +186,7 @@ const isGenerating = ref(false);
 const generatedImageUrl = ref('');
 const error = ref('');
 const loadingStep = ref(0); // Status für den Ladebalken-Fortschritt
+const isSaving = ref(false); // Status für den Speichervorgang
 
 // Watch for dialog prop changes
 watch(() => props.dialog, (newVal) => {
@@ -217,7 +232,7 @@ const generateImage = async () => {
     // Erster Schritt wird direkt ausgelöst
     loadingStep.value = 1;
     
-    const response = await axios.post('/api/images/generate', {
+    const response = await axios.post(API_ENDPOINTS.GENERATE_IMAGE, {
       prompt: prompt.value
     });
     
@@ -275,6 +290,57 @@ const downloadImage = () => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+};
+
+// Save the character
+const saveCharacter = async () => {
+  if (!generatedImageUrl.value || isSaving.value) return;
+
+  isSaving.value = true;
+  error.value = '';
+
+  try {
+    const response = await axios.post(API_ENDPOINTS.SAVE_CHARACTER, {
+      prompt: prompt.value,
+      imageUrl: generatedImageUrl.value
+    });
+
+    if (response.data) {
+      const savedCharacter = response.data;
+      
+      // Close dialog
+      dialogVisible.value = false;
+      
+      // Emit event to parent component
+      emit('character-created', savedCharacter);
+      
+      // Also emit global event for HomeView
+      eventBus.emit('fantasy-character-created', savedCharacter);
+      
+      // Reset form after successful save and close
+      setTimeout(() => {
+        resetForm();
+      }, 300);
+    } else {
+      throw new Error('Failed to save character');
+    }
+  } catch (err) {
+    console.error('Error saving character:', err);
+
+    if (err.response) {
+      if (err.response.data && err.response.data.error) {
+        error.value = `Error: ${err.response.data.error}`;
+      } else {
+        error.value = `Server error (${err.response.status}): Please try again later`;
+      }
+    } else if (err.request) {
+      error.value = 'No response from server. Please check if the backend is running.';
+    } else {
+      error.value = 'Failed to save character: ' + (err.message || 'Unknown error');
+    }
+  } finally {
+    isSaving.value = false;
+  }
 };
 </script>
 

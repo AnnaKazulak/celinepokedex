@@ -27,6 +27,16 @@ export enum PokemonType {
 }
 
 /**
+ * Interface für Fantasy-Charaktere
+ */
+export interface FantasyCharacter {
+  id?: number; // ID from database
+  prompt: string; // User's description of the fantasy character
+  imageUrl: string; // URL of the generated image
+  createdAt?: string; // Creation date as ISO string
+}
+
+/**
  * Interface für das Pokemon-Modell, entspricht der Pokemon-Klasse im Backend
  */
 export interface Pokemon {
