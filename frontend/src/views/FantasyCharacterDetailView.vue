@@ -9,7 +9,9 @@
         class="fantasy-detail-container" 
         :style="{
           background: isColorLoaded ? `linear-gradient(180deg, ${dominantColorLight} 0%, white 100%)` : 'transparent',
-          opacity: isColorLoaded ? 1 : 0
+          opacity: isColorLoaded ? 1 : 0,
+          '--dominant-color': dominantColor,
+          '--dominant-color-light': dominantColorLight
         }"
         :class="{ 'color-loaded': isColorLoaded }"
       >
@@ -28,48 +30,58 @@
 
         <!-- Fantasy Character Header -->
         <div class="fantasy-header">
-          <div class="fantasy-image-wrapper">
+          <!-- Fantasy Character Info - Links -->
+          <div class="fantasy-info">
+            <div class="mb-4">
+              <div class="d-flex align-center">
+                <h1 class="text-h2 font-weight-bold mr-2"
+                    :style="{ color: isColorLoaded ? dominantColor : 'rgba(0,0,0,0.87)' }"
+                >
+                  Fantasy Character
+                </h1>
+              </div>
+              <p class="creation-date text-subtitle-1">
+                Erstellt am {{ formatDate(character.createdAt) }}
+              </p>
+            </div>
+
+            <!-- Fantasy Character Description -->
+            <div class="description-container">
+              <p class="prompt-text">{{ character.prompt }}</p>
+              
+              <!-- Download Button direkt unter der Beschreibung -->
+              <v-btn
+                color="primary"
+                variant="outlined"
+                prepend-icon="mdi-download"
+                @click="downloadImage"
+                class="download-btn mt-4"
+              >
+                Bild herunterladen
+              </v-btn>
+            </div>
+          </div>
+          
+          <!-- Fantasy Character Image Container - Rechts -->
+          <div class="fantasy-image-container">
             <v-img
               :src="character.imageUrl"
               class="fantasy-image"
               contain
               @load="extractColorFromImage"
-              max-height="350px"
             ></v-img>
-          </div>
-          
-          <div class="fantasy-title-section">
-            <h1 class="title">Fantasy Character</h1>
-            <div class="creation-date">
-              Erstellt am {{ formatDate(character.createdAt) }}
-            </div>
           </div>
         </div>
 
-        <!-- Fantasy Character Details Card -->
-        <v-card class="details-card mt-6" :style="{ borderColor: dominantColor }">
-          <v-card-title class="header" :style="{ backgroundColor: dominantColor }">
-            <h3>Beschreibung</h3>
-          </v-card-title>
-          <v-card-text class="pa-4">
-            <p class="prompt-text">{{ character.prompt }}</p>
-          </v-card-text>
-          <v-card-actions class="pa-4">
-            <v-btn
-              color="primary"
-              variant="outlined"
-              prepend-icon="mdi-download"
-              @click="downloadImage"
-              :style="{ borderColor: dominantColor, color: dominantColor }"
-            >
-              Bild herunterladen
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-
         <!-- Generated Properties Card -->
-        <v-card class="details-card mt-6" :style="{ borderColor: dominantColor }">
-          <v-card-title class="header" :style="{ backgroundColor: dominantColor }">
+        <v-card 
+          class="details-card mt-6" 
+          :style="{ '--dominant-color': dominantColor }"
+        >
+          <v-card-title 
+            class="header" 
+            :style="{ backgroundColor: dominantColor }"
+          >
             <h3>Eigenschaften</h3>
           </v-card-title>
           <v-card-text class="pa-4">
@@ -87,7 +99,6 @@
                 </div>
               </v-col>
             </v-row>
-            <!-- Removed the Generierte URL section -->
           </v-card-text>
         </v-card>
       </div>
@@ -182,7 +193,10 @@ async function extractColorFromImage() {
       // Farbe an die Navbar senden
       eventBus.emit('detail-page-color-change', dominantColor.value);
       
-      // Animation starten
+      // CSS-Variablen aktualisieren und Animation starten
+      document.documentElement.style.setProperty('--dominant-color', dominantColor.value);
+      document.documentElement.style.setProperty('--dominant-color-light', dominantColorLight.value);
+      
       setTimeout(() => {
         isColorLoaded.value = true;
       }, 100);
@@ -265,6 +279,7 @@ function downloadImage() {
 .back-button {
   font-weight: bold;
   transition: all 0.5s ease;
+  color: var(--dominant-color);
 }
 
 .back-button:hover {
@@ -273,48 +288,78 @@ function downloadImage() {
 
 .fantasy-header {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  margin-bottom: 2rem;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto 2rem;
 }
 
-.fantasy-image-wrapper {
-  margin-bottom: 1.5rem;
-  width: 100%;
-  max-width: 450px;
+.fantasy-info {
+  flex: 1;
+  min-width: 280px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
 }
 
+.fantasy-image-container {
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+}
+
 .fantasy-image {
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+  transform: scale(1.05);
+  transition: transform 0.5s ease;
+  max-height: 450px;
+  max-width: 100%;
 }
 
-.fantasy-title-section {
-  text-align: center;
+.fantasy-image:hover {
+  transform: scale(1.1);
 }
 
-.fantasy-title-section .title {
-  font-size: 2.5rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
+.title {
+  color: var(--dominant-color, #6890F0);
 }
 
-.creation-date {
-  font-size: 1rem;
-  color: rgba(0, 0, 0, 0.6);
+.color-transition {
+  color: var(--dominant-color, rgba(0,0,0,0.7));
+  transition: color 0.5s ease;
+}
+
+.description-container {
+  margin-bottom: 1.5rem;
+}
+
+.prompt-text {
+  white-space: pre-line;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.8);
+  margin-bottom: 1rem;
+}
+
+.download-btn {
+  border-color: var(--dominant-color);
+  color: var(--dominant-color);
 }
 
 .details-card {
   border-radius: 12px;
-  margin-bottom: 2rem;
-  border-left: 4px solid;
+  margin: 0 auto 2rem;
+  border-left: 4px solid var(--dominant-color);
   overflow: hidden;
+  max-width: 1400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .details-card .header {
+  background-color: var(--dominant-color);
   color: white;
   padding: 1rem 1.5rem;
 }
@@ -322,12 +367,7 @@ function downloadImage() {
 .details-card .header h3 {
   font-size: 1.5rem;
   margin: 0;
-}
-
-.prompt-text {
-  white-space: pre-line;
-  font-size: 1.1rem;
-  line-height: 1.6;
+  font-weight: 500;
 }
 
 .property {
@@ -347,12 +387,6 @@ function downloadImage() {
   font-size: 1.1rem;
 }
 
-.url-value {
-  word-break: break-all;
-  font-size: 0.9rem;
-  color: rgba(0, 0, 0, 0.8);
-}
-
 .error-container {
   display: flex;
   flex-direction: column;
@@ -362,31 +396,85 @@ function downloadImage() {
   padding: 2rem;
 }
 
-@media (max-width: 960px) {
-  .fantasy-detail-container {
-    padding: 1.5rem 4%;
+/* Größere Desktop-Bildschirme */
+@media (min-width: 1200px) {
+  .fantasy-header {
+    padding: 0 2rem;
   }
   
-  .fantasy-title-section .title {
-    font-size: 2rem;
+  .fantasy-info {
+    padding-right: 50px;
+  }
+  
+  .fantasy-image {
+    height: 450px;
+    width: 450px;
   }
 }
 
+/* Mittlere Desktops und Tablets im Querformat */
+@media (min-width: 769px) and (max-width: 1199px) {
+  .fantasy-header {
+    gap: 0;
+  }
+  
+  .fantasy-info {
+    padding-right: 20px;
+  }
+  
+  .fantasy-image {
+    height: 350px;
+    width: 350px;
+  }
+}
+
+/* Tablets im Hochformat und mobile Geräte */
+@media (max-width: 768px) {
+  .fantasy-header {
+    flex-direction: column-reverse;
+    gap: 1.5rem;
+  }
+  
+  .fantasy-image {
+    height: 320px;
+    width: 320px;
+  }
+  
+  .fantasy-info {
+    text-align: center;
+    padding: 0 1rem;
+  }
+  
+  .fantasy-info .d-flex {
+    justify-content: center;
+  }
+  
+  .download-btn {
+    margin: 0 auto;
+    display: block;
+  }
+}
+
+/* Mobile Geräte */
 @media (max-width: 600px) {
   .fantasy-detail-container {
     padding: 1rem 3%;
   }
   
-  .fantasy-title-section .title {
-    font-size: 1.8rem;
+  .fantasy-image {
+    height: 250px;
+    width: 250px;
+  }
+  
+  .fantasy-info h1 {
+    font-size: 2rem !important;
+    line-height: 1.2;
+    margin-right: 0.5rem;
   }
   
   .prompt-text {
     font-size: 1rem;
-  }
-  
-  .property-value {
-    font-size: 1rem;
+    line-height: 1.5;
   }
 }
 </style>
