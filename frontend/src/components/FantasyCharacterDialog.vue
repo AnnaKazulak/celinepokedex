@@ -1,74 +1,120 @@
 <template>
-  <v-dialog v-model="dialogVisible" max-width="700">
-    <v-card class="fantasy-dialog">
+  <v-dialog 
+    v-model="dialogVisible" 
+    max-width="800px"
+    content-class="fantasy-dialog-wrapper"
+  >
+    <v-card class="fantasy-main-card" :class="{'has-image': generatedImageUrl}">
+      <!-- Title first - ganz oben -->
       <v-card-title class="dialog-title">
         Create Fantasy Character
-        <v-spacer></v-spacer>
-        <v-btn icon @click="closeDialog">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
       </v-card-title>
+
+      <!-- Close-Button nach rechts oben positioniert -->
+      <v-btn
+        icon
+        @click="closeDialog"
+        class="close-btn"
+      >
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
       
-      <v-card-text>
+      <div class="card-header">
+        <!-- Schwebendes Bild etwas nach unten versetzt -->
+        <div v-if="generatedImageUrl" class="floating-image-container">
+          <v-img
+            :src="generatedImageUrl"
+            class="fantasy-floating-image"
+            contain
+          ></v-img>
+        </div>
+        
+        <!-- Beschreibung unter dem Bild, außerhalb des Footers -->
+        <div v-if="generatedImageUrl && !isGenerating" class="character-description">
+          <p class="description-text">{{ prompt }}</p>
+        </div>
+        
+        <div class="level-text"></div>
+        
         <v-form @submit.prevent="generateImage">
-          <v-textarea
-            v-model="prompt"
-            label="Describe your fantasy character"
-            hint="Be as descriptive as possible for best results"
-            rows="3"
-            auto-grow
-            counter
-            :disabled="isGenerating"
-          ></v-textarea>
-          
-          <div class="text-center mt-4">
-            <v-btn 
-              color="primary" 
-              :loading="isGenerating"
-              :disabled="!prompt || isGenerating"
-              @click="generateImage"
-            >
-              {{ isGenerating ? 'Generating...' : 'Generate Character' }}
-            </v-btn>
-          </div>
-          
-          <div v-if="isGenerating" class="text-center my-4">
-            <v-progress-circular indeterminate color="primary"></v-progress-circular>
-            <p class="mt-2">Creating your fantasy character... This may take 15-30 seconds.</p>
-          </div>
-          
-          <div v-if="generatedImageUrl" class="image-result mt-4">
-            <v-card flat>
-              <v-card-title class="pb-0">Your Fantasy Character</v-card-title>
-              <v-card-subtitle>{{ prompt }}</v-card-subtitle>
-              <v-card-text class="text-center">
-                <v-img
-                  :src="generatedImageUrl"
-                  max-height="400"
-                  contain
-                  class="generated-image"
-                ></v-img>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  color="primary"
-                  variant="text"
-                  @click="downloadImage"
+          <!-- Eingabefeld nur anzeigen, wenn kein Bild generiert wurde -->
+          <div v-if="!generatedImageUrl || isGenerating" class="fantasy-form">
+            <div class="form-section">
+              <v-textarea
+                v-model="prompt"
+                label="Beschreibe deinen Fantasy-Charakter"
+                hint="Je detaillierter die Beschreibung, desto besser das Ergebnis"
+                rows="3"
+                auto-grow
+                counter
+                variant="underlined"
+                density="compact"
+                :disabled="isGenerating"
+              ></v-textarea>
+              
+              <div class="text-center mt-4 mb-4">
+                <v-btn 
+                  color="primary" 
+                  :loading="isGenerating"
+                  :disabled="!prompt || isGenerating"
+                  @click="generateImage"
+                  class="generate-btn"
                 >
-                  Download
+                  {{ isGenerating ? 'Generiere...' : 'Charakter erstellen' }}
                 </v-btn>
-                <v-btn
-                  color="secondary" 
-                  variant="text"
-                  @click="resetForm"
-                >
-                  Create Another
-                </v-btn>
-                <v-spacer></v-spacer>
-              </v-card-actions>
-            </v-card>
+              </div>
+            </div>
           </div>
+          
+          <!-- Einfacherer Ladebildschirm, der garantiert sichtbar ist -->
+          <v-card v-if="isGenerating" class="mt-4 mb-4 pa-4 loading-status" variant="outlined">
+            <div class="text-center">
+              <v-icon size="x-large" color="primary" class="mb-3">mdi-creation</v-icon>
+              <h3 class="text-h6 mb-2">Dein Fantasy-Charakter wird erstellt</h3>
+              <p class="text-body-2 mb-4">Die KI arbeitet an deinem einzigartigen Charakter...</p>
+              
+              <v-progress-linear
+                indeterminate
+                color="primary"
+                class="mb-3"
+                height="6"
+                rounded
+              ></v-progress-linear>
+              
+              <!-- Vereinfachte Schrittanzeige -->
+              <div class="d-flex justify-space-between mb-2">
+                <v-chip
+                  size="small"
+                  :color="loadingStep >= 1 ? 'primary' : 'grey-lighten-1'" 
+                  :variant="loadingStep >= 1 ? 'elevated' : 'flat'"
+                >
+                  <v-icon size="x-small" start>mdi-pencil</v-icon>Analysieren
+                </v-chip>
+                <v-chip
+                  size="small"
+                  :color="loadingStep >= 2 ? 'primary' : 'grey-lighten-1'"
+                  :variant="loadingStep >= 2 ? 'elevated' : 'flat'"
+                >
+                  <v-icon size="x-small" start>mdi-brush</v-icon>Zeichnen
+                </v-chip>
+                <v-chip
+                  size="small"
+                  :color="loadingStep >= 3 ? 'primary' : 'grey-lighten-1'"
+                  :variant="loadingStep >= 3 ? 'elevated' : 'flat'"
+                >
+                  <v-icon size="x-small" start>mdi-palette</v-icon>Details
+                </v-chip>
+                <v-chip
+                  size="small"
+                  :color="loadingStep >= 4 ? 'primary' : 'grey-lighten-1'"
+                  :variant="loadingStep >= 4 ? 'elevated' : 'flat'"
+                >
+                  <v-icon size="x-small" start>mdi-image</v-icon>Fertigstellen
+                </v-chip>
+              </div>
+              <p class="text-caption mt-3">Dieser Vorgang kann 15-30 Sekunden dauern</p>
+            </div>
+          </v-card>
           
           <div v-if="error" class="error-message mt-4">
             <v-alert type="error" dismissible>
@@ -76,7 +122,32 @@
             </v-alert>
           </div>
         </v-form>
-      </v-card-text>
+      </div>
+      
+      <!-- Footer nur mit Aktionen -->
+      <div v-if="generatedImageUrl && !isGenerating" class="fantasy-footer" :style="{ background: '#6890F0' }">
+        <div class="footer-section actions">
+          <v-spacer></v-spacer>
+          <v-btn 
+            color="white" 
+            variant="text" 
+            @click="resetForm"
+            class="cancel-btn"
+          >
+            Neuer Charakter
+          </v-btn>
+          <v-btn 
+            color="white" 
+            variant="elevated" 
+            @click="downloadImage"
+            class="save-btn"
+          >
+            <v-icon start>mdi-download</v-icon>
+            Download
+          </v-btn>
+          <v-spacer></v-spacer>
+        </div>
+      </div>
     </v-card>
   </v-dialog>
 </template>
@@ -100,6 +171,7 @@ const prompt = ref('');
 const isGenerating = ref(false);
 const generatedImageUrl = ref('');
 const error = ref('');
+const loadingStep = ref(0); // Status für den Ladebalken-Fortschritt
 
 // Watch for dialog prop changes
 watch(() => props.dialog, (newVal) => {
@@ -122,6 +194,7 @@ const resetForm = () => {
   prompt.value = '';
   generatedImageUrl.value = '';
   error.value = '';
+  loadingStep.value = 0;
 };
 
 // Generate image
@@ -131,8 +204,19 @@ const generateImage = async () => {
   isGenerating.value = true;
   error.value = '';
   generatedImageUrl.value = '';
+  loadingStep.value = 0;
+  
+  // Simuliere Fortschrittsanimation für den Ladebalken
+  const loadingInterval = setInterval(() => {
+    if (loadingStep.value < 4) {
+      loadingStep.value++;
+    }
+  }, 3000); // Alle 3 Sekunden ein neuer Schritt
   
   try {
+    // Erster Schritt wird direkt ausgelöst
+    loadingStep.value = 1;
+    
     const response = await axios.post('/api/images/generate', {
       prompt: prompt.value
     });
@@ -162,6 +246,8 @@ const generateImage = async () => {
       error.value = 'Failed to generate image: ' + (err.message || 'Unknown error');
     }
   } finally {
+    clearInterval(loadingInterval);
+    loadingStep.value = 4; // Setze auf den letzten Schritt, falls es fertig ist
     isGenerating.value = false;
   }
 };
@@ -193,25 +279,186 @@ const downloadImage = () => {
 </script>
 
 <style scoped>
-.fantasy-dialog {
+/* Styling für den Dialog selbst */
+:deep(.fantasy-dialog-wrapper) {
+  box-shadow: none;
+  background: transparent;
+}
+
+/* Dialog Card mit festgelegter Höhe */
+.fantasy-main-card {
+  width: 100%;
+  max-width: 600px;
+  min-height: 520px;
+  background: white;
+  padding-top: 0;
   border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0 auto;
   overflow: hidden;
-  background-color: #f8f9fa;
+  position: relative;
+}
+
+.fantasy-main-card.has-image {
+  padding-top: 0; /* Kein Padding mehr, da Titel über dem Bild */
 }
 
 .dialog-title {
-  background: linear-gradient(135deg, var(--v-primary-base) 0%, var(--v-secondary-base) 100%);
+  background: linear-gradient(135deg, #6890F0 0%, #705898 100%);
   color: white;
   padding: 16px 20px;
+  position: relative;
+  z-index: 25;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
-.generated-image {
+/* Neu positionierter Close-Button */
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 30;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.floating-image-container {
+  position: relative;
+  margin: 20px auto;
+  width: 240px;
+  display: flex;
+  justify-content: center;
+  z-index: 5;
+}
+
+.fantasy-floating-image {
+  width: 240px;
+  height: 240px;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin: 12px 0;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Neue Styling für die Beschreibung unter dem Bild */
+.character-description {
+  text-align: center;
+  margin: 0 auto 16px;
+  max-width: 80%;
+}
+
+.description-text {
+  font-size: 0.95rem;
+  color: rgba(0, 0, 0, 0.7);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.card-header {
+  padding: 16px 24px;
+  flex-grow: 1;
+}
+
+.level-text {
+  font-size: 16px;
+  color: #6890F0;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.fantasy-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-section {
+  margin-bottom: 8px;
+}
+
+.generate-btn {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-transform: none;
+  font-weight: 500;
+  padding: 0 24px;
+  min-width: 200px;
+  height: 44px;
+}
+
+.generate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.loading-status {
+  border-radius: 12px;
+  background-color: white !important;
+  position: relative;
+  z-index: 5;
 }
 
 .error-message {
   margin-top: 16px;
+}
+
+.fantasy-footer {
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 24px;
+  margin-top: auto;
+  transition: background-color 0.5s ease;
+}
+
+.footer-section {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+}
+
+.save-btn {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Mobile Anpassungen */
+@media (max-width: 600px) {
+  .floating-image-container {
+    width: 180px;
+    margin: 15px auto;
+  }
+  
+  .fantasy-floating-image {
+    width: 180px;
+    height: 180px;
+  }
+  
+  .character-description {
+    max-width: 95%;
+    margin-bottom: 12px;
+  }
+  
+  .description-text {
+    font-size: 0.9rem;
+  }
+  
+  .fantasy-footer {
+    flex-direction: column;
+    gap: 16px;
+  }
 }
 </style>
