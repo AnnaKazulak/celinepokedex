@@ -4,6 +4,7 @@
     :data-id="character.id" 
     ref="cardElement"
     :class="{ 'clickable': true }"
+    @click="navigateToDetail"
   >
     <div class="fantasy-image-wrapper">
       <v-img
@@ -46,6 +47,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { extractDominantColor } from '../utils/colorUtils';
 import { eventBus } from '../utils/eventBus';
 import { type FantasyCharacter } from '../types/pokemon';
@@ -54,6 +56,7 @@ const props = defineProps<{
   character: FantasyCharacter
 }>();
 
+const router = useRouter();
 const dominantColor = ref('#6890F0'); // Default fantasy color (water pokemon)
 const cardElement = ref<HTMLElement | null>(null);
 
@@ -120,6 +123,16 @@ const downloadImage = () => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+};
+
+// Navigate to fantasy character details page
+const navigateToDetail = () => {
+  if (props.character.id) {
+    router.push({
+      name: 'fantasyCharacterDetail',
+      params: { id: props.character.id }
+    });
+  }
 };
 
 onMounted(() => {
