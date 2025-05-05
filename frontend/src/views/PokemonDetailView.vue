@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="isLoading" class="loading-container">
+    <div v-if="isLoading" class="d-flex justify-center align-center" style="min-height: 80vh">
       <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
     </div>
 
@@ -21,20 +21,21 @@
       />
 
       <div 
-        class="pokemon-detail-container" 
+        class="pa-8 pa-sm-10 px-md-12 w-100 transition-fade"
         :style="{
           background: isColorLoaded ? `linear-gradient(180deg, ${dominantColorLight} 0%, white 100%)` : 'transparent',
-          opacity: isColorLoaded ? 1 : 0
+          opacity: isColorLoaded ? 1 : 0,
+          minHeight: '100vh'
         }"
-        :class="{ 'color-loaded': isColorLoaded }"
+        :class="{ 'opacity-1': isColorLoaded }"
       >
         <!-- Back Button -->
-        <div class="back-button-container">
+        <div class="pb-4">
           <v-btn
             prepend-icon="mdi-arrow-left"
             variant="text"
             @click="goBack"
-            class="mb-4 back-button"
+            class="mb-4 font-weight-bold transition-transform"
             :style="{ color: isColorLoaded ? dominantColor : 'rgba(0,0,0,0.7)' }"
           >
             Zurück
@@ -66,10 +67,12 @@
       </div>
     </template>
 
-    <div v-else class="error-container">
+    <div v-else class="d-flex flex-column align-center justify-center pa-8" style="min-height: 50vh">
       <v-alert
         type="error"
         variant="tonal"
+        width="100%"
+        max-width="500px"
       >
         Pokemon wurde nicht gefunden.
       </v-alert>
@@ -325,50 +328,16 @@ function onPokemonCreated(newPokemon: Pokemon) {
 </script>
 
 <style scoped>
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-}
-
-.pokemon-detail-container {
-  border-radius: 0;
-  padding: 2rem 5%;
-  min-height: 100vh;
-  width: 100%;
+/* Nur die nötigsten speziellen Stile behalten, die nicht durch Vuetify-Klassen abgedeckt werden */
+.transition-fade {
   transition: all 0.8s ease;
 }
 
-.color-loaded {
-  opacity: 1 !important;
+.transition-transform {
+  transition: transform 0.3s ease;
 }
 
-.back-button-container {
-  padding: 0 0 1rem 0;
-}
-
-.back-button {
-  font-weight: bold;
-  transition: all 0.5s ease;
-}
-
-.back-button:hover {
+.transition-transform:hover {
   transform: translateX(-5px);
-}
-
-.error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 50vh;
-  padding: 2rem;
-}
-
-@media (max-width: 600px) {
-  .pokemon-detail-container {
-    padding: 1rem 3%;
-  }
 }
 </style>
