@@ -1,40 +1,42 @@
 <template>
   <div>
     <!-- Confirmation Dialog for missing Pokemon -->
-    <v-dialog v-model="showDialog" max-width="400px" content-class="missing-pokemon-dialog">
-      <v-card class="dialog-card">
+    <v-dialog v-model="showDialog" max-width="400" content-class="missing-pokemon-dialog">
+      <v-card class="position-relative rounded-lg overflow-hidden elevation-5" style="padding-top: 60px">
         <!-- Schwebendes Bild Container -->
-        <div class="floating-image-container">
+        <div class="position-absolute" style="top: 0px; left: 65%; transform: translateX(-50%); z-index: 10; width: 140px; height: 140px;">
           <v-img
             :src="pokemon.imageUrl || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/0.png'"
-            class="pokemon-floating-image"
+            width="140"
+            height="140"
+            class="pokemon-image-shadow"
             contain
           ></v-img>
         </div>
 
-        <v-card-title class="dialog-header" 
-                     :style="{ background: dominantColor, color: 'white' }">
+        <v-card-item :class="`pa-4 d-flex align-start ${textColorClass}`" :style="{ backgroundColor: dominantColor }">
           <v-icon color="white" class="mr-2">mdi-pokeball</v-icon>
-          <div class="pokemon-title-container">
-            <span class="pokemon-dialog-title">{{ pokemon.name }}</span>
-            <span class="pokemon-number-subtitle">#{{ pokemon.pokedexNumber }}</span>
+          <div class="d-flex flex-column align-start">
+            <span class="text-h5 font-weight-bold">{{ pokemon.name }}</span>
+            <span class="text-subtitle-2 text-white text-opacity-85 mt-n1">#{{ pokemon.pokedexNumber }}</span>
           </div>
-        </v-card-title>
+        </v-card-item>
 
-        <v-card-text class="dialog-content">
-          <div class="pokemon-info-container">            
-            <p class="message">
+        <v-card-text class="pa-5 pt-6 pb-2">
+          <div class="text-center">            
+            <p class="text-body-1 text-medium-emphasis">
               Dieses Pokémon ist noch nicht in deiner Sammlung. Möchtest du es jetzt hinzufügen?
             </p>
           </div>
         </v-card-text>
 
-        <v-card-actions class="dialog-actions">
+        <v-card-actions class="pa-6 pt-3">
           <v-spacer></v-spacer>
-          <v-btn color="grey-darken-1" variant="text" @click="closeDialog" class="cancel-btn">
+          <v-btn color="grey-darken-1" variant="text" @click="closeDialog" class="text-none font-weight-medium">
             Abbrechen
           </v-btn>
-          <v-btn :color="dominantColor" variant="elevated" @click="createPokemon" class="create-btn">
+          <v-btn :color="dominantColor" variant="elevated" @click="createPokemon" 
+                class="text-none font-weight-bold text-white elevation-2 px-5 py-2 create-button">
             <v-icon class="mr-1">mdi-plus</v-icon>
             Hinzufügen
           </v-btn>
@@ -45,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 
 // Props
 const props = defineProps<{
@@ -59,6 +61,9 @@ const emit = defineEmits<{
   (event: 'update:modelValue', value: boolean): void;
   (event: 'create', pokemon: { name: string, pokedexNumber: string, imageUrl?: string }): void;
 }>();
+
+// Computed
+const textColorClass = computed(() => 'text-white');
 
 // Sync with v-model
 const showDialog = ref(props.modelValue);
@@ -88,129 +93,40 @@ function createPokemon() {
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
 }
 
-.dialog-card {
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  padding-top: 60px;
-  position: relative;
-}
-
-.floating-image-container {
-  position: absolute;
-  top: 0px;
-  left: 65%;
-  transform: translateX(-50%);
-  z-index: 10;
-  width: 140px;
-  height: 140px;
-}
-
-.pokemon-floating-image {
-  width: 140px;
-  height: 140px;
+.pokemon-image-shadow {
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
   transform: scale(1.05);
   transition: transform 0.5s ease;
 }
 
-.dialog-header {
-  font-size: 1.3rem;
-  padding: 16px 20px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: flex-start;
-}
-
-.pokemon-title-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.pokemon-dialog-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.pokemon-number-subtitle {
-  font-size: 0.85rem;
-  opacity: 0.85;
-  font-weight: 400;
-  margin-top: -2px;
-}
-
-.dialog-content {
-  padding: 20px 20px 10px 20px;
-}
-
-.pokemon-info-container {
-  text-align: center;
-}
-
-.message {
-  color: rgba(0, 0, 0, 0.7);
-  font-size: 1.1rem;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.dialog-actions {
-  padding: 12px 24px 24px;
-}
-
-.cancel-btn {
-  font-weight: 500;
-  text-transform: none;
-  letter-spacing: 0.5px;
-}
-
-.create-btn {
-  color: white;
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  padding: 0 20px;
-  height: 40px;
-}
-
-.create-btn:hover {
+.create-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* Responsive für Mobile */
 @media (max-width: 600px) {
-  .floating-image-container {
-    top: 5px;
-    left: 65%;
-    width: 120px;
-    height: 120px;
+  .v-card {
+    padding-top: 50px !important;
   }
   
-  .pokemon-floating-image {
-    width: 120px;
-    height: 120px;
+  .position-absolute {
+    top: 5px !important;
+    width: 120px !important;
+    height: 120px !important;
   }
   
-  .dialog-card {
-    padding-top: 50px;
+  .pokemon-image-shadow {
+    width: 120px !important;
+    height: 120px !important;
   }
   
-  .dialog-header {
-    font-size: 1.1rem;
+  .text-h5 {
+    font-size: 1.15rem !important;
   }
   
-  .pokemon-dialog-title {
-    font-size: 1.15rem;
-  }
-  
-  .pokemon-number-subtitle {
-    font-size: 0.8rem;
+  .text-subtitle-2 {
+    font-size: 0.8rem !important;
   }
 }
 </style>
