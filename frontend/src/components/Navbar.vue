@@ -89,7 +89,7 @@ const isMobileView = ref(false);
 const detailPageColor = ref('');
 // Sind wir auf der Detailseite?
 const isDetailPage = computed(() => {
-  return route.name === 'pokemonDetail' && !!detailPageColor.value;
+  return (route.name === 'pokemonDetail' || route.name === 'fantasyCharacterDetail') && !!detailPageColor.value;
 });
 
 // Liste aller Pokémon-Farben und ihre DOM-Elemente
