@@ -164,10 +164,14 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { useRouter } from 'vue-router'; 
 import axios from 'axios';
 import { API_ENDPOINTS } from '../utils/constants';
 import { eventBus } from '../utils/eventBus';
 import type { FantasyCharacter } from '../types/pokemon';
+
+// Router initialisieren
+const router = useRouter();
 
 // Props and emits
 const props = defineProps<{
@@ -316,6 +320,14 @@ const saveCharacter = async () => {
       
       // Also emit global event for HomeView
       eventBus.emit('fantasy-character-created', savedCharacter);
+      
+      // Navigiere zur Detail-Seite des erstellten Fantasy Characters
+      if (savedCharacter.id) {
+        router.push({
+          name: 'fantasyCharacterDetail',
+          params: { id: savedCharacter.id }
+        });
+      }
       
       // Reset form after successful save and close
       setTimeout(() => {
