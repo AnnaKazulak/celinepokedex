@@ -34,6 +34,7 @@ public class ImageGenerationService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Bearer " + huggingfaceToken);
+        headers.set("Accept", "image/png");
         
         logger.info("Authorization header set: Bearer " + 
                     (huggingfaceToken != null ? huggingfaceToken.substring(0, 5) + "..." : "null"));
