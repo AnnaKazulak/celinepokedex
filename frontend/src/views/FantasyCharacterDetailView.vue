@@ -1,27 +1,28 @@
 <template>
   <div>
-    <div v-if="isLoading" class="loading-container">
+    <div v-if="isLoading" class="d-flex justify-center align-center" style="min-height: 80vh">
       <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
     </div>
 
     <template v-else-if="character">
       <div 
-        class="fantasy-detail-container" 
+        class="pa-8 pa-sm-10 px-md-12 transition-smooth w-100"
         :style="{
           background: isColorLoaded ? `linear-gradient(180deg, ${dominantColorLight} 0%, white 100%)` : 'transparent',
           opacity: isColorLoaded ? 1 : 0,
           '--dominant-color': dominantColor,
-          '--dominant-color-light': dominantColorLight
+          '--dominant-color-light': dominantColorLight,
+          minHeight: '100vh'
         }"
-        :class="{ 'color-loaded': isColorLoaded }"
+        :class="{ 'opacity-1': isColorLoaded }"
       >
         <!-- Back Button -->
-        <div class="back-button-container">
+        <div>
           <v-btn
             prepend-icon="mdi-arrow-left"
             variant="text"
             @click="goBack"
-            class="mb-4 back-button"
+            class="mb-4 font-weight-bold transition-transform"
             :style="{ color: isColorLoaded ? dominantColor : 'rgba(0,0,0,0.7)' }"
           >
             Zurück
@@ -29,73 +30,88 @@
         </div>
 
         <!-- Fantasy Character Header -->
-        <div class="fantasy-header">
-          <!-- Fantasy Character Info - Links -->
-          <div class="fantasy-info">
-            <div class="mb-4">
-              <div class="d-flex align-center">
-                <h1 class="text-h2 font-weight-bold mr-2"
-                    :style="{ color: isColorLoaded ? dominantColor : 'rgba(0,0,0,0.87)' }"
-                >
-                  Fantasy Character
-                </h1>
+        <v-container fluid class="ma-0 pa-0 mb-8" style="max-width: 1400px">
+          <v-row class="align-center" :class="{'flex-column-reverse': $vuetify.display.smAndDown}">
+            <!-- Fantasy Character Info -->
+            <v-col cols="12" md="6" :class="{'text-center': $vuetify.display.smAndDown}">
+              <div class="mb-4">
+                <div class="d-flex align-center" :class="{'justify-center': $vuetify.display.smAndDown}">
+                  <h1 class="text-h2 font-weight-bold mr-2"
+                      :style="{ color: isColorLoaded ? dominantColor : 'rgba(0,0,0,0.87)' }"
+                      :class="{'text-h4': $vuetify.display.xs}"
+                  >
+                    Fantasy Character
+                  </h1>
+                </div>
+                <p class="text-subtitle-1">
+                  Erstellt am {{ formatDate(character.createdAt) }}
+                </p>
               </div>
-              <p class="creation-date text-subtitle-1">
-                Erstellt am {{ formatDate(character.createdAt) }}
-              </p>
-            </div>
 
-            <!-- Fantasy Character Description -->
-            <div class="description-container">
-              <p class="prompt-text">{{ character.prompt }}</p>
-              
-              <!-- Download Button direkt unter der Beschreibung -->
-              <v-btn
-                color="primary"
-                variant="outlined"
-                prepend-icon="mdi-download"
-                @click="downloadImage"
-                class="download-btn mt-4"
-              >
-                Bild herunterladen
-              </v-btn>
-            </div>
-          </div>
-          
-          <!-- Fantasy Character Image Container - Rechts -->
-          <div class="fantasy-image-container">
-            <v-img
-              :src="character.imageUrl"
-              class="fantasy-image"
-              contain
-              @load="extractColorFromImage"
-            ></v-img>
-          </div>
-        </div>
+              <!-- Fantasy Character Description -->
+              <div class="mb-6">
+                <p class="text-body-1 mb-4 white-space-pre-line" 
+                  :class="{'text-body-2': $vuetify.display.xs}"
+                  style="line-height: 1.6; color: rgba(0, 0, 0, 0.8);">
+                  {{ character.prompt }}
+                </p>
+                
+                <v-btn
+                  color="primary"
+                  variant="outlined"
+                  prepend-icon="mdi-download"
+                  @click="downloadImage"
+                  class="mt-4"
+                  :class="{'mx-auto d-block': $vuetify.display.smAndDown}"
+                  :style="{ borderColor: dominantColor, color: dominantColor }"
+                >
+                  Bild herunterladen
+                </v-btn>
+              </div>
+            </v-col>
+            
+            <!-- Fantasy Character Image Container - nur einfaches v-img ohne v-card -->
+            <v-col cols="12" md="6" class="d-flex justify-center">
+              <v-img
+                :src="character.imageUrl"
+                @load="extractColorFromImage"
+                contain
+                :height="$vuetify.display.xs ? '250' : $vuetify.display.smAndDown ? '320' : $vuetify.display.mdAndDown ? '350' : '450'"
+                :width="$vuetify.display.xs ? '250' : $vuetify.display.smAndDown ? '320' : $vuetify.display.mdAndDown ? '350' : '450'"
+                class="transform-scale transition-transform rounded-lg"
+                style="filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));"
+                :style="{ transform: 'scale(1.05)' }"
+              ></v-img>
+            </v-col>
+          </v-row>
+        </v-container>
 
         <!-- Generated Properties Card -->
         <v-card 
-          class="details-card mt-6" 
-          :style="{ '--dominant-color': dominantColor }"
+          class="mt-6 mx-auto rounded-lg overflow-hidden" 
+          max-width="1400px"
+          style="border-left: 4px solid;"
+          :style="{ borderLeftColor: dominantColor }"
+          elevation="4"
         >
           <v-card-title 
-            class="header" 
-            :style="{ backgroundColor: dominantColor }"
+            class="py-4 px-6"
+            :style="{ backgroundColor: dominantColor, color: 'white' }"
           >
-            <h3>Eigenschaften</h3>
+            <span class="text-h5 font-weight-medium">Eigenschaften</span>
           </v-card-title>
           <v-card-text class="pa-4">
             <v-row>
               <v-col cols="12" sm="6">
-                <div class="property">
-                  <span class="property-label">ID:</span>
-                  <span class="property-value">{{ character.id || 'Nicht verfügbar' }}</span>
+                <div class="d-flex flex-column mb-4">
+                  <span class="text-caption font-weight-bold text-medium-emphasis mb-1">ID:</span>
+                  <span class="text-body-1">{{ character.id || 'Nicht verfügbar' }}</span>
                 </div>
               </v-col>
               <v-col cols="12" sm="6">
-                <div class="property">
-                  <span class="property-label">Erstellt am:</span>
-                  <span class="property-value">{{ formatDate(character.createdAt) }}</span>
+                <div class="d-flex flex-column mb-4">
+                  <span class="text-caption font-weight-bold text-medium-emphasis mb-1">Erstellt am:</span>
+                  <span class="text-body-1">{{ formatDate(character.createdAt) }}</span>
                 </div>
               </v-col>
             </v-row>
@@ -104,10 +120,12 @@
       </div>
     </template>
 
-    <div v-else class="error-container">
+    <div v-else class="d-flex flex-column align-center justify-center pa-8" style="min-height: 50vh">
       <v-alert
         type="error"
         variant="tonal"
+        width="100%"
+        max-width="500px"
       >
         Fantasy Character wurde nicht gefunden.
       </v-alert>
@@ -253,228 +271,28 @@ function downloadImage() {
 </script>
 
 <style scoped>
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-}
-
-.fantasy-detail-container {
-  border-radius: 0;
-  padding: 2rem 5%;
-  min-height: 100vh;
-  width: 100%;
+/* Nur Hilfsstile behalten, die nicht direkt über Vuetify zugänglich sind */
+.transition-smooth {
   transition: all 0.8s ease;
 }
 
-.color-loaded {
-  opacity: 1 !important;
+.white-space-pre-line {
+  white-space: pre-line;
 }
 
-.back-button-container {
-  padding: 0 0 1rem 0;
+.transition-transform {
+  transition: transform 0.3s ease;
 }
 
-.back-button {
-  font-weight: bold;
-  transition: all 0.5s ease;
-  color: var(--dominant-color);
-}
-
-.back-button:hover {
+.transition-transform:hover {
   transform: translateX(-5px);
 }
 
-.fantasy-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 2rem;
-  max-width: 1400px;
-  margin: 0 auto 2rem;
-}
-
-.fantasy-info {
-  flex: 1;
-  min-width: 280px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.fantasy-image-container {
-  flex: 1;
-  min-width: 250px;
-  display: flex;
-  justify-content: center;
-  padding: 0;
-}
-
-.fantasy-image {
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
-  transform: scale(1.05);
+.transform-scale {
   transition: transform 0.5s ease;
-  max-height: 450px;
-  max-width: 100%;
 }
 
-.fantasy-image:hover {
-  transform: scale(1.1);
-}
-
-.title {
-  color: var(--dominant-color, #6890F0);
-}
-
-.color-transition {
-  color: var(--dominant-color, rgba(0,0,0,0.7));
-  transition: color 0.5s ease;
-}
-
-.description-container {
-  margin-bottom: 1.5rem;
-}
-
-.prompt-text {
-  white-space: pre-line;
-  font-size: 1.1rem;
-  line-height: 1.6;
-  color: rgba(0, 0, 0, 0.8);
-  margin-bottom: 1rem;
-}
-
-.download-btn {
-  border-color: var(--dominant-color);
-  color: var(--dominant-color);
-}
-
-.details-card {
-  border-radius: 12px;
-  margin: 0 auto 2rem;
-  border-left: 4px solid var(--dominant-color);
-  overflow: hidden;
-  max-width: 1400px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.details-card .header {
-  background-color: var(--dominant-color);
-  color: white;
-  padding: 1rem 1.5rem;
-}
-
-.details-card .header h3 {
-  font-size: 1.5rem;
-  margin: 0;
-  font-weight: 500;
-}
-
-.property {
-  margin-bottom: 1rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.property-label {
-  font-weight: bold;
-  font-size: 0.9rem;
-  color: rgba(0, 0, 0, 0.6);
-  margin-bottom: 0.25rem;
-}
-
-.property-value {
-  font-size: 1.1rem;
-}
-
-.error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 50vh;
-  padding: 2rem;
-}
-
-/* Größere Desktop-Bildschirme */
-@media (min-width: 1200px) {
-  .fantasy-header {
-    padding: 0 2rem;
-  }
-  
-  .fantasy-info {
-    padding-right: 50px;
-  }
-  
-  .fantasy-image {
-    height: 450px;
-    width: 450px;
-  }
-}
-
-/* Mittlere Desktops und Tablets im Querformat */
-@media (min-width: 769px) and (max-width: 1199px) {
-  .fantasy-header {
-    gap: 0;
-  }
-  
-  .fantasy-info {
-    padding-right: 20px;
-  }
-  
-  .fantasy-image {
-    height: 350px;
-    width: 350px;
-  }
-}
-
-/* Tablets im Hochformat und mobile Geräte */
-@media (max-width: 768px) {
-  .fantasy-header {
-    flex-direction: column-reverse;
-    gap: 1.5rem;
-  }
-  
-  .fantasy-image {
-    height: 320px;
-    width: 320px;
-  }
-  
-  .fantasy-info {
-    text-align: center;
-    padding: 0 1rem;
-  }
-  
-  .fantasy-info .d-flex {
-    justify-content: center;
-  }
-  
-  .download-btn {
-    margin: 0 auto;
-    display: block;
-  }
-}
-
-/* Mobile Geräte */
-@media (max-width: 600px) {
-  .fantasy-detail-container {
-    padding: 1rem 3%;
-  }
-  
-  .fantasy-image {
-    height: 250px;
-    width: 250px;
-  }
-  
-  .fantasy-info h1 {
-    font-size: 2rem !important;
-    line-height: 1.2;
-    margin-right: 0.5rem;
-  }
-  
-  .prompt-text {
-    font-size: 1rem;
-    line-height: 1.5;
-  }
+.transform-scale:hover {
+  transform: scale(1.1) !important;
 }
 </style>
