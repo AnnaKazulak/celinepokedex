@@ -1,25 +1,35 @@
 <template>
   <div class="navbar-container">
     <v-app-bar
-      class="pokemon-navbar"
-      :class="{ 'scrolled': isScrolled || isDetailPage }"
-      :style="{ background: navbarBackground }"
-      elevation="0"
+      :class="{ 'bg-transparent': !isScrolled && !isDetailPage }"
+      :style="isScrolled || isDetailPage ? { background: navbarBackground } : {}"
+      :elevation="isScrolled || isDetailPage ? 1 : 0"
+      app
       fixed
     >
       <div class="d-flex align-center">
-        <router-link to="/" class="home-link">
-          <div class="logo-container" :class="{ 'logo-scrolled': isScrolled || isDetailPage }">
+        <router-link to="/" class="text-decoration-none d-flex align-center">
+          <v-avatar
+            :class="[
+              'mr-3',
+              { 'bg-white-darken-1': !isScrolled && !isDetailPage, 'bg-white-darken-2': isScrolled || isDetailPage }
+            ]"
+            :elevation="isScrolled || isDetailPage ? 2 : 0"
+            size="48"
+          >
             <v-img
               alt="Pokemon Logo"
-              class="pokemon-logo"
               contain
               src="/src/assets/celinepokedex-logo-1.jpg"
               transition="scale-transition"
-              width="48"
             />
-          </div>
-          <v-toolbar-title class="app-title" :class="{ 'title-scrolled': isScrolled || isDetailPage }">
+          </v-avatar>
+          <v-toolbar-title 
+            :class="[
+              'text-h6 font-weight-medium',
+              { 'text-white-darken-1': !isScrolled && !isDetailPage, 'text-white font-weight-bold': isScrolled || isDetailPage }
+            ]"
+          >
             Céline Pokédex
           </v-toolbar-title>
         </router-link>
@@ -27,18 +37,21 @@
 
       <v-spacer></v-spacer>
       <v-btn
-        class="fantasy-button mr-2"
-        :class="{ 'button-scrolled': isScrolled || isDetailPage }"
-        elevation="0"
+        class="mr-2"
+        :class="{ 'text-white': isScrolled || isDetailPage }"
+        color="white"
+        :elevation="isScrolled || isDetailPage ? 2 : 1"
+        rounded="pill"
         prepend-icon="mdi-magic-staff"
         @click="showFantasyDialog = true"
       >
         Fantasy Character
       </v-btn>
       <v-btn
-        class="create-button"
-        :class="{ 'button-scrolled': isScrolled || isDetailPage }"
-        elevation="0"
+        :class="{ 'text-white': isScrolled || isDetailPage }"
+        color="white"
+        :elevation="isScrolled || isDetailPage ? 2 : 1"
+        rounded="pill"
         prepend-icon="mdi-plus"
         @click="showDialog = true"
       >
@@ -276,180 +289,14 @@ const handlePokemonCreated = (newPokemon: Pokemon) => {
 </script>
 
 <style scoped>
+/* Keep only the navbar container with z-index for proper layering */
 .navbar-container {
   position: relative;
-  z-index: 100; /* Erhöht von 5 auf 100, damit die Navbar über allen Elementen liegt */
+  z-index: 100;
 }
 
-.pokemon-navbar {
-  padding: 0 24px;
-  box-shadow: none !important;
-  height: 68px !important;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.pokemon-navbar.scrolled {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
-}
-
-.logo-container {
-  position: relative;
-  width: 48px;
-  height: 48px;
-  margin-right: 12px;
-  overflow: hidden;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.1);
-  box-shadow: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.logo-container.logo-scrolled {
-  background-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-}
-
-.logo-container:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-}
-
-.pokemon-logo {
-  transition: all 0.3s ease;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-.pokemon-logo:hover {
-  transform: scale(1.1);
-}
-
-.app-title {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-left: 8px;
-  letter-spacing: 0.5px;
-  text-shadow: none;
-  white-space: nowrap;
-  overflow: visible;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.app-title.title-scrolled {
-  color: white;
-  font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.create-button {
-  background-color: white !important;
-  color: v-bind(psychicColor) !important;
-  border-radius: 28px;
-  font-weight: 600;
-  padding: 0 20px;
-  height: 42px;
-  letter-spacing: 0.5px;
-  text-transform: none;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1) !important;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-  opacity: 0.9;
-}
-
-.create-button.button-scrolled {
-  background-color: white !important;
-  color: v-bind(psychicColor) !important;
-  font-weight: 600;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-  opacity: 1;
-}
-
-.create-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-}
-
-.create-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-.fantasy-button {
-  background-color: white !important;
-  color: v-bind(ghostColor) !important;
-  border-radius: 28px;
-  font-weight: 600;
-  padding: 0 20px;
-  height: 42px;
-  letter-spacing: 0.5px;
-  text-transform: none;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1) !important;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-  opacity: 0.9;
-}
-
-.fantasy-button.button-scrolled {
-  background-color: white !important;
-  color: v-bind(ghostColor) !important;
-  font-weight: 600;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-  opacity: 1;
-}
-
-.fantasy-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-}
-
-.fantasy-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-.home-link {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.home-link:hover {
-  text-decoration: none;
-}
-
+/* Mobile responsive adjustments */
 @media (max-width: 600px) {
-  .pokemon-navbar {
-    padding: 0 16px;
-    height: 60px !important;
-  }
-  
-  .app-title {
-    font-size: 1.2rem;
-  }
-  
-  .create-button {
-    font-size: 0.85rem;
-    padding: 0 12px;
-    height: 36px;
-  }
-  
-  .logo-container {
-    width: 38px;
-    height: 38px;
-    margin-right: 8px;
-  }
-
-  .pokemon-logo {
-    width: 38px;
-  }
-
-  .fantasy-button {
-    font-size: 0.85rem;
-    padding: 0 12px;
-    height: 36px;
-    margin-right: 8px;
-  }
+  /* Removed all custom styles as they're now handled by Vuetify classes */
 }
 </style>
