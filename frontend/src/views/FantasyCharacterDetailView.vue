@@ -141,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import { type FantasyCharacter } from '@/types/pokemon';
@@ -164,6 +164,14 @@ const characterId = computed(() => {
 
 onMounted(async () => {
   await fetchCharacterDetails();
+});
+
+// Watch für Änderungen der Character ID (wenn ein neuer Character erstellt wird)
+watch(() => route.params.id, async (newId, oldId) => {
+  if (newId !== oldId) {
+    // Lade Daten des neuen Characters
+    await fetchCharacterDetails();
+  }
 });
 
 async function fetchCharacterDetails() {
