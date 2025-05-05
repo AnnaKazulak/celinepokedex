@@ -116,10 +116,47 @@ const navbarBackground = computed(() => {
 // Event-Handler für die Registrierung von Pokémon-Farben
 const handleRegisterPokemonColor = (data: {id: number | string; color: string; element: HTMLElement | null}) => {
   if (data.element) {
-    pokemonColors.value.set(data.id, {
-      color: data.color,
-      element: data.element
-    });
+    // Sicherstellen, dass beim Hinzufügen neuer Farben kein Element überschrieben wird
+    if (!pokemonColors.value.has(data.id)) {
+      pokemonColors.value.set(data.id, {
+        color: data.color,
+        element: data.element
+      });
+    } else {
+      // Aktualisiere nur die Farbe, nicht das Element, falls bereits vorhanden
+      const existingData = pokemonColors.value.get(data.id);
+      if (existingData) {
+        pokemonColors.value.set(data.id, {
+          color: data.color,
+          element: existingData.element || data.element
+        });
+      }
+    }
+  }
+};
+
+// Event-Handler für die Registrierung von Fantasy-Charakter-Farben
+const handleRegisterFantasyColor = (data: {id: number | string; color: string; element: HTMLElement | null}) => {
+  if (data.element) {
+    // Fantasy-Charaktere immer mit einem Präfix speichern, um Kollisionen zu vermeiden
+    const fantasyId = `fantasy-${data.id}`;
+    
+    // Sicherstellen, dass beim Hinzufügen neuer Farben kein Element überschrieben wird
+    if (!pokemonColors.value.has(fantasyId)) {
+      pokemonColors.value.set(fantasyId, {
+        color: data.color,
+        element: data.element
+      });
+    } else {
+      // Aktualisiere nur die Farbe, nicht das Element, falls bereits vorhanden
+      const existingData = pokemonColors.value.get(fantasyId);
+      if (existingData) {
+        pokemonColors.value.set(fantasyId, {
+          color: data.color,
+          element: existingData.element || data.element
+        });
+      }
+    }
   }
 };
 
@@ -211,6 +248,7 @@ onMounted(() => {
   window.addEventListener('scroll', handleScroll);
   window.addEventListener('resize', checkScreenSize);
   eventBus.on('register-pokemon-color', handleRegisterPokemonColor);
+  eventBus.on('register-fantasy-color', handleRegisterFantasyColor);
   eventBus.on('detail-page-color-change', handleDetailPageColorChange);
 
   // Initial prüfen
@@ -223,6 +261,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll);
   window.removeEventListener('resize', checkScreenSize);
   eventBus.off('register-pokemon-color', handleRegisterPokemonColor);
+  eventBus.off('register-fantasy-color', handleRegisterFantasyColor);
   eventBus.off('detail-page-color-change', handleDetailPageColorChange);
 });
 
