@@ -36,27 +36,64 @@
       </div>
 
       <v-spacer></v-spacer>
-      <v-btn
-        class="mr-2"
-        :class="{ 'text-white': isScrolled || isDetailPage }"
-        color="white"
-        :elevation="isScrolled || isDetailPage ? 2 : 1"
-        rounded="pill"
-        prepend-icon="mdi-magic-staff"
-        @click="showFantasyDialog = true"
-      >
-        Fantasy Character
-      </v-btn>
-      <v-btn
-        :class="{ 'text-white': isScrolled || isDetailPage }"
-        color="white"
-        :elevation="isScrolled || isDetailPage ? 2 : 1"
-        rounded="pill"
-        prepend-icon="mdi-plus"
-        @click="showDialog = true"
-      >
-        Pokémon
-      </v-btn>
+      
+      <!-- Desktop buttons -->
+      <div class="d-none d-sm-flex">
+        <v-btn
+          class="mr-2"
+          :class="{ 'text-white': isScrolled || isDetailPage }"
+          color="white"
+          :elevation="isScrolled || isDetailPage ? 2 : 1"
+          rounded="pill"
+          prepend-icon="mdi-magic-staff"
+          @click="showFantasyDialog = true"
+        >
+          Fantasy Character
+        </v-btn>
+        <v-btn
+          :class="{ 'text-white': isScrolled || isDetailPage }"
+          color="white"
+          :elevation="isScrolled || isDetailPage ? 2 : 1"
+          rounded="pill"
+          prepend-icon="mdi-plus"
+          @click="showDialog = true"
+        >
+          Pokémon
+        </v-btn>
+      </div>
+      
+      <!-- Mobile hamburger menu -->
+      <div class="d-sm-none">
+        <v-menu 
+          location="bottom end"
+          transition="slide-y-transition"
+        >
+          <template v-slot:activator="{ props }">
+            <v-btn
+              v-bind="props"
+              icon
+              :class="{ 'text-white': isScrolled || isDetailPage }"
+              :elevation="isScrolled || isDetailPage ? 2 : 1"
+            >
+              <v-icon>mdi-menu</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item @click="showFantasyDialog = true">
+              <v-list-item-title>
+                <v-icon start>mdi-magic-staff</v-icon>
+                Fantasy Character
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item @click="showDialog = true">
+              <v-list-item-title>
+                <v-icon start>mdi-plus</v-icon>
+                Pokémon
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
     </v-app-bar>
     
     <PokemonFormDialog 
@@ -71,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import PokemonFormDialog from './PokemonFormDialog.vue';
 import FantasyCharacterDialog from './FantasyCharacterDialog.vue';
@@ -105,6 +142,37 @@ const isDetailPage = computed(() => {
   return (route.name === 'pokemonDetail' || route.name === 'fantasyCharacterDetail') && !!detailPageColor.value;
 });
 
+// Watch for route changes
+watch(
+  () => route.name,
+  (newRouteName) => {
+    // If we're navigating to the home view, reset the detail page color
+    if (newRouteName === 'home') {
+      detailPageColor.value = '';
+      // Reset active color as well to avoid sticking with old detail color
+      activeColor.value = '';
+      useDynamicColor.value = false;
+      
+      // After a short delay, trigger scroll handler to ensure DOM is ready
+      setTimeout(() => {
+        handleScroll();
+      }, 200);
+    }
+  }
+);
+
+// Extra handler for home view specific full reset
+eventBus.on('home-view-mounted', () => {
+  // Reset all dynamic colors
+  detailPageColor.value = '';
+  activeColor.value = '';
+  
+  // Force refresh of scroll handler after DOM is fully ready
+  setTimeout(() => {
+    handleScroll();
+  }, 300);
+});
+
 // Liste aller Pokémon-Farben und ihre DOM-Elemente
 const pokemonColors = ref<Map<string | number, { color: string; element: HTMLElement | null }>>(new Map());
 
@@ -117,7 +185,7 @@ const navbarBackground = computed(() => {
     return `linear-gradient(135deg, ${detailPageColor.value} 0%, ${darkColor} 100%)`;
   }
   // Normale Logik für die HomeView
-  else if (isScrolled.value && useDynamicColor.value && activeColor.value && isMobileView.value) {
+  else if (isScrolled.value && useDynamicColor.value && activeColor.value) {
     return activeColor.value;
   } else if (isScrolled.value) {
     return `linear-gradient(135deg, ${psychicColor} 0%, ${ghostColor} 100%)`;
@@ -178,14 +246,42 @@ const handleDetailPageColorChange = (color: string) => {
   detailPageColor.value = color;
 };
 
+// Complete reset of all navbar color-related states
+function resetNavbarColors() {
+  // Reset all color variables
+  detailPageColor.value = '';
+  activeColor.value = '';
+  useDynamicColor.value = false;
+  
+  // Re-evaluate cards in view after a delay to ensure DOM is ready
+  setTimeout(() => {
+    handleScroll();
+  }, 300);
+}
+
+// Watch for route changes with immediate effect for reliable detection
+watch(() => route.name, 
+  (newRouteName) => {
+    if (newRouteName === 'home') {
+      resetNavbarColors();
+    }
+  },
+  { immediate: true }
+);
+
+// Event handler for direct reset from home view
+eventBus.on('home-view-mounted', () => {
+  resetNavbarColors();
+});
+
 // Scroll-Event-Handler mit verbessertem Matching-Algorithmus
 const handleScroll = () => {
   // Ab 50px Scroll-Position wird die Navbar als gescrollt betrachtet
   const wasScrolled = isScrolled.value;
   isScrolled.value = window.scrollY > 50;
   
-  // Nur wenn wir auf Mobilgeräten sind und gescrollt haben
-  if (isMobileView.value && isScrolled.value) {
+  // Nur fortfahren, wenn wir gescrollt haben
+  if (isScrolled.value) {
     // Viewport-Mitte berechnen
     const viewportCenter = window.innerHeight / 2;
     
@@ -251,9 +347,6 @@ function createDarkerShade(color: string): string {
 // Bildschirmgröße prüfen
 const checkScreenSize = () => {
   isMobileView.value = window.innerWidth <= 768;
-  if (!isMobileView.value) {
-    useDynamicColor.value = false;
-  }
 };
 
 // Event-Listener beim Mounten hinzufügen
@@ -263,6 +356,9 @@ onMounted(() => {
   eventBus.on('register-pokemon-color', handleRegisterPokemonColor);
   eventBus.on('register-fantasy-color', handleRegisterFantasyColor);
   eventBus.on('detail-page-color-change', handleDetailPageColorChange);
+  
+  // New direct reset handler that forces a complete navbar state reset
+  eventBus.on('force-navbar-reset', forceNavbarReset);
 
   // Initial prüfen
   checkScreenSize();
@@ -276,7 +372,32 @@ onBeforeUnmount(() => {
   eventBus.off('register-pokemon-color', handleRegisterPokemonColor);
   eventBus.off('register-fantasy-color', handleRegisterFantasyColor);
   eventBus.off('detail-page-color-change', handleDetailPageColorChange);
+  eventBus.off('force-navbar-reset', forceNavbarReset);
 });
+
+// Direct forceful reset of navbar that guarantees color updates
+function forceNavbarReset() {
+  console.log('Forcing navbar reset...');
+  // Clear all state variables
+  detailPageColor.value = '';
+  activeColor.value = '';
+  useDynamicColor.value = false;
+  
+  // Force immediate update of the scroll status to trigger navbar background update
+  isScrolled.value = window.scrollY > 50;
+  
+  // Clear and rebuild the color map
+  pokemonColors.value.clear();
+  
+  // Multiple delayed calls to handle scroll with increasing delays
+  // This ensures we catch cards as they appear in the DOM
+  const delays = [100, 300, 600, 1000];
+  delays.forEach(delay => {
+    setTimeout(() => {
+      handleScroll();
+    }, delay);
+  });
+}
 
 // Event, wenn ein Pokémon erstellt wurde
 const handlePokemonCreated = (newPokemon: Pokemon) => {

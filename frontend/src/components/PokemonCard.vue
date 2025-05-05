@@ -67,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { extractDominantColor } from '../utils/colorUtils';
 import { eventBus } from '../utils/eventBus';
@@ -79,6 +79,7 @@ const props = defineProps<{
 
 const router = useRouter();
 const dominantColor = ref('#ffffff'); // Standard-Fallback-Farbe
+const cardElement = ref<HTMLElement | null>(null);
 
 // Extrahiere die dominante Farbe aus dem Pokémon-Bild
 async function extractColorFromImage() {
@@ -89,16 +90,24 @@ async function extractColorFromImage() {
         dominantColor.value = await extractDominantColor(props.pokemon.imageUrl || '');
         
         // Farbe zur globalen Farbpalette hinzufügen
-        eventBus.emit('register-pokemon-color', {
-          id: props.pokemon.pokedexNumber,
-          color: dominantColor.value,
-          element: document.querySelector(`.pokemon-card-container[data-id="${props.pokemon.pokedexNumber}"]`)
-        });
+        registerCardColor();
       }, 100);
     }
   } catch (error) {
     console.error('Fehler bei der Farbextraktion:', error);
   }
+}
+
+// Separate function to register the card color with the navbar
+function registerCardColor() {
+  // Make sure we have a reference to the actual DOM element
+  const element = cardElement.value || document.querySelector(`.pokemon-card-container[data-id="${props.pokemon.pokedexNumber}"]`);
+  
+  eventBus.emit('register-pokemon-color', {
+    id: props.pokemon.pokedexNumber,
+    color: dominantColor.value,
+    element: element
+  });
 }
 
 // Navigation zur Detailansicht
@@ -145,6 +154,28 @@ function getTypeColor(type: PokemonType): string {
 
 onMounted(() => {
   extractColorFromImage();
+  
+  // Listen for home view mounted event to re-register colors
+  eventBus.on('home-view-mounted', () => {
+    // Small delay to ensure DOM is ready
+    setTimeout(() => {
+      registerCardColor();
+    }, 100);
+  });
+  
+  // Listen for direct force reregistration event
+  eventBus.on('reregister-all-cards', () => {
+    // Different delay to avoid timing conflicts
+    setTimeout(() => {
+      registerCardColor();
+    }, 150);
+  });
+});
+
+onBeforeUnmount(() => {
+  // Clean up event listeners
+  eventBus.off('home-view-mounted');
+  eventBus.off('reregister-all-cards');
 });
 </script>
 

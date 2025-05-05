@@ -85,7 +85,7 @@ import { ref, onMounted, computed, onBeforeUnmount, watch } from 'vue';
 import axios from 'axios';
 import { eventBus } from '../utils/eventBus';
 import { Pokemon, PokemonType, FantasyCharacter } from '../types/pokemon';
-import { API_ENDPOINTS } from '../utils/constants';
+import { API_ENDPOINTS, EXTERNAL_API } from '../utils/constants';
 
 // Importiere die Unterkomponenten
 import SearchBar from '@/components/home/SearchBar.vue';
@@ -105,6 +105,19 @@ const fantasyCharacters = ref<FantasyCharacter[]>([]);
 const searchQuery = ref('');
 const isLoading = ref(false);
 const selectedTypes = ref<PokemonType[]>([]);
+
+// Ensure each Pokemon has an imageUrl
+function ensureImageUrls(pokemonList: Pokemon[]): Pokemon[] {
+  return pokemonList.map(pokemon => {
+    if (!pokemon.imageUrl && pokemon.pokedexNumber) {
+      // Extract the numeric ID from pokedexNumber (remove leading zeros)
+      const numericId = parseInt(pokemon.pokedexNumber.replace(/^0+/, ''));
+      // Use the external API's sprite URL as fallback
+      pokemon.imageUrl = EXTERNAL_API.SPRITE_URL(numericId);
+    }
+    return pokemon;
+  });
+}
 
 // Erstelle eine Liste aller Pokémon-Typen für das Dropdown
 const pokemonTypes = Object.values(PokemonType).map(type => ({
@@ -252,7 +265,7 @@ async function loadAllPokemons(updateLoadingState = true) {
   
   try {
     const response = await axios.get<Pokemon[]>(API_ENDPOINTS.POKEMONS);
-    pokemons.value = response.data;
+    pokemons.value = ensureImageUrls(response.data);
   } catch (error) {
     console.error('Error loading pokemons:', error);
   } finally {
@@ -290,7 +303,7 @@ async function filterPokemonsByType() {
           indexes: null // null means no indexes, so ?types=FEUER&types=WASSER
         }
       });
-      pokemons.value = response.data;
+      pokemons.value = ensureImageUrls(response.data);
     } else {
       // If no type is selected, load all pokemons
       await loadAllPokemons();
@@ -321,7 +334,7 @@ async function searchContent() {
             indexes: null
           }
         });
-        pokemons.value = pokemonResponse.data;
+        pokemons.value = ensureImageUrls(pokemonResponse.data);
       }
       
       // If in Fantasy or All mode, search for Fantasy Characters
@@ -368,13 +381,26 @@ function handleNewFantasyCharacter(newCharacter: FantasyCharacter) {
 }
 
 // Register event listeners
-onMounted(() => {
+onMounted(async () => {
   // Initial content loading
   loadAllContent();
   
   // Register event listeners
   eventBus.on('pokemon-created', handleNewPokemon);
   eventBus.on('fantasy-character-created', handleNewFantasyCharacter);
+
+  // A series of events with increasing delays to ensure navbar updates
+  // This makes navigation back to the home page reliable
+  setTimeout(() => {
+    eventBus.emit('home-view-mounted');
+  }, 100);
+  
+  // After content has likely loaded, trigger navbar reset and card reregistration
+  setTimeout(() => {
+    eventBus.emit('force-navbar-reset');
+    // Tell all cards to reregister
+    eventBus.emit('reregister-all-cards');
+  }, 500);
 });
 
 // Clean up event listeners

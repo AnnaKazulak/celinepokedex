@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { extractDominantColor } from '../utils/colorUtils';
 import { eventBus } from '../utils/eventBus';
@@ -69,16 +69,23 @@ async function extractColorFromImage() {
         dominantColor.value = await extractDominantColor(props.character.imageUrl || '');
         
         // Add color to global color palette for dynamic navbar
-        eventBus.emit('register-fantasy-color', {
-          id: props.character.id,
-          color: dominantColor.value,
-          element: cardElement.value
-        });
+        registerCardColor();
       }, 100);
     }
   } catch (error) {
     console.error('Error extracting color:', error);
   }
+}
+
+// Separate function to register the card color with the navbar
+function registerCardColor() {
+  const element = cardElement.value || document.querySelector(`.fantasy-card-container[data-id="${props.character.id}"]`);
+  
+  eventBus.emit('register-fantasy-color', {
+    id: props.character.id,
+    color: dominantColor.value,
+    element: element
+  });
 }
 
 // Format date from ISO string to readable format
@@ -137,6 +144,19 @@ const navigateToDetail = () => {
 
 onMounted(() => {
   extractColorFromImage();
+  
+  // Register for home view mounted event
+  eventBus.on('home-view-mounted', () => {
+    // Re-register color when returning to home view
+    setTimeout(() => {
+      registerCardColor();
+    }, 100);
+  });
+});
+
+// Clean up event listeners
+onBeforeUnmount(() => {
+  eventBus.off('home-view-mounted');
 });
 </script>
 
