@@ -97,11 +97,14 @@
 <script lang="ts">
 import { defineComponent, ref, computed } from 'vue';
 import axios from 'axios';
+import { eventBus } from '../utils/eventBus';
 
 export default defineComponent({
   name: 'FantasyCharacterGenerator',
   
-  setup() {
+  emits: ['character-created'],
+  
+  setup(props, { emit }) {
     const dialog = ref(false);
     const isLoading = ref(false);
     const imageData = ref('');
@@ -166,15 +169,22 @@ export default defineComponent({
       
       isLoading.value = true;
       try {
-        await axios.post('/api/characters/save-generated', {
-          baseAnimal: baseAnimal.value,
-          elementType: elementType.value,
-          styleType: styleType.value,
-          traits: traits.value
+        // Direkt das generierte Bild speichern, anstatt ein neues zu generieren
+        const response = await axios.post('/api/characters/save', {
+          prompt: generatedPrompt.value,
+          imageUrl: imageData.value
         });
+        
+        // Emit the saved character to update the parent component
+        const savedCharacter = response.data;
+        emit('character-created', savedCharacter);
+        
+        // Also publish via event bus for global updates
+        eventBus.emit('fantasy-character-created', savedCharacter);
         
         alert('Character saved successfully!');
         dialog.value = false;
+        resetForm();
       } catch (error) {
         console.error('Error saving character:', error);
         alert('Failed to save character. Please try again.');
