@@ -1,5 +1,10 @@
 package com.celinepokedex.service;
 
+import com.celinepokedex.model.BaseAnimal;
+import com.celinepokedex.model.CharacterTrait;
+import com.celinepokedex.model.ElementType;
+import com.celinepokedex.model.StyleType;
+import com.celinepokedex.util.PromptBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -9,6 +14,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -26,6 +32,20 @@ public class ImageGenerationService {
         this.huggingfaceToken = huggingfaceToken;
         logger.info("ImageGenerationService initialized with token: " + 
                     (huggingfaceToken != null ? huggingfaceToken.substring(0, 5) + "..." : "null"));
+    }
+    
+    /**
+     * Generates an image using user-selected character attributes
+     * @param animal The base animal type for the character
+     * @param element The elemental power of the character
+     * @param style The art style to generate the character in
+     * @param traits List of character traits to apply
+     * @return Base64 encoded image data
+     */
+    public String generateFantasyCharacterImage(BaseAnimal animal, ElementType element, StyleType style, List<CharacterTrait> traits) {
+        String prompt = PromptBuilder.buildPrompt(animal, element, style, traits);
+        logger.info("Generated prompt from attributes: " + prompt);
+        return generateImage(prompt);
     }
 
     public String generateImage(String prompt) {

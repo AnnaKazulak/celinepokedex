@@ -1,7 +1,10 @@
 package com.celinepokedex.controller;
 
+import com.celinepokedex.controller.request.FantasyCharacterGenerationRequest;
 import com.celinepokedex.model.FantasyCharacter;
 import com.celinepokedex.service.FantasyCharacterService;
+import com.celinepokedex.service.ImageGenerationService;
+import com.celinepokedex.util.PromptBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +19,13 @@ import java.util.Optional;
 public class FantasyCharacterController {
 
     private final FantasyCharacterService fantasyCharacterService;
+    private final ImageGenerationService imageGenerationService;
 
     @Autowired
-    public FantasyCharacterController(FantasyCharacterService fantasyCharacterService) {
+    public FantasyCharacterController(FantasyCharacterService fantasyCharacterService, 
+                                      ImageGenerationService imageGenerationService) {
         this.fantasyCharacterService = fantasyCharacterService;
+        this.imageGenerationService = imageGenerationService;
     }
 
     /**
@@ -69,5 +75,82 @@ public class FantasyCharacterController {
     public ResponseEntity<List<FantasyCharacter>> searchCharacters(@RequestParam String query) {
         List<FantasyCharacter> characters = fantasyCharacterService.searchFantasyCharacters(query);
         return ResponseEntity.ok(characters);
+    }
+
+    /**
+     * Generate a fantasy character image using enum options instead of raw prompts
+     * POST /api/characters/generate
+     */
+    @PostMapping("/generate")
+    public ResponseEntity<Map<String, Object>> generateCharacterFromAttributes(
+            @RequestBody FantasyCharacterGenerationRequest request) {
+        
+        // Validate request
+        if (request.getBaseAnimal() == null || 
+            request.getElementType() == null || 
+            request.getStyleType() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        // Generate the prompt based on selected attributes
+        String prompt = PromptBuilder.buildPrompt(
+            request.getBaseAnimal(),
+            request.getElementType(),
+            request.getStyleType(),
+            request.getTraits()
+        );
+        
+        // Generate the image
+        String imageData = imageGenerationService.generateFantasyCharacterImage(
+            request.getBaseAnimal(),
+            request.getElementType(),
+            request.getStyleType(),
+            request.getTraits()
+        );
+        
+        // Return both the generated prompt and image data
+        Map<String, Object> response = Map.of(
+            "prompt", prompt,
+            "imageData", imageData
+        );
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Save a fantasy character that was generated using enum options
+     * POST /api/characters/save-generated
+     */
+    @PostMapping("/save-generated")
+    public ResponseEntity<FantasyCharacter> saveGeneratedCharacter(
+            @RequestBody FantasyCharacterGenerationRequest request) {
+        
+        // Validate request
+        if (request.getBaseAnimal() == null || 
+            request.getElementType() == null || 
+            request.getStyleType() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        // Generate image and prompt
+        String prompt = PromptBuilder.buildPrompt(
+            request.getBaseAnimal(),
+            request.getElementType(),
+            request.getStyleType(),
+            request.getTraits()
+        );
+        
+        String imageData = imageGenerationService.generateFantasyCharacterImage(
+            request.getBaseAnimal(),
+            request.getElementType(),
+            request.getStyleType(),
+            request.getTraits()
+        );
+        
+        // Create and save character
+        FantasyCharacter character = new FantasyCharacter(prompt, imageData);
+        FantasyCharacter savedCharacter = fantasyCharacterService.saveFantasyCharacter(character);
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedCharacter);
     }
 }

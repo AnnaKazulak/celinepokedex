@@ -25,6 +25,11 @@
         </v-btn-toggle>
       </div>
       
+      <!-- Fantasy Character Generator button -->
+      <div v-if="contentType === 'fantasy' || contentType === 'all'" class="mb-4">
+        <FantasyCharacterGenerator @character-created="handleNewFantasyCharacter" />
+      </div>
+      
       <!-- Suchfeld-Komponente -->
       <SearchBar
         v-model:searchQuery="searchQuery"
@@ -95,6 +100,7 @@ import NoResultsMessage from '@/components/home/NoResultsMessage.vue';
 import LoadingIndicator from '@/components/home/LoadingIndicator.vue';
 import PokemonCard from '@/components/PokemonCard.vue';
 import FantasyCharacterCard from '@/components/FantasyCharacterCard.vue';
+import FantasyCharacterGenerator from '@/components/FantasyCharacterGenerator.vue';
 
 // Content type toggle - 'all', 'pokemon', or 'fantasy'
 const contentType = ref('all');
