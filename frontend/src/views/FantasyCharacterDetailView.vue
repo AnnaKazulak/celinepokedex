@@ -70,6 +70,17 @@
                   </v-btn>
                   
                   <v-btn
+                    color="primary"
+                    variant="outlined"
+                    prepend-icon="mdi-pencil"
+                    @click="openEditDialog"
+                    class="mt-4"
+                    :style="{ borderColor: dominantColor, color: dominantColor }"
+                  >
+                    Bearbeiten
+                  </v-btn>
+                  
+                  <v-btn
                     color="error"
                     variant="outlined"
                     prepend-icon="mdi-delete"
@@ -180,6 +191,14 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <!-- Bearbeitungsdialog -->
+  <fantasy-character-edit-dialog
+    v-if="character"
+    v-model:dialog="showEditDialog"
+    :character="character"
+    @character-updated="handleCharacterUpdated"
+  />
 </template>
 
 <script setup lang="ts">
@@ -189,6 +208,7 @@ import axios from 'axios';
 import { type FantasyCharacter } from '@/types/pokemon';
 import { eventBus } from '@/utils/eventBus';
 import { extractDominantColor } from '@/utils/colorUtils';
+import FantasyCharacterEditDialog from '@/components/FantasyCharacterEditDialog.vue';
 
 // Disable automatic attribute inheritance
 defineOptions({
@@ -204,6 +224,7 @@ const dominantColor = ref('#6890F0'); // Default fantasy color (blue)
 const dominantColorLight = ref('rgba(104, 144, 240, 0.15)'); // Hellere Version für Hintergründe
 const isColorLoaded = ref(false); // State-Variable für den Übergang
 const showDeleteConfirmation = ref(false); // State-Variable für den Bestätigungsdialog
+const showEditDialog = ref(false); // State-Variable für den Bearbeitungsdialog
 const isDeleting = ref(false); // State-Variable für den Löschvorgang
 
 // Character ID aus der URL lesen
@@ -346,6 +367,28 @@ async function deleteCharacter() {
     isDeleting.value = false;
   }
 }
+
+// Open edit dialog
+function openEditDialog() {
+  showEditDialog.value = true;
+}
+
+// Handle character update
+function handleCharacterUpdated(updatedCharacter: FantasyCharacter) {
+  // Update the character data in the view
+  if (character.value && updatedCharacter) {
+    character.value = updatedCharacter;
+  }
+}
+
+// Listen for events from eventBus
+onMounted(() => {
+  eventBus.on('fantasy-character-updated', (updatedCharacter: FantasyCharacter) => {
+    if (character.value && updatedCharacter.id === character.value.id) {
+      character.value = updatedCharacter;
+    }
+  });
+});
 </script>
 
 <style scoped>

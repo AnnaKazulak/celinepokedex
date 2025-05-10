@@ -174,4 +174,33 @@ public class FantasyCharacterController {
         fantasyCharacterService.deleteFantasyCharacter(id);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Update a fantasy character by ID
+     * PUT /api/characters/{id}
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<FantasyCharacter> updateCharacter(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> payload) {
+        
+        Optional<FantasyCharacter> existingCharacter = fantasyCharacterService.getFantasyCharacterById(id);
+        if (existingCharacter.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        String prompt = payload.get("prompt");
+        String imageUrl = payload.get("imageUrl");
+        
+        if (prompt == null || imageUrl == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        FantasyCharacter updatedCharacter = existingCharacter.get();
+        updatedCharacter.setPrompt(prompt);
+        updatedCharacter.setImageUrl(imageUrl);
+        
+        FantasyCharacter savedCharacter = fantasyCharacterService.saveFantasyCharacter(updatedCharacter);
+        return ResponseEntity.ok(savedCharacter);
+    }
 }
