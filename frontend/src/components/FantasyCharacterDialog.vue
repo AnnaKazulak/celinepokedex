@@ -315,10 +315,7 @@ const saveCharacter = async () => {
       // Close dialog
       dialogVisible.value = false;
       
-      // Emit event to parent component
-      emit('character-created', savedCharacter);
-      
-      // Also emit global event for HomeView
+      // Only emit via event bus for global updates
       eventBus.emit('fantasy-character-created', savedCharacter);
       
       // Navigiere zur Detail-Seite des erstellten Fantasy Characters

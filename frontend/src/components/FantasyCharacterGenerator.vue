@@ -175,14 +175,11 @@ export default defineComponent({
           imageUrl: imageData.value
         });
         
-        // Emit the saved character to update the parent component
+        // Only emit via event bus for global updates
         const savedCharacter = response.data;
-        emit('character-created', savedCharacter);
-        
-        // Also publish via event bus for global updates
         eventBus.emit('fantasy-character-created', savedCharacter);
         
-        alert('Character saved successfully!');
+        // Close dialog and reset form
         dialog.value = false;
         resetForm();
       } catch (error) {
