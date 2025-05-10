@@ -2,6 +2,7 @@ package com.celinepokedex.controller.request;
 
 import com.celinepokedex.model.BaseAnimal;
 import com.celinepokedex.model.CharacterTrait;
+import com.celinepokedex.model.DominantColor;
 import com.celinepokedex.model.ElementType;
 import com.celinepokedex.model.StyleType;
 
@@ -10,6 +11,7 @@ import java.util.List;
 public class FantasyCharacterGenerationRequest {
     private BaseAnimal baseAnimal;
     private ElementType elementType;
+    private DominantColor dominantColor;
     private StyleType styleType;
     private List<CharacterTrait> traits;
 
@@ -28,6 +30,14 @@ public class FantasyCharacterGenerationRequest {
 
     public void setElementType(ElementType elementType) {
         this.elementType = elementType;
+    }
+
+    public DominantColor getDominantColor() {
+        return dominantColor;
+    }
+
+    public void setDominantColor(DominantColor dominantColor) {
+        this.dominantColor = dominantColor;
     }
 
     public StyleType getStyleType() {

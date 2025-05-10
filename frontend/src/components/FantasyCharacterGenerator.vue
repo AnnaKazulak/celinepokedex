@@ -29,6 +29,13 @@
             ></v-select>
             
             <v-select
+              v-model="dominantColor"
+              :items="colorOptions"
+              label="Dominant Color"
+              required
+            ></v-select>
+            
+            <v-select
               v-model="styleType"
               :items="styleTypeOptions"
               label="Art Style"
@@ -113,6 +120,7 @@ export default defineComponent({
     // Form values
     const baseAnimal = ref('');
     const elementType = ref('');
+    const dominantColor = ref('');
     const styleType = ref('');
     const traits = ref<string[]>([]);
     
@@ -127,6 +135,11 @@ export default defineComponent({
       'ICE', 'NATURE', 'SHADOW', 'LIGHT', 'POISON'
     ];
     
+    const colorOptions = [
+      'RED', 'BLUE', 'GREEN', 'YELLOW', 'PURPLE', 
+      'ORANGE', 'BLACK', 'WHITE', 'PINK', 'BROWN'
+    ];
+    
     const styleTypeOptions = [
       'DISNEY', 'PIXAR', 'POKEMON', 'STUDIO_GHIBLI', 'DREAMWORKS'
     ];
@@ -138,7 +151,7 @@ export default defineComponent({
     
     // Computed properties
     const isFormValid = computed(() => {
-      return baseAnimal.value && elementType.value && styleType.value;
+      return baseAnimal.value && elementType.value && dominantColor.value && styleType.value;
     });
     
     // Methods
@@ -150,6 +163,7 @@ export default defineComponent({
         const response = await axios.post('/api/characters/generate', {
           baseAnimal: baseAnimal.value,
           elementType: elementType.value,
+          dominantColor: dominantColor.value,
           styleType: styleType.value,
           traits: traits.value
         });
@@ -193,6 +207,7 @@ export default defineComponent({
     const resetForm = () => {
       baseAnimal.value = '';
       elementType.value = '';
+      dominantColor.value = '';
       styleType.value = '';
       traits.value = [];
       imageData.value = '';
@@ -206,10 +221,12 @@ export default defineComponent({
       generatedPrompt,
       baseAnimal,
       elementType,
+      dominantColor,
       styleType,
       traits,
       baseAnimalOptions,
       elementTypeOptions,
+      colorOptions,
       styleTypeOptions,
       characterTraitOptions,
       isFormValid,

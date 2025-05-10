@@ -88,6 +88,7 @@ public class FantasyCharacterController {
         // Validate request
         if (request.getBaseAnimal() == null || 
             request.getElementType() == null || 
+            request.getDominantColor() == null ||
             request.getStyleType() == null) {
             return ResponseEntity.badRequest().build();
         }
@@ -96,6 +97,7 @@ public class FantasyCharacterController {
         String prompt = PromptBuilder.buildPrompt(
             request.getBaseAnimal(),
             request.getElementType(),
+            request.getDominantColor(),
             request.getStyleType(),
             request.getTraits()
         );
@@ -104,6 +106,7 @@ public class FantasyCharacterController {
         String imageData = imageGenerationService.generateFantasyCharacterImage(
             request.getBaseAnimal(),
             request.getElementType(),
+            request.getDominantColor(),
             request.getStyleType(),
             request.getTraits()
         );
@@ -128,6 +131,7 @@ public class FantasyCharacterController {
         // Validate request
         if (request.getBaseAnimal() == null || 
             request.getElementType() == null || 
+            request.getDominantColor() == null ||
             request.getStyleType() == null) {
             return ResponseEntity.badRequest().build();
         }
@@ -136,6 +140,7 @@ public class FantasyCharacterController {
         String prompt = PromptBuilder.buildPrompt(
             request.getBaseAnimal(),
             request.getElementType(),
+            request.getDominantColor(),
             request.getStyleType(),
             request.getTraits()
         );
@@ -143,6 +148,7 @@ public class FantasyCharacterController {
         String imageData = imageGenerationService.generateFantasyCharacterImage(
             request.getBaseAnimal(),
             request.getElementType(),
+            request.getDominantColor(),
             request.getStyleType(),
             request.getTraits()
         );

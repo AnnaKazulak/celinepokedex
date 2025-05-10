@@ -2,6 +2,7 @@ package com.celinepokedex.service;
 
 import com.celinepokedex.model.BaseAnimal;
 import com.celinepokedex.model.CharacterTrait;
+import com.celinepokedex.model.DominantColor;
 import com.celinepokedex.model.ElementType;
 import com.celinepokedex.model.StyleType;
 import com.celinepokedex.util.PromptBuilder;
@@ -35,7 +36,7 @@ public class ImageGenerationService {
     }
     
     /**
-     * Generates an image using user-selected character attributes
+     * Generates an image using user-selected character attributes (Legacy method for backward compatibility)
      * @param animal The base animal type for the character
      * @param element The elemental power of the character
      * @param style The art style to generate the character in
@@ -43,7 +44,20 @@ public class ImageGenerationService {
      * @return Base64 encoded image data
      */
     public String generateFantasyCharacterImage(BaseAnimal animal, ElementType element, StyleType style, List<CharacterTrait> traits) {
-        String prompt = PromptBuilder.buildPrompt(animal, element, style, traits);
+        return generateFantasyCharacterImage(animal, element, null, style, traits);
+    }
+    
+    /**
+     * Generates an image using user-selected character attributes including dominant color
+     * @param animal The base animal type for the character
+     * @param element The elemental power of the character
+     * @param dominantColor The dominant color of the character
+     * @param style The art style to generate the character in
+     * @param traits List of character traits to apply
+     * @return Base64 encoded image data
+     */
+    public String generateFantasyCharacterImage(BaseAnimal animal, ElementType element, DominantColor dominantColor, StyleType style, List<CharacterTrait> traits) {
+        String prompt = PromptBuilder.buildPrompt(animal, element, dominantColor, style, traits);
         logger.info("Generated prompt from attributes: " + prompt);
         return generateImage(prompt);
     }
