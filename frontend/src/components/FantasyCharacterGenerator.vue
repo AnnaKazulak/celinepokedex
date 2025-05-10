@@ -150,6 +150,21 @@ export default defineComponent({
       'FUNNY', 'SMALL', 'GIANT', 'BABY', 'ELDER'
     ];
     
+    // Fantasy transformations map
+    const fantasyTransformations: Record<string, string> = {
+      'CAT': 'Bakeneko (mystical cat)',
+      'LIZARD': 'Dragon',
+      'BIRD': 'Phoenix',
+      'FROG': 'Frog Prince',
+      'FOX': 'Kitsune (nine-tailed fox)',
+      'SNAKE': 'Naga (half-snake, half-human)',
+      'HORSE': 'Pegasus (winged horse)',
+      'TURTLE': 'Koopa (Mario-like turtle)',
+      'LION': 'Manticore (lion with scorpion tail)',
+      'EAGLE': 'Griffin (eagle-lion hybrid)',
+      'DEER': 'Celestial Deer (glowing antlers)'
+    };
+    
     // Computed properties
     const isFormValid = computed(() => {
       return baseAnimal.value && elementType.value && dominantColor.value && styleType.value;
@@ -161,12 +176,16 @@ export default defineComponent({
       
       isLoading.value = true;
       try {
+        // Transform the base animal into its fantasy version
+        const fantasyCreature = fantasyTransformations[baseAnimal.value] || baseAnimal.value;
+        
         const response = await axios.post('/api/characters/generate', {
           baseAnimal: baseAnimal.value,
           elementType: elementType.value,
           dominantColor: dominantColor.value,
           styleType: styleType.value,
-          traits: traits.value
+          traits: traits.value,
+          fantasyCreature: fantasyCreature // Add the fantasy transformation
         });
         
         imageData.value = response.data.imageData;
