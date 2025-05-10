@@ -37,31 +37,55 @@ public class ImageGenerationService {
     
     /**
      * Generates an image using user-selected character attributes (Legacy method for backward compatibility)
+     * 
      * @param animal The base animal type for the character
      * @param element The elemental power of the character
      * @param style The art style to generate the character in
      * @param traits List of character traits to apply
      * @return Base64 encoded image data
+     * @deprecated Use {@link #generateFantasyCharacterImage(BaseAnimal, ElementType, DominantColor, StyleType, List)} instead
      */
+    @Deprecated
     public String generateFantasyCharacterImage(BaseAnimal animal, ElementType element, StyleType style, List<CharacterTrait> traits) {
+        // Call the complete method with null for dominantColor
         return generateFantasyCharacterImage(animal, element, null, style, traits);
     }
     
     /**
      * Generates an image using user-selected character attributes including dominant color
+     * 
      * @param animal The base animal type for the character
      * @param element The elemental power of the character
-     * @param dominantColor The dominant color of the character
+     * @param dominantColor The dominant color of the character (can be null)
      * @param style The art style to generate the character in
      * @param traits List of character traits to apply
      * @return Base64 encoded image data
      */
     public String generateFantasyCharacterImage(BaseAnimal animal, ElementType element, DominantColor dominantColor, StyleType style, List<CharacterTrait> traits) {
+        // Validate required parameters
+        if (animal == null) {
+            throw new IllegalArgumentException("Base animal cannot be null");
+        }
+        if (element == null) {
+            throw new IllegalArgumentException("Element type cannot be null");
+        }
+        if (style == null) {
+            throw new IllegalArgumentException("Style type cannot be null");
+        }
+        
+        // Build the prompt and generate the image
         String prompt = PromptBuilder.buildPrompt(animal, element, dominantColor, style, traits);
         logger.info("Generated prompt from attributes: " + prompt);
         return generateImage(prompt);
     }
 
+    /**
+     * Generates an image using the provided prompt text
+     *
+     * @param prompt The text prompt to generate an image from
+     * @return Base64 encoded image data
+     * @throws RuntimeException if image generation fails
+     */
     public String generateImage(String prompt) {
         logger.info("Generating image for prompt: " + prompt);
         
