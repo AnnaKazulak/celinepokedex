@@ -159,4 +159,19 @@ public class FantasyCharacterController {
         
         return ResponseEntity.status(HttpStatus.CREATED).body(savedCharacter);
     }
+
+    /**
+     * Delete a fantasy character by ID
+     * DELETE /api/characters/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCharacter(@PathVariable Long id) {
+        Optional<FantasyCharacter> character = fantasyCharacterService.getFantasyCharacterById(id);
+        if (character.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        fantasyCharacterService.deleteFantasyCharacter(id);
+        return ResponseEntity.noContent().build();
+    }
 }

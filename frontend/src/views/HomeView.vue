@@ -386,6 +386,13 @@ function handleNewFantasyCharacter(newCharacter: FantasyCharacter) {
   fantasyCharacters.value.unshift(newCharacter);
 }
 
+function handleFantasyCharacterDeleted(characterId: number) {
+  // Entferne den gelöschten Character aus der Liste
+  fantasyCharacters.value = fantasyCharacters.value.filter(
+    character => character.id !== characterId
+  );
+}
+
 // Register event listeners
 onMounted(async () => {
   // Initial content loading
@@ -394,6 +401,7 @@ onMounted(async () => {
   // Register event listeners
   eventBus.on('pokemon-created', handleNewPokemon);
   eventBus.on('fantasy-character-created', handleNewFantasyCharacter);
+  eventBus.on('fantasy-character-deleted', handleFantasyCharacterDeleted);
 
   // A series of events with increasing delays to ensure navbar updates
   // This makes navigation back to the home page reliable
@@ -413,6 +421,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   eventBus.off('pokemon-created', handleNewPokemon);
   eventBus.off('fantasy-character-created', handleNewFantasyCharacter);
+  eventBus.off('fantasy-character-deleted', handleFantasyCharacterDeleted);
 });
 </script>
 

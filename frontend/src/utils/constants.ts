@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
   // Fantasy Character Endpoints
   FANTASY_CHARACTERS: `${API_BASE_URL}/characters`,
   FANTASY_CHARACTER_BY_ID: (id: number) => `${API_BASE_URL}/characters/${id}`,
+  DELETE_CHARACTER: (id: number) => `${API_BASE_URL}/characters/${id}`,
   GENERATE_IMAGE: `${API_BASE_URL}/images/generate`,
   SAVE_CHARACTER: `${API_BASE_URL}/characters/save`
 };

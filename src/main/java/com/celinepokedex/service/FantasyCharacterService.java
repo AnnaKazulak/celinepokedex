@@ -45,4 +45,11 @@ public class FantasyCharacterService {
     public List<FantasyCharacter> searchFantasyCharacters(String query) {
         return fantasyCharacterRepository.findByPromptContaining(query);
     }
+    
+    /**
+     * Delete a fantasy character by ID
+     */
+    public void deleteFantasyCharacter(Long id) {
+        fantasyCharacterRepository.deleteById(id);
+    }
 }

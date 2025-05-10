@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <!-- Use :id="$attrs.id" to properly handle inheritance of the id attribute -->
+  <div :id="$attrs.id">
     <div v-if="isLoading" class="d-flex justify-center align-center" style="min-height: 80vh">
       <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
     </div>
@@ -56,17 +57,28 @@
                   {{ character.prompt }}
                 </p>
                 
-                <v-btn
-                  color="primary"
-                  variant="outlined"
-                  prepend-icon="mdi-download"
-                  @click="downloadImage"
-                  class="mt-4"
-                  :class="{'mx-auto d-block': $vuetify.display.smAndDown}"
-                  :style="{ borderColor: dominantColor, color: dominantColor }"
-                >
-                  Bild herunterladen
-                </v-btn>
+                <div class="d-flex flex-wrap gap-2" :class="{'justify-center': $vuetify.display.smAndDown}">
+                  <v-btn
+                    color="primary"
+                    variant="outlined"
+                    prepend-icon="mdi-download"
+                    @click="downloadImage"
+                    class="mt-4"
+                    :style="{ borderColor: dominantColor, color: dominantColor }"
+                  >
+                    Bild herunterladen
+                  </v-btn>
+                  
+                  <v-btn
+                    color="error"
+                    variant="outlined"
+                    prepend-icon="mdi-delete"
+                    @click="showDeleteConfirmation = true"
+                    class="mt-4"
+                  >
+                    Löschen
+                  </v-btn>
+                </div>
               </div>
             </v-col>
             
@@ -79,8 +91,10 @@
                 :height="$vuetify.display.xs ? '250' : $vuetify.display.smAndDown ? '320' : $vuetify.display.mdAndDown ? '350' : '450'"
                 :width="$vuetify.display.xs ? '250' : $vuetify.display.smAndDown ? '320' : $vuetify.display.mdAndDown ? '350' : '450'"
                 class="transform-scale transition-transform rounded-lg"
-                style="filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));"
-                :style="{ transform: 'scale(1.05)' }"
+                :style="{ 
+                  transform: 'scale(1.05)',
+                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2))'
+                }"
               ></v-img>
             </v-col>
           </v-row>
@@ -90,8 +104,10 @@
         <v-card 
           class="mt-6 mx-auto rounded-lg overflow-hidden" 
           max-width="1400px"
-          style="border-left: 4px solid;"
-          :style="{ borderLeftColor: dominantColor }"
+          :style="{ 
+            borderLeft: '4px solid',
+            borderLeftColor: dominantColor 
+          }"
           elevation="4"
         >
           <v-card-title 
@@ -138,6 +154,32 @@
       </v-btn>
     </div>
   </div>
+  
+  <!-- Bestätigungsdialog für das Löschen -->
+  <v-dialog v-model="showDeleteConfirmation" max-width="400">
+    <v-card>
+      <v-card-title class="text-h5">
+        Fantasy Character löschen?
+      </v-card-title>
+      <v-card-text>
+        Möchten Sie diesen Fantasy Character wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="blue-darken-1" variant="text" @click="showDeleteConfirmation = false">
+          Abbrechen
+        </v-btn>
+        <v-btn 
+          color="error" 
+          variant="flat" 
+          @click="deleteCharacter" 
+          :loading="isDeleting"
+        >
+          Löschen
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -148,6 +190,11 @@ import { type FantasyCharacter } from '@/types/pokemon';
 import { eventBus } from '@/utils/eventBus';
 import { extractDominantColor } from '@/utils/colorUtils';
 
+// Disable automatic attribute inheritance
+defineOptions({
+  inheritAttrs: false
+});
+
 const router = useRouter();
 const route = useRoute();
 const character = ref<FantasyCharacter | null>(null);
@@ -156,6 +203,8 @@ const error = ref<string | null>(null);
 const dominantColor = ref('#6890F0'); // Default fantasy color (blue)
 const dominantColorLight = ref('rgba(104, 144, 240, 0.15)'); // Hellere Version für Hintergründe
 const isColorLoaded = ref(false); // State-Variable für den Übergang
+const showDeleteConfirmation = ref(false); // State-Variable für den Bestätigungsdialog
+const isDeleting = ref(false); // State-Variable für den Löschvorgang
 
 // Character ID aus der URL lesen
 const characterId = computed(() => {
@@ -275,6 +324,27 @@ function downloadImage() {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+// Delete the character
+async function deleteCharacter() {
+  if (!character.value?.id) return;
+  
+  isDeleting.value = true;
+  
+  try {
+    await axios.delete(`http://localhost:8080/api/characters/${character.value.id}`);
+    showDeleteConfirmation.value = false;
+    
+    // Event emittieren, dass ein Fantasy Character gelöscht wurde
+    eventBus.emit('fantasy-character-deleted', character.value.id);
+    
+    router.push({ name: 'home' }); // Zurück zur Übersicht nach dem Löschen
+  } catch (err) {
+    console.error('Fehler beim Löschen des Fantasy Characters:', err);
+  } finally {
+    isDeleting.value = false;
+  }
 }
 </script>
 
