@@ -18,6 +18,15 @@ public interface FantasyCharacterRepository extends JpaRepository<FantasyCharact
     List<FantasyCharacter> findByPromptContaining(@Param("query") String query);
     
     /**
+     * Find fantasy characters that contain the query string in either their name or prompt
+     */
+    @Query("SELECT f FROM FantasyCharacter f WHERE " +
+           "LOWER(f.prompt) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "(f.name IS NOT NULL AND LOWER(f.name) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+           "ORDER BY f.createdAt DESC")
+    List<FantasyCharacter> findByNameOrPromptContaining(@Param("query") String query);
+    
+    /**
      * Get all characters ordered by creation date (newest first)
      */
     List<FantasyCharacter> findAllByOrderByCreatedAtDesc();

@@ -214,7 +214,9 @@ const filteredContent = computed(() => {
         return item.name.toLowerCase().includes(query) || 
                item.pokedexNumber.includes(query);
       } else {
-        return item.prompt.toLowerCase().includes(query);
+        // Suche sowohl im Namen als auch in der Beschreibung (prompt)
+        return (item.name && item.name.toLowerCase().includes(query)) || 
+               item.prompt.toLowerCase().includes(query);
       }
     });
   }

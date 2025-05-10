@@ -40,10 +40,10 @@ public class FantasyCharacterService {
     }
 
     /**
-     * Search fantasy characters by prompt
+     * Search fantasy characters by prompt or name
      */
     public List<FantasyCharacter> searchFantasyCharacters(String query) {
-        return fantasyCharacterRepository.findByPromptContaining(query);
+        return fantasyCharacterRepository.findByNameOrPromptContaining(query);
     }
     
     /**
