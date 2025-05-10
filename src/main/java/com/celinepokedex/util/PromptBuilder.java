@@ -27,7 +27,7 @@ public class PromptBuilder {
         prompt.append(". ");
         prompt.append("Designed in the style of ")
               .append(style.name().replace("_", " ").toLowerCase())
-              .append(". Full body, high detail, colorful, white background, no text, no watermark.");
+              .append(". White background, centered, full body, high detail, colorful, no shadow, no text, no watermark.");
         
         return prompt.toString();
     }
