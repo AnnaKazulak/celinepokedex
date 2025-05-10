@@ -32,6 +32,17 @@
         <v-form @submit.prevent="updateCharacter">
           <div class="fantasy-form">
             <div class="form-section">
+              <v-text-field
+                v-model="editedName"
+                label="Name deines Fantasy-Charakters"
+                hint="Bearbeite den Namen deines Charakters"
+                variant="underlined"
+                density="compact"
+                :disabled="isSaving"
+              ></v-text-field>
+            </div>
+            
+            <div class="form-section">
               <v-textarea
                 v-model="editedPrompt"
                 label="Beschreibung deines Fantasy-Charakters"
@@ -103,6 +114,7 @@ const emit = defineEmits<{
 
 // Reactive variables
 const dialogVisible = ref(props.dialog);
+const editedName = ref('');
 const editedPrompt = ref('');
 const error = ref('');
 const isSaving = ref(false);
@@ -115,6 +127,7 @@ watch(() => props.dialog, (newVal) => {
 // Watch for character prop changes
 watch(() => props.character, (newVal) => {
   if (newVal) {
+    editedName.value = newVal.name;
     editedPrompt.value = newVal.prompt;
   }
 });
@@ -127,6 +140,7 @@ watch(dialogVisible, (newVal) => {
 onMounted(() => {
   // Initialize with character data
   if (props.character) {
+    editedName.value = props.character.name;
     editedPrompt.value = props.character.prompt;
   }
 });
@@ -143,8 +157,16 @@ const updateCharacter = async () => {
   isSaving.value = true;
   error.value = '';
 
+  // Stellt sicher, dass der Name mit einem Großbuchstaben beginnt
+  let nameToSave = editedName.value;
+  if (nameToSave && nameToSave.length > 0) {
+    nameToSave = nameToSave.charAt(0).toUpperCase() + nameToSave.slice(1);
+    editedName.value = nameToSave; // Aktualisiere auch das Eingabefeld
+  }
+
   try {
     const response = await axios.put(`${API_ENDPOINTS.FANTASY_CHARACTERS}/${props.character.id}`, {
+      name: nameToSave,
       prompt: editedPrompt.value,
       imageUrl: props.character.imageUrl
     });

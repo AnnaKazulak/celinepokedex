@@ -31,6 +31,7 @@ export enum PokemonType {
  */
 export interface FantasyCharacter {
   id?: number; // ID from database
+  name?: string; // Name of the fantasy character
   prompt: string; // User's description of the fantasy character
   imageUrl: string; // URL of the generated image
   createdAt?: string; // Creation date as ISO string

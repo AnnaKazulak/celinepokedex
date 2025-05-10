@@ -11,6 +11,8 @@ public class FantasyCharacter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String name;
+
     @Column(columnDefinition = "TEXT")
     private String prompt;
 
@@ -31,6 +33,14 @@ public class FantasyCharacter {
         this.imageUrl = imageUrl;
         this.createdAt = LocalDateTime.now();
     }
+    
+    // Constructor with name
+    public FantasyCharacter(String name, String prompt, String imageUrl) {
+        this.name = name;
+        this.prompt = prompt;
+        this.imageUrl = imageUrl;
+        this.createdAt = LocalDateTime.now();
+    }
 
     // Getters and Setters
     public Long getId() {
@@ -39,6 +49,14 @@ public class FantasyCharacter {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPrompt() {
@@ -69,6 +87,7 @@ public class FantasyCharacter {
     public String toString() {
         return "FantasyCharacter{" +
                 "id=" + id +
+                ", name='" + name + '\'' +
                 ", prompt='" + prompt + '\'' +
                 ", imageUrl='" + (imageUrl != null ? imageUrl.substring(0, Math.min(30, imageUrl.length())) + "..." : null) + '\'' +
                 ", createdAt=" + createdAt +

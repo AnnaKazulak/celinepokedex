@@ -18,7 +18,7 @@
     <v-card class="fantasy-card" :style="{ backgroundColor: dominantColor + '22' }">
       <div class="card-content">
         <div class="fantasy-header">
-          <div class="fantasy-title">Fantasy Character</div>
+          <div class="fantasy-title">{{ character.name || 'Fantasy Character' }}</div>
           
           <div class="description">
             {{ character.prompt }}

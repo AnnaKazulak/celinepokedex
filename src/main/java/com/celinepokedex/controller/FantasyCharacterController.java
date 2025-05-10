@@ -191,6 +191,7 @@ public class FantasyCharacterController {
         
         String prompt = payload.get("prompt");
         String imageUrl = payload.get("imageUrl");
+        String name = payload.get("name");
         
         if (prompt == null || imageUrl == null) {
             return ResponseEntity.badRequest().build();
@@ -199,6 +200,11 @@ public class FantasyCharacterController {
         FantasyCharacter updatedCharacter = existingCharacter.get();
         updatedCharacter.setPrompt(prompt);
         updatedCharacter.setImageUrl(imageUrl);
+        
+        // Name setzen, wenn vorhanden
+        if (name != null) {
+            updatedCharacter.setName(name);
+        }
         
         FantasyCharacter savedCharacter = fantasyCharacterService.saveFantasyCharacter(updatedCharacter);
         return ResponseEntity.ok(savedCharacter);

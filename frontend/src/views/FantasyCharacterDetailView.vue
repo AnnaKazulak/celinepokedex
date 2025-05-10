@@ -41,12 +41,10 @@
                       :style="{ color: isColorLoaded ? dominantColor : 'rgba(0,0,0,0.87)' }"
                       :class="{'text-h4': $vuetify.display.xs}"
                   >
-                    Fantasy Character
+                    {{ character.name || 'Fantasy Character' }}
                   </h1>
                 </div>
-                <p class="text-subtitle-1">
-                  Erstellt am {{ formatDate(character.createdAt) }}
-                </p>
+   
               </div>
 
               <!-- Fantasy Character Description -->
