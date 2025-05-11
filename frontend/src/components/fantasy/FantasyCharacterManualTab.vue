@@ -47,68 +47,6 @@
             :rules="[v => !!v || 'Beschreibung wird benötigt']"
           ></v-textarea>
           
-          <!-- Image Upload mit Drag & Drop -->
-          <v-card class="mt-4 bg-grey-lighten-5 upload-zone" variant="outlined" rounded="lg" flat>
-            <v-card-text class="pa-2">
-              <div 
-                class="dropzone-container compact" 
-                @dragover.prevent="isDragging = true"
-                @dragleave.prevent="isDragging = false"
-                @drop.prevent="handleFileDrop"
-                :class="{ 'dropzone-dragging': isDragging }"
-              >
-                <div class="upload-content text-center">
-                  <v-icon size="32" class="mb-1" :color="manualImageUrl ? 'primary' : 'grey-lighten-1'">
-                    {{ manualImageUrl ? 'mdi-check-circle' : 'mdi-cloud-upload' }}
-                  </v-icon>
-                  
-                  <div v-if="!manualImageUrl" class="upload-text">
-                    <div class="text-body-2 font-weight-medium">Bild hierher ziehen</div>
-                    <div class="text-caption text-medium-emphasis">oder</div>
-                    <v-btn 
-                      class="mt-1" 
-                      color="primary" 
-                      variant="tonal"
-                      size="small"
-                      density="comfortable"
-                      @click="triggerFileInput"
-                    >
-                      Bild auswählen
-                    </v-btn>
-                  </div>
-                  
-                  <div v-else class="upload-text">
-                    <div class="text-caption">{{ imageFile?.name || 'Bild hochgeladen' }}</div>
-                    <v-btn
-                      class="mt-1" 
-                      color="grey-darken-1" 
-                      size="x-small"
-                      variant="text"
-                      @click="resetImage"
-                    >
-                      Ändern
-                    </v-btn>
-                  </div>
-
-                  <!-- Versteckter File Input -->
-                  <v-file-input
-                    ref="fileInput"
-                    v-model="imageFile"
-                    class="d-none"
-                    accept="image/*"
-                    :rules="[v => !!manualImageUrl || !!v || 'Bild wird benötigt']"
-                    @update:model-value="handleImageFileChange"
-                  ></v-file-input>
-                </div>
-              </div>
-
-              <div class="text-caption mt-1 ps-1">
-                <v-icon size="x-small" class="me-1">mdi-information-outline</v-icon>
-                JPG, PNG, GIF, WebP. Max 5MB.
-              </div>
-            </v-card-text>
-          </v-card>
-          
           <div class="d-flex justify-center mt-4">
             <v-btn
               color="primary"
@@ -132,8 +70,9 @@
         </v-form>
       </v-col>
       
-      <v-col cols="12" md="6" class="d-flex align-center">
-        <div v-if="manualImageUrl" class="text-center w-100">
+      <v-col cols="12" md="6" class="d-flex flex-column align-center">
+        <!-- Image Preview Section -->
+        <div v-if="manualImageUrl" class="text-center w-100 mb-4">
           <v-img
             :src="manualImageUrl"
             max-width="240"
@@ -144,10 +83,72 @@
           <p v-if="characterName" class="text-caption mt-2">{{ characterName }}</p>
         </div>
         
-        <div v-else class="text-center w-100">
+        <div v-else class="text-center w-100 mb-4">
           <v-icon size="64" color="grey-lighten-1">mdi-image-outline</v-icon>
           <div class="mt-2 text-medium-emphasis">Bild hochladen, um deinen Charakter zu erstellen</div>
         </div>
+
+        <!-- Upload Section - Now positioned below the image -->
+        <v-card class="bg-grey-lighten-5 upload-zone w-100" variant="outlined" rounded="lg" flat>
+          <v-card-text class="pa-2">
+            <div 
+              class="dropzone-container compact" 
+              @dragover.prevent="isDragging = true"
+              @dragleave.prevent="isDragging = false"
+              @drop.prevent="handleFileDrop"
+              :class="{ 'dropzone-dragging': isDragging }"
+            >
+              <div class="upload-content text-center">
+                <v-icon size="32" class="mb-1" :color="manualImageUrl ? 'primary' : 'grey-lighten-1'">
+                  {{ manualImageUrl ? 'mdi-check-circle' : 'mdi-cloud-upload' }}
+                </v-icon>
+                
+                <div v-if="!manualImageUrl" class="upload-text">
+                  <div class="text-body-2 font-weight-medium">Bild hierher ziehen</div>
+                  <div class="text-caption text-medium-emphasis">oder</div>
+                  <v-btn 
+                    class="mt-1" 
+                    color="primary" 
+                    variant="tonal"
+                    size="small"
+                    density="comfortable"
+                    @click="triggerFileInput"
+                  >
+                    Bild auswählen
+                  </v-btn>
+                </div>
+                
+                <div v-else class="upload-text">
+                  <div class="text-caption">{{ imageFile?.name || 'Bild hochgeladen' }}</div>
+                  <v-btn
+                    class="mt-1" 
+                    color="grey-darken-1" 
+                    size="x-small"
+                    variant="text"
+                    @click="resetImage"
+                  >
+                    Ändern
+                  </v-btn>
+                </div>
+
+                <!-- Versteckter File Input -->
+                <v-file-input
+                  ref="fileInput"
+                  v-model="imageFile"
+                  class="d-none"
+                  accept="image/*"
+                  :rules="[v => !!manualImageUrl || !!v || 'Bild wird benötigt']"
+                  @update:model-value="handleImageFileChange"
+                ></v-file-input>
+              </div>
+            </div>
+
+            <div class="text-caption mt-1 ps-1">
+              <v-icon size="x-small" class="me-1">mdi-information-outline</v-icon>
+              JPG, PNG, GIF, WebP. Max 5MB.
+            </div>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
 
