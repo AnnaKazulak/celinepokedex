@@ -116,21 +116,32 @@
         </v-window-item>
       </v-window>
       
-      <!-- AI tab footer -->
+      <!-- AI tab footer - Always show footer for this tab -->
       <fantasy-character-footer 
-        v-if="activeTab === 'ai' && generatedImageUrl && !isGenerating"
+        v-if="activeTab === 'ai'"
         :reset-label="'Neuer Charakter'"
         :show-save="true"
-        :show-download="true"
+        :show-download="!!generatedImageUrl"
+        :save-disabled="!generatedImageUrl"
         :is-saving="isSaving"
         @reset="resetForm"
         @save="saveCharacter"
         @download="downloadImage"
       />
 
-      <!-- Generator tab footer -->
+      <!-- Manual tab footer - Always show footer for this tab -->
       <fantasy-character-footer
-        v-if="activeTab === 'generator' && generatorImageData"
+        v-if="activeTab === 'manual'"
+        :save-disabled="!manualCharacterName || !manualCharacterDescription || (!manualImageUrl && !imageFile)"
+        :is-saving="isManualSaving"
+        @reset="resetManualForm"
+        @save="saveManualCharacter"
+      />
+
+      <!-- Generator tab footer - Always show footer for this tab -->
+      <fantasy-character-footer
+        v-if="activeTab === 'generator'"
+        :save-disabled="!generatorImageData"
         :is-saving="isSavingGenerator"
         @reset="resetGeneratorForm"
         @save="saveGeneratorCharacter"

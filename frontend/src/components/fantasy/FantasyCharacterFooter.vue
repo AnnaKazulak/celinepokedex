@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-primary d-flex justify-center py-3 px-4 py-md-4 px-md-6">
+  <div class="footer-container d-flex justify-center py-3 px-4 py-md-4 px-md-6">
     <v-spacer></v-spacer>
     
     <v-btn 
@@ -13,11 +13,11 @@
     </v-btn>
     
     <v-btn 
-      v-if="showSave"
       color="white" 
       variant="text" 
       @click="$emit('save')"
       :loading="isSaving"
+      :disabled="saveDisabled"
       class="mr-2"
     >
       <v-icon>mdi-content-save</v-icon>
@@ -48,6 +48,10 @@ defineProps({
     type: Boolean,
     default: true
   },
+  saveDisabled: {
+    type: Boolean,
+    default: false
+  },
   showDownload: {
     type: Boolean,
     default: false
@@ -60,3 +64,9 @@ defineProps({
 
 defineEmits(['reset', 'save', 'download']);
 </script>
+
+<style scoped>
+.footer-container {
+  background: linear-gradient(135deg, #6890F0 0%, #705898 100%);
+}
+</style>
