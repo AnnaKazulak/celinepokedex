@@ -35,6 +35,8 @@ export interface FantasyCharacter {
   prompt: string; // User's description of the fantasy character
   imageUrl: string; // URL of the generated image
   createdAt?: string; // Creation date as ISO string
+  elementType?: string; // Element type like FIRE, WATER, etc.
+  baseAnimal?: string; // Base animal type like DEER, CAT, etc.
 }
 
 /**
