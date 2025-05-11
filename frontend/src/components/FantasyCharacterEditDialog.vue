@@ -15,7 +15,7 @@
     >
       <!-- Title first - ganz oben -->
       <v-card-title :class="$style.dialogTitle" class="text-white text-center font-weight-medium letter-spacing-1 position-relative">
-        Fantasy Character bearbeiten
+        Bearbeiten
       </v-card-title>
 
       <!-- Close-Button nach rechts oben positioniert -->
