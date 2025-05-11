@@ -232,43 +232,68 @@ const generateImage = async () => {
     }
   }, 3000); // Alle 3 Sekunden ein neuer Schritt
   
-  try {
-    // Erster Schritt wird direkt ausgelöst
-    loadingStep.value = 1;
-    
-    const response = await axios.post(API_ENDPOINTS.GENERATE_IMAGE, {
-      prompt: prompt.value
-    });
-    
-    if (response.data && response.data.imageUrl) {
-      generatedImageUrl.value = response.data.imageUrl;
-    } else {
-      throw new Error('No image URL returned from server');
-    }
-  } catch (err) {
-    console.error('Error generating image:', err);
-    
-    // More detailed error handling
-    if (err.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      if (err.response.data && err.response.data.error) {
-        error.value = `Error: ${err.response.data.error}`;
-      } else {
-        error.value = `Server error (${err.response.status}): Please try again later`;
+  // Maximum number of retry attempts
+  const maxRetries = 2;
+  let retryCount = 0;
+  let success = false;
+  
+  while (retryCount <= maxRetries && !success) {
+    try {
+      // Erster Schritt wird direkt ausgelöst
+      loadingStep.value = 1;
+      
+      if (retryCount > 0) {
+        console.log(`Retry attempt ${retryCount} of ${maxRetries}`);
       }
-    } else if (err.request) {
-      // The request was made but no response was received
-      error.value = 'No response from server. Please check if the backend is running.';
-    } else {
-      // Something happened in setting up the request
-      error.value = 'Failed to generate image: ' + (err.message || 'Unknown error');
+      
+      const response = await axios.post(API_ENDPOINTS.GENERATE_IMAGE, {
+        prompt: prompt.value
+      }, {
+        // Increased timeout for axios request (60 seconds)
+        timeout: 60000
+      });
+      
+      if (response.data && response.data.imageUrl) {
+        generatedImageUrl.value = response.data.imageUrl;
+        success = true;
+      } else {
+        throw new Error('No image URL returned from server');
+      }
+    } catch (err) {
+      console.error('Error generating image:', err);
+      
+      // If we've reached max retries, show error to user
+      if (retryCount === maxRetries) {
+        // More detailed error handling
+        if (err.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          if (err.response.status === 504) {
+            error.value = `Gateway Timeout Error: The image generation server is taking too long to respond. Please try a simpler description or try again later.`;
+          } else if (err.response.data && err.response.data.error) {
+            error.value = `Error: ${err.response.data.error}`;
+          } else {
+            error.value = `Server error (${err.response.status}): Please try again later`;
+          }
+        } else if (err.request) {
+          // The request was made but no response was received
+          error.value = 'No response from server. Please check if the backend is running.';
+        } else {
+          // Something happened in setting up the request
+          error.value = 'Failed to generate image: ' + (err.message || 'Unknown error');
+        }
+      } else {
+        // If we haven't reached max retries yet, continue to next attempt
+        retryCount++;
+        // Wait a bit before retrying
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
     }
-  } finally {
-    clearInterval(loadingInterval);
-    loadingStep.value = 4; // Setze auf den letzten Schritt, falls es fertig ist
-    isGenerating.value = false;
   }
+  
+  clearInterval(loadingInterval);
+  loadingStep.value = 4; // Setze auf den letzten Schritt, falls es fertig ist
+  isGenerating.value = false;
 };
 
 // Download the generated image

@@ -27,12 +27,26 @@ public class ImageGenerationService {
     private final RestTemplate restTemplate;
     private final String huggingfaceToken;
     private final String apiUrl = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0";
+    
+    // Added timeout constants
+    private static final int CONNECTION_TIMEOUT = 60000; // 60 seconds
+    private static final int READ_TIMEOUT = 120000;      // 120 seconds
 
     public ImageGenerationService(@Value("${huggingface.token}") String huggingfaceToken) {
+        // Create RestTemplate with increased timeouts
         this.restTemplate = new RestTemplate();
+        
+        // Configure timeouts
+        restTemplate.setRequestFactory(new org.springframework.http.client.SimpleClientHttpRequestFactory());
+        ((org.springframework.http.client.SimpleClientHttpRequestFactory) restTemplate
+            .getRequestFactory()).setConnectTimeout(CONNECTION_TIMEOUT);
+        ((org.springframework.http.client.SimpleClientHttpRequestFactory) restTemplate
+            .getRequestFactory()).setReadTimeout(READ_TIMEOUT);
+            
         this.huggingfaceToken = huggingfaceToken;
         logger.info("ImageGenerationService initialized with token: " + 
-                    (huggingfaceToken != null ? huggingfaceToken.substring(0, 5) + "..." : "null"));
+                    (huggingfaceToken != null ? huggingfaceToken.substring(0, 5) + "..." : "null") + 
+                    " and timeouts: connect=" + CONNECTION_TIMEOUT + "ms, read=" + READ_TIMEOUT + "ms");
     }
     
     /**

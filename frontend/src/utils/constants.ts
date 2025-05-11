@@ -38,7 +38,8 @@ export const APP_CONFIG = {
 // Timeouts und Verzögerungen (in Millisekunden)
 export const TIMEOUTS = {
   DEBOUNCE_SEARCH: 300,
-  API_REQUEST_TIMEOUT: 10000,
+  API_REQUEST_TIMEOUT: 60000, // Increased from 10000 to 60000 (60 seconds)
+  IMAGE_GENERATION_TIMEOUT: 120000, // New: 120 seconds specifically for image generation
   COLOR_EXTRACTION_DELAY: 100,
   AUTO_COMPLETE_DELAY: 800
 };
