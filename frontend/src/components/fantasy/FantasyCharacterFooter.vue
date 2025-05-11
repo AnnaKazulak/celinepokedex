@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-primary d-flex justify-center py-4 px-6">
+  <div class="bg-primary d-flex justify-center py-3 px-4 py-md-4 px-md-6">
     <v-spacer></v-spacer>
     
     <v-btn 
@@ -8,7 +8,8 @@
       @click="$emit('reset')"
       class="mr-2"
     >
-      {{ resetLabel }}
+      <v-icon>mdi-refresh</v-icon>
+      <span class="d-none d-md-inline ml-1">{{ resetLabel }}</span>
     </v-btn>
     
     <v-btn 
@@ -19,8 +20,8 @@
       :loading="isSaving"
       class="mr-2"
     >
-      <v-icon start>mdi-content-save</v-icon>
-      Speichern
+      <v-icon>mdi-content-save</v-icon>
+      <span class="d-none d-md-inline ml-1">Speichern</span>
     </v-btn>
     
     <v-btn 
@@ -29,8 +30,8 @@
       variant="elevated" 
       @click="$emit('download')"
     >
-      <v-icon start>mdi-download</v-icon>
-      Download
+      <v-icon>mdi-download</v-icon>
+      <span class="d-none d-md-inline ml-1">Download</span>
     </v-btn>
     
     <v-spacer></v-spacer>

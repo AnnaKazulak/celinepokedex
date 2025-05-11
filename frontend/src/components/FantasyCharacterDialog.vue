@@ -28,9 +28,18 @@
         color="primary"
         class="bg-primary-lighten-4"
       >
-        <v-tab value="ai">KI-Generierung</v-tab>
-        <v-tab value="manual">Manuell erstellen</v-tab>
-        <v-tab value="generator">Generator</v-tab>
+        <v-tab value="ai">
+          <v-icon>mdi-robot</v-icon>
+          <span class="d-none d-md-inline ml-2">Ki-generierung</span>
+        </v-tab>
+        <v-tab value="manual">
+          <v-icon>mdi-pencil</v-icon>
+          <span class="d-none d-md-inline ml-2">Manuell erstellen</span>
+        </v-tab>
+        <v-tab value="generator">
+          <v-icon>mdi-auto-fix</v-icon>
+          <span class="d-none d-md-inline ml-2">Generator</span>
+        </v-tab>
       </v-tabs>
 
       <!-- Tab content -->
