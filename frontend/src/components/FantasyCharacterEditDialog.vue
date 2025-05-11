@@ -32,15 +32,15 @@
       
       <div :class="$style.contentWrapper">
         <!-- Schwebendes Bild etwas nach unten versetzt -->
-        <div v-if="character.imageUrl" class="d-flex justify-center mx-auto my-5 position-relative" :class="$style.floatingImageContainer">
-          <v-img
-            :src="character.imageUrl"
-            :class="$style.fantasyFloatingImage"
-            contain
-            width="240"
-            height="240"
-          ></v-img>
-        </div>
+        <v-img
+          v-if="character.imageUrl"
+          :src="character.imageUrl"
+          :class="$style.fantasyFloatingImage"
+          class="mx-auto my-5"
+          contain
+          width="240"
+          height="240"
+        ></v-img>
         
         <v-form @submit.prevent="updateCharacter">
           <div class="d-flex flex-column gap-4">
