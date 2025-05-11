@@ -2,19 +2,18 @@
   <v-dialog 
     v-model="dialogVisible" 
     max-width="800px"
-    :content-class="$style.fantasyDialogWrapper"
+    content-class="bg-transparent shadow-none"
   >
     <v-card 
-      class="mx-auto overflow-hidden position-relative d-flex flex-column justify-space-between" 
-      :class="[$style.fantasyMainCard, {'has-image': character.imageUrl}]"
+      class="mx-auto overflow-hidden position-relative d-flex flex-column justify-space-between rounded-xl" 
+      :class="{'has-image': character.imageUrl}"
       width="100%" 
       max-width="600px"
       min-height="520px"
-      rounded="xl"
       elevation="8"
     >
       <!-- Title first - ganz oben -->
-      <v-card-title :class="$style.dialogTitle" class="text-white text-center font-weight-medium letter-spacing-1 position-relative">
+      <v-card-title class="text-white text-center font-weight-medium letter-spacing-1 position-relative bg-gradient-primary">
         Bearbeiten
       </v-card-title>
 
@@ -22,24 +21,24 @@
       <v-btn
         icon
         @click="closeDialog"
-        :class="$style.closeBtn"
-        class="text-white position-absolute"
+        class="text-white position-absolute close-btn"
         size="small"
         variant="text"
+        style="top: 8px; right: 8px; z-index: 30; background-color: rgba(255, 255, 255, 0.2);"
       >
         <v-icon>mdi-close</v-icon>
       </v-btn>
       
-      <div :class="$style.contentWrapper">
+      <div class="content-wrapper px-6 flex-1 overflow-y-auto" style="max-height: calc(80vh - 140px);">
         <!-- Schwebendes Bild etwas nach unten versetzt -->
         <v-img
           v-if="character.imageUrl"
           :src="character.imageUrl"
-          :class="$style.fantasyFloatingImage"
-          class="mx-auto my-5"
+          class="mx-auto my-5 rounded floating-image"
           contain
           width="240"
           height="240"
+          style="box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);"
         ></v-img>
         
         <v-form @submit.prevent="updateCharacter">
@@ -105,7 +104,7 @@
       </div>
       
       <!-- Footer mit Aktionen -->
-      <div :class="$style.fantasyFooter" class="d-flex justify-center align-center py-4 px-6">
+      <div class="bg-gradient-primary d-flex justify-center align-center py-4 px-6 text-white footer">
         <div class="d-flex w-100 justify-center">
           <v-spacer></v-spacer>
           <v-btn 
@@ -119,8 +118,9 @@
             color="white" 
             variant="elevated" 
             @click="updateCharacter"
-            :class="$style.saveBtn"
+            class="save-btn"
             :loading="isSaving"
+            style="background-color: rgba(255, 255, 255, 0.2) !important;"
           >
             <v-icon start>mdi-content-save</v-icon>
             Speichern
@@ -263,86 +263,44 @@ const updateCharacter = async () => {
 };
 </script>
 
-<style module>
-.fantasyDialogWrapper {
-  box-shadow: none;
-  background: transparent;
-}
-
-.fantasyMainCard {
-  background: white;
-  padding-top: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.fantasyMainCard.has-image {
-  padding-top: 0;
-}
-
-.contentWrapper {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 24px;
-  max-height: calc(80vh - 140px); /* Ensure content doesn't exceed viewport minus header/footer */
-}
-
-.dialogTitle {
+<style>
+/* Benutzerdefinierte Klassen für die Komponentendarstellung */
+.bg-gradient-primary {
   background: linear-gradient(135deg, #6890F0 0%, #705898 100%);
-  padding: 16px 20px;
   z-index: 25;
 }
 
-.closeBtn {
-  top: 8px;
-  right: 8px;
-  z-index: 30;
-  background-color: rgba(255, 255, 255, 0.2);
+.has-image {
+  padding-top: 0;
 }
 
-.closeBtn:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+.content-wrapper {
+  max-height: calc(80vh - 140px);
 }
 
-.floatingImageContainer {
-  width: 240px;
-  z-index: 5;
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3) !important;
 }
 
-.fantasyFloatingImage {
-  border-radius: 8px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
-.fantasyFooter {
-  color: white;
-  transition: background-color 0.5s ease;
-  background: linear-gradient(135deg, #6890F0 0%, #705898 100%);
+.footer {
   position: sticky;
   bottom: 0;
   z-index: 10;
-}
-
-.saveBtn {
-  background-color: rgba(255, 255, 255, 0.2) !important;
+  transition: background-color 0.5s ease;
 }
 
 @media (max-width: 600px) {
-  .contentWrapper {
+  .content-wrapper {
     max-height: calc(100vh - 140px);
     padding: 0 16px;
   }
 
-  .floatingImageContainer {
-    width: 180px;
+  .floating-image {
+    width: 180px !important;
+    height: 180px !important;
   }
   
-  .fantasyFloatingImage {
-    width: 180px;
-    height: 180px;
-  }
-  
-  .fantasyFooter {
+  .footer {
     flex-direction: column;
     gap: 16px;
   }
