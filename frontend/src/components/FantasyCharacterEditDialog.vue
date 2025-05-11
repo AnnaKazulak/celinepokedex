@@ -42,6 +42,32 @@
               ></v-text-field>
             </div>
             
+            <!-- Base Animal Select -->
+            <div class="form-section">
+              <v-select
+                v-model="editedBaseAnimal"
+                :items="baseAnimalOptions"
+                label="Base Animal"
+                hint="Wähle das Basistier aus"
+                variant="underlined"
+                density="compact"
+                :disabled="isSaving"
+              ></v-select>
+            </div>
+            
+            <!-- Element Type Select -->
+            <div class="form-section">
+              <v-select
+                v-model="editedElementType"
+                :items="elementTypeOptions"
+                label="Element Type"
+                hint="Wähle den Elementtyp aus"
+                variant="underlined"
+                density="compact"
+                :disabled="isSaving"
+              ></v-select>
+            </div>
+            
             <div class="form-section">
               <v-textarea
                 v-model="editedPrompt"
@@ -116,8 +142,22 @@ const emit = defineEmits<{
 const dialogVisible = ref(props.dialog);
 const editedName = ref('');
 const editedPrompt = ref('');
+const editedBaseAnimal = ref('');
+const editedElementType = ref('');
 const error = ref('');
 const isSaving = ref(false);
+
+// Optionen für die Select-Felder mit den korrekten Werten aus dem System
+const baseAnimalOptions = [
+  'CAT', 'LIZARD', 'BIRD', 
+  'FROG', 'FOX', 'SNAKE', 'HORSE', 'TURTLE',
+  'LION', 'EAGLE', 'DEER'
+];
+
+const elementTypeOptions = [
+  'FIRE', 'WATER', 'EARTH', 'WIND', 'ELECTRIC', 
+  'ICE', 'NATURE', 'SHADOW', 'LIGHT', 'POISON'
+];
 
 // Watch for dialog prop changes
 watch(() => props.dialog, (newVal) => {
@@ -129,6 +169,8 @@ watch(() => props.character, (newVal) => {
   if (newVal) {
     editedName.value = newVal.name;
     editedPrompt.value = newVal.prompt;
+    editedBaseAnimal.value = newVal.baseAnimal;
+    editedElementType.value = newVal.elementType;
   }
 });
 
@@ -142,6 +184,8 @@ onMounted(() => {
   if (props.character) {
     editedName.value = props.character.name;
     editedPrompt.value = props.character.prompt;
+    editedBaseAnimal.value = props.character.baseAnimal;
+    editedElementType.value = props.character.elementType;
   }
 });
 
@@ -168,6 +212,8 @@ const updateCharacter = async () => {
     const response = await axios.put(`${API_ENDPOINTS.FANTASY_CHARACTERS}/${props.character.id}`, {
       name: nameToSave,
       prompt: editedPrompt.value,
+      baseAnimal: editedBaseAnimal.value,
+      elementType: editedElementType.value,
       imageUrl: props.character.imageUrl
     });
 
