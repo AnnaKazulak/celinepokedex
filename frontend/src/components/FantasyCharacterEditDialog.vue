@@ -2,11 +2,19 @@
   <v-dialog 
     v-model="dialogVisible" 
     max-width="800px"
-    content-class="fantasy-dialog-wrapper"
+    :content-class="$style.fantasyDialogWrapper"
   >
-    <v-card class="fantasy-main-card" :class="{'has-image': character.imageUrl}">
+    <v-card 
+      class="mx-auto overflow-hidden position-relative d-flex flex-column justify-space-between" 
+      :class="[$style.fantasyMainCard, {'has-image': character.imageUrl}]"
+      width="100%" 
+      max-width="600px"
+      min-height="520px"
+      rounded="xl"
+      elevation="8"
+    >
       <!-- Title first - ganz oben -->
-      <v-card-title class="dialog-title">
+      <v-card-title :class="$style.dialogTitle" class="text-white text-center font-weight-medium letter-spacing-1 position-relative">
         Fantasy Character bearbeiten
       </v-card-title>
 
@@ -14,24 +22,29 @@
       <v-btn
         icon
         @click="closeDialog"
-        class="close-btn"
+        :class="$style.closeBtn"
+        class="text-white position-absolute"
+        size="small"
+        variant="text"
       >
         <v-icon>mdi-close</v-icon>
       </v-btn>
       
-      <div class="card-header">
+      <div class="pa-6 flex-grow-1">
         <!-- Schwebendes Bild etwas nach unten versetzt -->
-        <div v-if="character.imageUrl" class="floating-image-container">
+        <div v-if="character.imageUrl" class="d-flex justify-center mx-auto my-5 position-relative" :class="$style.floatingImageContainer">
           <v-img
             :src="character.imageUrl"
-            class="fantasy-floating-image"
+            :class="$style.fantasyFloatingImage"
             contain
+            width="240"
+            height="240"
           ></v-img>
         </div>
         
         <v-form @submit.prevent="updateCharacter">
-          <div class="fantasy-form">
-            <div class="form-section">
+          <div class="d-flex flex-column gap-4">
+            <div class="mb-2">
               <v-text-field
                 v-model="editedName"
                 label="Name deines Fantasy-Charakters"
@@ -43,7 +56,7 @@
             </div>
             
             <!-- Base Animal Select -->
-            <div class="form-section">
+            <div class="mb-2">
               <v-select
                 v-model="editedBaseAnimal"
                 :items="baseAnimalOptions"
@@ -56,7 +69,7 @@
             </div>
             
             <!-- Element Type Select -->
-            <div class="form-section">
+            <div class="mb-2">
               <v-select
                 v-model="editedElementType"
                 :items="elementTypeOptions"
@@ -68,7 +81,7 @@
               ></v-select>
             </div>
             
-            <div class="form-section">
+            <div class="mb-2">
               <v-textarea
                 v-model="editedPrompt"
                 label="Beschreibung deines Fantasy-Charakters"
@@ -83,7 +96,7 @@
             </div>
           </div>
           
-          <div v-if="error" class="error-message mt-4">
+          <div v-if="error" class="mt-4">
             <v-alert type="error" dismissible>
               {{ error }}
             </v-alert>
@@ -92,14 +105,13 @@
       </div>
       
       <!-- Footer mit Aktionen -->
-      <div class="fantasy-footer" :style="{ background: '#6890F0' }">
-        <div class="footer-section actions">
+      <div :class="$style.fantasyFooter" class="d-flex justify-center align-center py-4 px-6" style="background: #6890F0">
+        <div class="d-flex w-100 justify-center">
           <v-spacer></v-spacer>
           <v-btn 
             color="white" 
             variant="text" 
             @click="closeDialog"
-            class="cancel-btn"
           >
             Abbrechen
           </v-btn>
@@ -107,7 +119,7 @@
             color="white" 
             variant="elevated" 
             @click="updateCharacter"
-            class="save-btn"
+            :class="$style.saveBtn"
             :loading="isSaving"
           >
             <v-icon start>mdi-content-save</v-icon>
@@ -251,133 +263,68 @@ const updateCharacter = async () => {
 };
 </script>
 
-<style scoped>
-/* Styling für den Dialog selbst */
-:deep(.fantasy-dialog-wrapper) {
+<style module>
+.fantasyDialogWrapper {
   box-shadow: none;
   background: transparent;
 }
 
-/* Dialog Card mit festgelegter Höhe */
-.fantasy-main-card {
-  width: 100%;
-  max-width: 600px;
-  min-height: 520px;
+.fantasyMainCard {
   background: white;
   padding-top: 0;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  margin: 0 auto;
-  overflow: hidden;
-  position: relative;
 }
 
-.fantasy-main-card.has-image {
+.fantasyMainCard.has-image {
   padding-top: 0;
 }
 
-.dialog-title {
+.dialogTitle {
   background: linear-gradient(135deg, #6890F0 0%, #705898 100%);
-  color: white;
   padding: 16px 20px;
-  position: relative;
   z-index: 25;
-  text-align: center;
-  font-weight: 500;
-  letter-spacing: 0.5px;
 }
 
-/* Neu positionierter Close-Button */
-.close-btn {
-  position: absolute;
+.closeBtn {
   top: 8px;
   right: 8px;
   z-index: 30;
   background-color: rgba(255, 255, 255, 0.2);
-  color: white;
 }
 
-.close-btn:hover {
+.closeBtn:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
 
-.floating-image-container {
-  position: relative;
-  margin: 20px auto;
+.floatingImageContainer {
   width: 240px;
-  display: flex;
-  justify-content: center;
   z-index: 5;
 }
 
-.fantasy-floating-image {
-  width: 240px;
-  height: 240px;
+.fantasyFloatingImage {
   border-radius: 8px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-.card-header {
-  padding: 16px 24px;
-  flex-grow: 1;
-}
-
-.fantasy-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.form-section {
-  margin-bottom: 8px;
-}
-
-.error-message {
-  margin-top: 16px;
-}
-
-.fantasy-footer {
+.fantasyFooter {
   color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 16px 24px;
-  margin-top: auto;
   transition: background-color 0.5s ease;
 }
 
-.footer-section {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  width: 100%;
-}
-
-.actions {
-  display: flex;
-  gap: 16px;
-}
-
-.save-btn {
+.saveBtn {
   background-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-/* Mobile Anpassungen */
 @media (max-width: 600px) {
-  .floating-image-container {
+  .floatingImageContainer {
     width: 180px;
-    margin: 15px auto;
   }
   
-  .fantasy-floating-image {
+  .fantasyFloatingImage {
     width: 180px;
     height: 180px;
   }
   
-  .fantasy-footer {
+  .fantasyFooter {
     flex-direction: column;
     gap: 16px;
   }
