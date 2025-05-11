@@ -74,37 +74,40 @@
               </v-chip>
             </div>
               
-            <div class="d-flex flex-wrap gap-2" :class="{'justify-center': $vuetify.display.smAndDown}">
+            <div class="d-flex flex-wrap" :class="{'justify-center': $vuetify.display.smAndDown}" style="gap: 12px;">
               <v-btn
                 color="primary"
                 variant="outlined"
-                prepend-icon="mdi-download"
+                :prepend-icon="!$vuetify.display.smAndDown ? 'mdi-download' : undefined"
                 @click="downloadImage"
                 class="mt-4"
                 :style="{ borderColor: dominantColor, color: dominantColor }"
               >
-                Bild herunterladen
+                <v-icon v-if="$vuetify.display.smAndDown">mdi-download</v-icon>
+                <span v-else>bild herunterladen</span>
               </v-btn>
               
               <v-btn
                 color="primary"
                 variant="outlined"
-                prepend-icon="mdi-pencil"
+                :prepend-icon="!$vuetify.display.smAndDown ? 'mdi-pencil' : undefined"
                 @click="openEditDialog"
                 class="mt-4"
                 :style="{ borderColor: dominantColor, color: dominantColor }"
               >
-                Bearbeiten
+                <v-icon v-if="$vuetify.display.smAndDown">mdi-pencil</v-icon>
+                <span v-else>bearbeiten</span>
               </v-btn>
               
               <v-btn
                 color="error"
                 variant="outlined"
-                prepend-icon="mdi-delete"
+                :prepend-icon="!$vuetify.display.smAndDown ? 'mdi-delete' : undefined"
                 @click="showDeleteConfirmation = true"
                 class="mt-4"
               >
-                Löschen
+                <v-icon v-if="$vuetify.display.smAndDown">mdi-delete</v-icon>
+                <span v-else>löschen</span>
               </v-btn>
             </div>
           </v-col>
