@@ -30,7 +30,7 @@
         <v-icon>mdi-close</v-icon>
       </v-btn>
       
-      <div class="pa-6 flex-grow-1">
+      <div :class="$style.contentWrapper">
         <!-- Schwebendes Bild etwas nach unten versetzt -->
         <div v-if="character.imageUrl" class="d-flex justify-center mx-auto my-5 position-relative" :class="$style.floatingImageContainer">
           <v-img
@@ -272,10 +272,19 @@ const updateCharacter = async () => {
 .fantasyMainCard {
   background: white;
   padding-top: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .fantasyMainCard.has-image {
   padding-top: 0;
+}
+
+.contentWrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px;
+  max-height: calc(80vh - 140px); /* Ensure content doesn't exceed viewport minus header/footer */
 }
 
 .dialogTitle {
@@ -309,6 +318,9 @@ const updateCharacter = async () => {
   color: white;
   transition: background-color 0.5s ease;
   background: linear-gradient(135deg, #6890F0 0%, #705898 100%);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .saveBtn {
@@ -316,6 +328,11 @@ const updateCharacter = async () => {
 }
 
 @media (max-width: 600px) {
+  .contentWrapper {
+    max-height: calc(100vh - 140px);
+    padding: 0 16px;
+  }
+
   .floatingImageContainer {
     width: 180px;
   }
