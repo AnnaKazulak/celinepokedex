@@ -4,7 +4,9 @@ import { TIMEOUTS } from './constants';
 // Create a custom axios instance with increased timeouts
 const axiosInstance = axios.create({
   // Default timeout is 60 seconds (60000ms), much longer than the standard 0ms (no timeout)
-  timeout: TIMEOUTS.API_REQUEST_TIMEOUT
+  timeout: TIMEOUTS.API_REQUEST_TIMEOUT,
+  // Add withCredentials to allow cross-origin requests with credentials
+  withCredentials: true
 });
 
 // Add request interceptor for logging

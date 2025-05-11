@@ -16,7 +16,9 @@ public class CorsConfig {
                 registry.addMapping("/api/**") // Pfad der API
                         .allowedOrigins("http://localhost:5173") // Frontend-Host
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*");
+                        .allowedHeaders("*")
+                        .allowCredentials(true) // Allow credentials
+                        .exposedHeaders("Content-Disposition"); // Expose headers for file download
             }
         };
     }

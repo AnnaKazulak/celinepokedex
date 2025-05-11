@@ -4,7 +4,7 @@
     max-width="800px"
     content-class="fantasy-dialog-wrapper"
   >
-    <v-card class="fantasy-main-card" :class="{'has-image': generatedImageUrl}">
+    <v-card class="fantasy-main-card" :class="{'has-image': generatedImageUrl || (activeTab === 'manual' && manualImageUrl)}">
       <!-- Title first - ganz oben -->
       <v-card-title class="dialog-title">
         Create Fantasy Character
@@ -19,113 +19,204 @@
         <v-icon>mdi-close</v-icon>
       </v-btn>
       
-      <div class="card-header">
-        <!-- Schwebendes Bild etwas nach unten versetzt -->
-        <div v-if="generatedImageUrl" class="floating-image-container">
-          <v-img
-            :src="generatedImageUrl"
-            class="fantasy-floating-image"
-            contain
-          ></v-img>
-        </div>
-        
-        <!-- Beschreibung unter dem Bild, außerhalb des Footers -->
-        <div v-if="generatedImageUrl && !isGenerating" class="character-description">
-          <p class="description-text">{{ prompt }}</p>
-        </div>
-        
-        <div class="level-text"></div>
-        
-        <v-form @submit.prevent="generateImage">
-          <!-- Eingabefeld nur anzeigen, wenn kein Bild generiert wurde -->
-          <div v-if="!generatedImageUrl || isGenerating" class="fantasy-form">
-            <div class="form-section">
-              <v-textarea
-                v-model="prompt"
-                label="Beschreibe deinen Fantasy-Charakter"
-                hint="Je detaillierter die Beschreibung, desto besser das Ergebnis"
-                rows="3"
-                auto-grow
-                counter
+      <!-- Tabs for selection -->
+      <v-tabs
+        v-model="activeTab"
+        centered
+        color="primary"
+        class="fantasy-tabs"
+      >
+        <v-tab value="ai">KI-Generierung</v-tab>
+        <v-tab value="manual">Manuell erstellen</v-tab>
+      </v-tabs>
+
+      <!-- Tab content -->
+      <v-window v-model="activeTab" class="card-content">
+        <!-- AI Generation Tab -->
+        <v-window-item value="ai">
+          <div class="card-header">
+            <!-- Schwebendes Bild etwas nach unten versetzt -->
+            <div v-if="generatedImageUrl" class="floating-image-container">
+              <v-img
+                :src="generatedImageUrl"
+                class="fantasy-floating-image"
+                contain
+              ></v-img>
+            </div>
+            
+            <!-- Beschreibung unter dem Bild, außerhalb des Footers -->
+            <div v-if="generatedImageUrl && !isGenerating" class="character-description">
+              <p class="description-text">{{ prompt }}</p>
+            </div>
+            
+            <div class="level-text"></div>
+            
+            <v-form @submit.prevent="generateImage">
+              <!-- Eingabefeld nur anzeigen, wenn kein Bild generiert wurde -->
+              <div v-if="!generatedImageUrl || isGenerating" class="fantasy-form">
+                <div class="form-section">
+                  <v-textarea
+                    v-model="prompt"
+                    label="Beschreibe deinen Fantasy-Charakter"
+                    hint="Je detaillierter die Beschreibung, desto besser das Ergebnis"
+                    rows="3"
+                    auto-grow
+                    counter
+                    variant="underlined"
+                    density="compact"
+                    :disabled="isGenerating"
+                  ></v-textarea>
+                  
+                  <div class="text-center mt-4 mb-4">
+                    <v-btn 
+                      color="primary" 
+                      :loading="isGenerating"
+                      :disabled="!prompt || isGenerating"
+                      @click="generateImage"
+                      class="generate-btn"
+                    >
+                      {{ isGenerating ? 'Generiere...' : 'Charakter erstellen' }}
+                    </v-btn>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Einfacherer Ladebildschirm, der garantiert sichtbar ist -->
+              <v-card v-if="isGenerating" class="mt-4 mb-4 pa-4 loading-status" variant="outlined">
+                <div class="text-center">
+                  <v-icon size="x-large" color="primary" class="mb-3">mdi-creation</v-icon>
+                  <h3 class="text-h6 mb-2">Dein Fantasy-Charakter wird erstellt</h3>
+                  <p class="text-body-2 mb-4">Die KI arbeitet an deinem einzigartigen Charakter...</p>
+                  
+                  <v-progress-linear
+                    indeterminate
+                    color="primary"
+                    class="mb-3"
+                    height="6"
+                    rounded
+                  ></v-progress-linear>
+                  
+                  <!-- Vereinfachte Schrittanzeige -->
+                  <div class="d-flex justify-space-between mb-2">
+                    <v-chip
+                      size="small"
+                      :color="loadingStep >= 1 ? 'primary' : 'grey-lighten-1'" 
+                      :variant="loadingStep >= 1 ? 'elevated' : 'flat'"
+                    >
+                      <v-icon size="x-small" start>mdi-pencil</v-icon>Analysieren
+                    </v-chip>
+                    <v-chip
+                      size="small"
+                      :color="loadingStep >= 2 ? 'primary' : 'grey-lighten-1'"
+                      :variant="loadingStep >= 2 ? 'elevated' : 'flat'"
+                    >
+                      <v-icon size="x-small" start>mdi-brush</v-icon>Zeichnen
+                    </v-chip>
+                    <v-chip
+                      size="small"
+                      :color="loadingStep >= 3 ? 'primary' : 'grey-lighten-1'"
+                      :variant="loadingStep >= 3 ? 'elevated' : 'flat'"
+                    >
+                      <v-icon size="x-small" start>mdi-palette</v-icon>Details
+                    </v-chip>
+                    <v-chip
+                      size="small"
+                      :color="loadingStep >= 4 ? 'primary' : 'grey-lighten-1'"
+                      :variant="loadingStep >= 4 ? 'elevated' : 'flat'"
+                    >
+                      <v-icon size="x-small" start>mdi-image</v-icon>Fertigstellen
+                    </v-chip>
+                  </div>
+                  <p class="text-caption mt-3">Dieser Vorgang kann 15-30 Sekunden dauern</p>
+                </div>
+              </v-card>
+              
+              <div v-if="error" class="error-message mt-4">
+                <v-alert type="error" dismissible>
+                  {{ error }}
+                </v-alert>
+              </div>
+            </v-form>
+          </div>
+        </v-window-item>
+
+        <!-- Manual Creation Tab -->
+        <v-window-item value="manual">
+          <div class="card-header">
+            <!-- Manual Image Display -->
+            <div v-if="manualImageUrl" class="floating-image-container">
+              <v-img
+                :src="manualImageUrl"
+                class="fantasy-floating-image"
+                contain
+              ></v-img>
+            </div>
+            
+            <v-form @submit.prevent="saveManualCharacter" class="manual-form">
+              <!-- Character Name Input -->
+              <v-text-field
+                v-model="manualCharacterName"
+                label="Name des Charakters"
                 variant="underlined"
                 density="compact"
-                :disabled="isGenerating"
+                required
+                :rules="[v => !!v || 'Name wird benötigt']"
+              ></v-text-field>
+
+              <!-- Character Description Input -->
+              <v-textarea
+                v-model="manualCharacterDescription"
+                label="Beschreibe deinen Fantasy-Charakter"
+                rows="3"
+                auto-grow
+                variant="underlined"
+                density="compact"
+                required
+                :rules="[v => !!v || 'Beschreibung wird benötigt']"
               ></v-textarea>
               
-              <div class="text-center mt-4 mb-4">
-                <v-btn 
-                  color="primary" 
-                  :loading="isGenerating"
-                  :disabled="!prompt || isGenerating"
-                  @click="generateImage"
-                  class="generate-btn"
-                >
-                  {{ isGenerating ? 'Generiere...' : 'Charakter erstellen' }}
-                </v-btn>
+              <!-- Image Upload -->
+              <div class="image-upload-section mt-4">
+                <v-file-input
+                  v-model="imageFile"
+                  label="Bild hochladen"
+                  accept="image/*"
+                  variant="underlined"
+                  density="compact"
+                  prepend-icon="mdi-camera"
+                  :rules="[v => !!manualImageUrl || !!v || 'Bild wird benötigt']"
+                  @update:model-value="handleImageFileChange"
+                ></v-file-input>
+
+                <div class="text-caption mt-2">
+                  Unterstützt werden JPG, PNG, GIF und WebP. Maximal 5MB.
+                </div>
+                
+                <div class="text-center mt-4">
+                  <v-btn
+                    color="primary"
+                    class="generate-btn"
+                    type="submit"
+                    :disabled="!isManualFormValid || isManualSaving"
+                    :loading="isManualSaving"
+                  >
+                    Charakter speichern
+                  </v-btn>
+                </div>
               </div>
-            </div>
-          </div>
-          
-          <!-- Einfacherer Ladebildschirm, der garantiert sichtbar ist -->
-          <v-card v-if="isGenerating" class="mt-4 mb-4 pa-4 loading-status" variant="outlined">
-            <div class="text-center">
-              <v-icon size="x-large" color="primary" class="mb-3">mdi-creation</v-icon>
-              <h3 class="text-h6 mb-2">Dein Fantasy-Charakter wird erstellt</h3>
-              <p class="text-body-2 mb-4">Die KI arbeitet an deinem einzigartigen Charakter...</p>
-              
-              <v-progress-linear
-                indeterminate
-                color="primary"
-                class="mb-3"
-                height="6"
-                rounded
-              ></v-progress-linear>
-              
-              <!-- Vereinfachte Schrittanzeige -->
-              <div class="d-flex justify-space-between mb-2">
-                <v-chip
-                  size="small"
-                  :color="loadingStep >= 1 ? 'primary' : 'grey-lighten-1'" 
-                  :variant="loadingStep >= 1 ? 'elevated' : 'flat'"
-                >
-                  <v-icon size="x-small" start>mdi-pencil</v-icon>Analysieren
-                </v-chip>
-                <v-chip
-                  size="small"
-                  :color="loadingStep >= 2 ? 'primary' : 'grey-lighten-1'"
-                  :variant="loadingStep >= 2 ? 'elevated' : 'flat'"
-                >
-                  <v-icon size="x-small" start>mdi-brush</v-icon>Zeichnen
-                </v-chip>
-                <v-chip
-                  size="small"
-                  :color="loadingStep >= 3 ? 'primary' : 'grey-lighten-1'"
-                  :variant="loadingStep >= 3 ? 'elevated' : 'flat'"
-                >
-                  <v-icon size="x-small" start>mdi-palette</v-icon>Details
-                </v-chip>
-                <v-chip
-                  size="small"
-                  :color="loadingStep >= 4 ? 'primary' : 'grey-lighten-1'"
-                  :variant="loadingStep >= 4 ? 'elevated' : 'flat'"
-                >
-                  <v-icon size="x-small" start>mdi-image</v-icon>Fertigstellen
-                </v-chip>
+
+              <div v-if="manualError" class="error-message mt-4">
+                <v-alert type="error" dismissible>
+                  {{ manualError }}
+                </v-alert>
               </div>
-              <p class="text-caption mt-3">Dieser Vorgang kann 15-30 Sekunden dauern</p>
-            </div>
-          </v-card>
-          
-          <div v-if="error" class="error-message mt-4">
-            <v-alert type="error" dismissible>
-              {{ error }}
-            </v-alert>
+            </v-form>
           </div>
-        </v-form>
-      </div>
+        </v-window-item>
+      </v-window>
       
-      <!-- Footer nur mit Aktionen -->
-      <div v-if="generatedImageUrl && !isGenerating" class="fantasy-footer" :style="{ background: '#6890F0' }">
+      <!-- Footer nur mit Aktionen für AI tab -->
+      <div v-if="activeTab === 'ai' && generatedImageUrl && !isGenerating" class="fantasy-footer" :style="{ background: '#6890F0' }">
         <div class="footer-section actions">
           <v-spacer></v-spacer>
           <v-btn 
@@ -163,7 +254,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useRouter } from 'vue-router'; 
 import axios from 'axios';
 import { API_ENDPOINTS } from '../utils/constants';
@@ -185,12 +276,30 @@ const emit = defineEmits<{
 
 // Reactive variables
 const dialogVisible = ref(props.dialog);
+const activeTab = ref('ai'); // Default to AI generation tab
+
+// AI generation variables
 const prompt = ref('');
 const isGenerating = ref(false);
 const generatedImageUrl = ref('');
 const error = ref('');
 const loadingStep = ref(0); // Status für den Ladebalken-Fortschritt
 const isSaving = ref(false); // Status für den Speichervorgang
+
+// Manual creation variables
+const manualCharacterName = ref('');
+const manualCharacterDescription = ref('');
+const imageFile = ref<File | null>(null);
+const manualImageUrl = ref('');
+const isManualSaving = ref(false);
+const manualError = ref('');
+
+// Computed property to check if manual form is valid
+const isManualFormValid = computed(() => {
+  return !!manualCharacterName.value && 
+         !!manualCharacterDescription.value && 
+         (!!imageFile.value || !!manualImageUrl.value);
+});
 
 // Watch for dialog prop changes
 watch(() => props.dialog, (newVal) => {
@@ -206,14 +315,122 @@ watch(dialogVisible, (newVal) => {
 const closeDialog = () => {
   dialogVisible.value = false;
   resetForm();
+  resetManualForm();
 };
 
-// Reset the form
+// Reset the AI form
 const resetForm = () => {
   prompt.value = '';
   generatedImageUrl.value = '';
   error.value = '';
   loadingStep.value = 0;
+};
+
+// Reset the manual form
+const resetManualForm = () => {
+  manualCharacterName.value = '';
+  manualCharacterDescription.value = '';
+  imageFile.value = null;
+  manualImageUrl.value = '';
+  manualError.value = '';
+};
+
+// Handle file change for manual image upload
+const handleImageFileChange = (file: File | null) => {
+  if (!file) {
+    manualImageUrl.value = '';
+    return;
+  }
+  
+  // Check file size (5MB limit)
+  const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+  if (file.size > maxSize) {
+    manualError.value = 'Die Datei ist zu groß. Maximale Größe: 5MB';
+    imageFile.value = null;
+    return;
+  }
+  
+  // Create URL for preview
+  manualImageUrl.value = URL.createObjectURL(file);
+};
+
+// Save manual character
+const saveManualCharacter = async () => {
+  if (!isManualFormValid.value || isManualSaving.value) return;
+  
+  isManualSaving.value = true;
+  manualError.value = '';
+  
+  try {
+    let finalImageUrl = manualImageUrl.value;
+    
+    // If we have a file, we need to upload it first
+    if (imageFile.value) {
+      const formData = new FormData();
+      formData.append('image', imageFile.value);
+      
+      // Upload image first
+      const uploadResponse = await axios.post(API_ENDPOINTS.UPLOAD_IMAGE, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      if (uploadResponse.data && uploadResponse.data.imageUrl) {
+        finalImageUrl = uploadResponse.data.imageUrl;
+      } else {
+        throw new Error('Failed to upload image');
+      }
+    }
+    
+    // Now save the character directly with the regular save endpoint
+    const response = await axios.post(API_ENDPOINTS.SAVE_CHARACTER, {
+      name: manualCharacterName.value,
+      prompt: manualCharacterDescription.value,
+      imageUrl: finalImageUrl
+    });
+    
+    if (response.data) {
+      const savedCharacter = response.data;
+      
+      // Close dialog
+      dialogVisible.value = false;
+      
+      // Emit via event bus for global updates
+      eventBus.emit('fantasy-character-created', savedCharacter);
+      
+      // Navigate to detail page
+      if (savedCharacter.id) {
+        router.push({
+          name: 'fantasyCharacterDetail',
+          params: { id: savedCharacter.id }
+        });
+      }
+      
+      // Reset form after successful save
+      setTimeout(() => {
+        resetManualForm();
+      }, 300);
+    } else {
+      throw new Error('Failed to save character');
+    }
+  } catch (err) {
+    console.error('Error saving manual character:', err);
+    
+    if (err.response) {
+      if (err.response.data && err.response.data.error) {
+        manualError.value = `Error: ${err.response.data.error}`;
+      } else {
+        manualError.value = `Server error (${err.response.status}): Please try again later`;
+      }
+    } else if (err.request) {
+      manualError.value = 'No response from server. Please check if the backend is running.';
+    } else {
+      manualError.value = 'Failed to save character: ' + (err.message || 'Unknown error');
+    }
+  } finally {
+    isManualSaving.value = false;
+  }
 };
 
 // Generate image
@@ -417,6 +634,18 @@ const saveCharacter = async () => {
   letter-spacing: 0.5px;
 }
 
+/* Tabs styling */
+.fantasy-tabs {
+  background: rgba(104, 144, 240, 0.1);
+  border-bottom: 1px solid rgba(104, 144, 240, 0.2);
+}
+
+/* Card content container */
+.card-content {
+  flex-grow: 1;
+  overflow: auto;
+}
+
 /* Neu positionierter Close-Button */
 .close-btn {
   position: absolute;
@@ -474,7 +703,7 @@ const saveCharacter = async () => {
   text-align: center;
 }
 
-.fantasy-form {
+.fantasy-form, .manual-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -482,6 +711,13 @@ const saveCharacter = async () => {
 
 .form-section {
   margin-bottom: 8px;
+}
+
+.image-upload-section {
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px dashed rgba(104, 144, 240, 0.4);
+  background-color: rgba(104, 144, 240, 0.05);
 }
 
 .generate-btn {
