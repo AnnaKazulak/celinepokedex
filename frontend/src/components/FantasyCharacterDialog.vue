@@ -2,6 +2,7 @@
   <v-dialog 
     v-model="dialogVisible" 
     max-width="800"
+    min-height="700"
     content-class="fantasy-dialog-wrapper"
   >
     <v-card class="rounded-lg overflow-hidden" :class="{'has-image': shouldShowImage}">
