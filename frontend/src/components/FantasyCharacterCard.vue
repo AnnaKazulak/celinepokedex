@@ -1,12 +1,13 @@
 <template>
   <div 
-    class="fantasy-card-container" 
+    class="d-flex flex-column align-center position-relative"
+    style="margin: 25px auto; width: 100%; height: 480px;"
     :data-id="character.id" 
     ref="cardElement"
     :class="{ 'clickable': true }"
     @click="navigateToDetail"
   >
-    <div class="fantasy-image-wrapper">
+    <div class="position-absolute d-flex justify-center fantasy-image-wrapper">
       <v-img
         :src="character.imageUrl"
         class="fantasy-image"
@@ -15,13 +16,20 @@
       ></v-img>
     </div>
 
-    <v-card class="fantasy-card" :style="{ backgroundColor: dominantColor + '22' }">
-      <div class="card-content">
-        <div class="fantasy-header">
-          <div class="fantasy-title">{{ character.name || 'Fantasy Character' }}</div>
+    <v-card 
+      class="position-relative overflow-hidden ma-auto mt-15"
+      style="width: 100%; max-width: 300px; height: 400px; border-radius: 16px;"
+      :style="{ backgroundColor: dominantColor + '22' }"
+      :elevation="10"
+    >
+      <v-card-text class="d-flex flex-column justify-end pa-0 h-100">
+        <div class="text-center bg-white flex-grow-1 d-flex flex-column justify-start position-relative fantasy-header">
+          <v-card-title class="text-h5 text-center font-weight-bold mb-2 pa-0 fantasy-title">
+            {{ character.name || 'Fantasy Character' }}
+          </v-card-title>
           
           <!-- Type and Base Animal Chips -->
-          <div class="chip-container">
+          <div class="d-flex justify-center flex-wrap my-2 gap-2">
             <v-chip
               v-if="character.elementType"
               size="small"
@@ -48,10 +56,10 @@
           </div>
         </div>
 
-        <div class="fantasy-footer" :style="{ background: dominantColor }">
-          <div class="footer-value">
-            <span>Erstellt am</span>
-            <strong>{{ formatDate(character.createdAt) }}</strong>
+        <v-card-actions class="d-flex justify-space-between align-center fantasy-footer" :style="{ background: dominantColor }">
+          <div class="d-flex flex-column text-left footer-value">
+            <span class="text-caption opacity-90">Erstellt am</span>
+            <strong class="text-body-2 mt-1">{{ formatDate(character.createdAt) }}</strong>
           </div>
           <v-btn
             icon
@@ -62,8 +70,8 @@
           >
             <v-icon>mdi-download</v-icon>
           </v-btn>
-        </div>
-      </div>
+        </v-card-actions>
+      </v-card-text>
     </v-card>
   </div>
 </template>
@@ -213,16 +221,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.fantasy-card-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 25px auto;
-  position: relative;
-  width: 100%;
-  height: 480px;
-}
-
 .clickable {
   cursor: pointer;
   transition: transform 0.3s ease;
@@ -233,13 +231,10 @@ onBeforeUnmount(() => {
 }
 
 .fantasy-image-wrapper {
-  position: absolute;
   top: -25px;
   z-index: 10;
   width: 240px;
   height: 240px;
-  display: flex;
-  justify-content: center;
 }
 
 .fantasy-image {
@@ -252,49 +247,14 @@ onBeforeUnmount(() => {
   transform: scale(1.15);
 }
 
-.fantasy-card {
-  width: 100%;
-  max-width: 300px;
-  height: 400px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  margin: 0 auto;
-  margin-top: 60px;
-  overflow: hidden;
-  position: relative;
-}
-
-.card-content {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
-
 .fantasy-header {
-  text-align: center;
   padding: 16px;
-  background-color: white;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
   padding-top: 180px;
-  position: relative;
 }
 
 .fantasy-title {
   font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.chip-container {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 8px 0;
+  line-height: normal;
 }
 
 .element-chip, .animal-chip {
@@ -315,25 +275,15 @@ onBeforeUnmount(() => {
 
 .fantasy-footer {
   color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding: 12px 16px;
   background: linear-gradient(135deg, #6890F0 0%, #705898 100%);
   transition: background-color 0.5s ease;
-}
-
-.footer-value {
-  text-align: left;
-  display: flex;
-  flex-direction: column;
 }
 
 .footer-value span {
   display: block;
   font-size: 12px;
   font-weight: 400;
-  opacity: 0.9;
 }
 
 .footer-value strong {
@@ -352,21 +302,10 @@ onBeforeUnmount(() => {
 
 /* Mobile Anpassungen */
 @media (max-width: 600px) {
-  .fantasy-card-container {
-    margin: 20px auto;
-    height: 420px;
-  }
-  
   .fantasy-image-wrapper {
     width: 200px;
     height: 200px;
     top: -20px;
-  }
-  
-  .fantasy-card {
-    max-width: 280px;
-    height: 360px;
-    margin-top: 40px;
   }
   
   .fantasy-header {
@@ -381,8 +320,8 @@ onBeforeUnmount(() => {
   
   .description {
     font-size: 13px;
-    max-height: 60px; /* Reduced from 100px */
-    -webkit-line-clamp: 2; /* Changed from 4 to 2 lines */
+    max-height: 60px;
+    -webkit-line-clamp: 2;
     margin-top: 6px;
   }
   
@@ -401,19 +340,10 @@ onBeforeUnmount(() => {
 
 /* Extra kleine Geräte */
 @media (max-width: 320px) {
-  .fantasy-card-container {
-    height: 400px;
-  }
-  
   .fantasy-image-wrapper {
     width: 170px;
     height: 170px;
     top: -15px;
-  }
-  
-  .fantasy-card {
-    height: 340px;
-    margin-top: 30px;
   }
   
   .fantasy-header {
