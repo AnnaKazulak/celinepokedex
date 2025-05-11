@@ -1,149 +1,166 @@
 <template>
-  <!-- Use :id="$attrs.id" to properly handle inheritance of the id attribute -->
-  <div :id="$attrs.id">
+  <!-- Convert unknown to string for the id attribute -->
+  <div :id="String($attrs.id || '')">
     <div v-if="isLoading" class="d-flex justify-center align-center" style="min-height: 80vh">
       <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
     </div>
 
-    <template v-else-if="character">
-      <div 
-        class="pa-8 pa-sm-10 px-md-12 transition-smooth w-100"
-        :style="{
-          background: isColorLoaded ? `linear-gradient(180deg, ${dominantColorLight} 0%, white 100%)` : 'transparent',
-          opacity: isColorLoaded ? 1 : 0,
-          '--dominant-color': dominantColor,
-          '--dominant-color-light': dominantColorLight,
-          minHeight: '100vh'
-        }"
-        :class="{ 'opacity-1': isColorLoaded }"
-      >
-        <!-- Back Button -->
-        <div>
-          <v-btn
-            prepend-icon="mdi-arrow-left"
-            variant="text"
-            @click="goBack"
-            class="mb-4 font-weight-bold transition-transform"
-            :style="{ color: isColorLoaded ? dominantColor : 'rgba(0,0,0,0.7)' }"
-          >
-            Zurück
-          </v-btn>
-        </div>
+    <div v-else-if="character" 
+      class="pa-8 pa-sm-10 px-md-12 transition-smooth w-100"
+      :style="{
+        background: isColorLoaded ? `linear-gradient(180deg, ${dominantColorLight} 0%, white 100%)` : 'transparent',
+        opacity: isColorLoaded ? 1 : 0,
+        '--dominant-color': dominantColor,
+        '--dominant-color-light': dominantColorLight,
+        minHeight: '100vh'
+      }"
+      :class="{ 'opacity-1': isColorLoaded }"
+    >
+      <!-- Back Button -->
+      <div>
+        <v-btn
+          prepend-icon="mdi-arrow-left"
+          variant="text"
+          @click="goBack"
+          class="mb-4 font-weight-bold transition-transform"
+          :style="{ color: isColorLoaded ? dominantColor : 'rgba(0,0,0,0.7)' }"
+        >
+          Zurück
+        </v-btn>
+      </div>
 
-        <!-- Fantasy Character Header -->
-        <v-container fluid class="ma-0 pa-0 mb-8" style="max-width: 1400px">
-          <v-row class="align-center" :class="{'flex-column-reverse': $vuetify.display.smAndDown}">
-            <!-- Fantasy Character Info -->
-            <v-col cols="12" md="6" :class="{'text-center': $vuetify.display.smAndDown}">
-              <div class="mb-4">
-                <div class="d-flex align-center" :class="{'justify-center': $vuetify.display.smAndDown}">
-                  <h1 class="text-h2 font-weight-bold mr-2"
-                      :style="{ color: isColorLoaded ? dominantColor : 'rgba(0,0,0,0.87)' }"
-                      :class="{'text-h4': $vuetify.display.xs}"
-                  >
-                    {{ character.name || 'Fantasy Character' }}
-                  </h1>
-                </div>
-   
+      <!-- Fantasy Character Header -->
+      <v-container fluid class="ma-0 pa-0 mb-8" style="max-width: 1400px">
+        <v-row class="align-center" :class="{'flex-column-reverse': $vuetify.display.smAndDown}">
+          <!-- Fantasy Character Info -->
+          <v-col cols="12" md="6" :class="{'text-center': $vuetify.display.smAndDown}">
+            <div class="mb-4">
+              <div class="d-flex align-center" :class="{'justify-center': $vuetify.display.smAndDown}">
+                <h1 class="text-h2 font-weight-bold mr-2"
+                    :style="{ color: isColorLoaded ? dominantColor : 'rgba(0,0,0,0.87)' }"
+                    :class="{'text-h4': $vuetify.display.xs}"
+                >
+                  {{ character.name || 'Fantasy Character' }}
+                </h1>
               </div>
+            </div>
 
-              <!-- Fantasy Character Description -->
-              <div class="mb-6">
-                <p class="text-body-1 mb-4 white-space-pre-line" 
-                  :class="{'text-body-2': $vuetify.display.xs}"
-                  style="line-height: 1.6; color: rgba(0, 0, 0, 0.8);">
-                  {{ cleanedPrompt }}
-                </p>
-                
-                <div class="d-flex flex-wrap gap-2" :class="{'justify-center': $vuetify.display.smAndDown}">
-                  <v-btn
-                    color="primary"
-                    variant="outlined"
-                    prepend-icon="mdi-download"
-                    @click="downloadImage"
-                    class="mt-4"
-                    :style="{ borderColor: dominantColor, color: dominantColor }"
-                  >
-                    Bild herunterladen
-                  </v-btn>
-                  
-                  <v-btn
-                    color="primary"
-                    variant="outlined"
-                    prepend-icon="mdi-pencil"
-                    @click="openEditDialog"
-                    class="mt-4"
-                    :style="{ borderColor: dominantColor, color: dominantColor }"
-                  >
-                    Bearbeiten
-                  </v-btn>
-                  
-                  <v-btn
-                    color="error"
-                    variant="outlined"
-                    prepend-icon="mdi-delete"
-                    @click="showDeleteConfirmation = true"
-                    class="mt-4"
-                  >
-                    Löschen
-                  </v-btn>
-                </div>
+            <!-- Fantasy Character Description -->
+            <div class="mb-4">
+              <p class="text-body-1 mb-4 white-space-pre-line" 
+                :class="{'text-body-2': $vuetify.display.xs}"
+                style="line-height: 1.6; color: rgba(0, 0, 0, 0.8);">
+                {{ cleanedPrompt }}
+              </p>
+            </div>
+
+            <!-- Fantasy Character Properties (similar to Pokemon types) -->
+            <div class="d-flex flex-wrap mb-4" :class="{'justify-center': $vuetify.display.smAndDown}">
+              <v-chip
+                v-if="extractedProperties.baseAnimal"
+                class="mr-2 mb-2"
+                :color="getPropertyColor('baseAnimal')"
+                text-color="white"
+              >
+                {{ getSimpleAnimalName(extractedProperties.baseAnimal) }}
+              </v-chip>
+              <v-chip
+                v-if="extractedProperties.elementType"
+                class="mr-2 mb-2"
+                :color="getPropertyColor('elementType')"
+                text-color="white"
+              >
+                {{ extractedProperties.elementType }}
+              </v-chip>
+            </div>
+              
+            <div class="d-flex flex-wrap gap-2" :class="{'justify-center': $vuetify.display.smAndDown}">
+              <v-btn
+                color="primary"
+                variant="outlined"
+                prepend-icon="mdi-download"
+                @click="downloadImage"
+                class="mt-4"
+                :style="{ borderColor: dominantColor, color: dominantColor }"
+              >
+                Bild herunterladen
+              </v-btn>
+              
+              <v-btn
+                color="primary"
+                variant="outlined"
+                prepend-icon="mdi-pencil"
+                @click="openEditDialog"
+                class="mt-4"
+                :style="{ borderColor: dominantColor, color: dominantColor }"
+              >
+                Bearbeiten
+              </v-btn>
+              
+              <v-btn
+                color="error"
+                variant="outlined"
+                prepend-icon="mdi-delete"
+                @click="showDeleteConfirmation = true"
+                class="mt-4"
+              >
+                Löschen
+              </v-btn>
+            </div>
+          </v-col>
+          
+          <!-- Fantasy Character Image Container - nur einfaches v-img ohne v-card -->
+          <v-col cols="12" md="6" class="d-flex justify-center">
+            <v-img
+              :src="character.imageUrl"
+              @load="extractColorFromImage"
+              contain
+              :height="$vuetify.display.xs ? '250' : $vuetify.display.smAndDown ? '320' : $vuetify.display.mdAndDown ? '350' : '450'"
+              :width="$vuetify.display.xs ? '250' : $vuetify.display.smAndDown ? '320' : $vuetify.display.mdAndDown ? '350' : '450'"
+              class="transform-scale transition-transform rounded-lg"
+              :style="{ 
+                transform: 'scale(1.05)',
+                filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2))'
+              }"
+            ></v-img>
+          </v-col>
+        </v-row>
+      </v-container>
+
+      <!-- Generated Properties Card -->
+      <v-card 
+        class="mt-6 mx-auto rounded-lg overflow-hidden" 
+        max-width="1400px"
+        :style="{ 
+          borderLeft: '4px solid',
+          borderLeftColor: dominantColor 
+        }"
+        elevation="4"
+      >
+        <v-card-title 
+          class="py-4 px-6"
+          :style="{ backgroundColor: dominantColor, color: 'white' }"
+        >
+          <span class="text-h5 font-weight-medium">Eigenschaften</span>
+        </v-card-title>
+        <v-card-text class="pa-4">
+          <v-row>
+            <v-col cols="12" sm="6">
+              <div class="d-flex flex-column mb-4">
+                <span class="text-caption font-weight-bold text-medium-emphasis mb-1">ID:</span>
+                <span class="text-body-1">{{ character.id || 'Nicht verfügbar' }}</span>
               </div>
             </v-col>
-            
-            <!-- Fantasy Character Image Container - nur einfaches v-img ohne v-card -->
-            <v-col cols="12" md="6" class="d-flex justify-center">
-              <v-img
-                :src="character.imageUrl"
-                @load="extractColorFromImage"
-                contain
-                :height="$vuetify.display.xs ? '250' : $vuetify.display.smAndDown ? '320' : $vuetify.display.mdAndDown ? '350' : '450'"
-                :width="$vuetify.display.xs ? '250' : $vuetify.display.smAndDown ? '320' : $vuetify.display.mdAndDown ? '350' : '450'"
-                class="transform-scale transition-transform rounded-lg"
-                :style="{ 
-                  transform: 'scale(1.05)',
-                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2))'
-                }"
-              ></v-img>
+            <v-col cols="12" sm="6">
+              <div class="d-flex flex-column mb-4">
+                <span class="text-caption font-weight-bold text-medium-emphasis mb-1">Erstellt am:</span>
+                <span class="text-body-1">{{ formatDate(character.createdAt) }}</span>
+              </div>
             </v-col>
           </v-row>
-        </v-container>
-
-        <!-- Generated Properties Card -->
-        <v-card 
-          class="mt-6 mx-auto rounded-lg overflow-hidden" 
-          max-width="1400px"
-          :style="{ 
-            borderLeft: '4px solid',
-            borderLeftColor: dominantColor 
-          }"
-          elevation="4"
-        >
-          <v-card-title 
-            class="py-4 px-6"
-            :style="{ backgroundColor: dominantColor, color: 'white' }"
-          >
-            <span class="text-h5 font-weight-medium">Eigenschaften</span>
-          </v-card-title>
-          <v-card-text class="pa-4">
-            <v-row>
-              <v-col cols="12" sm="6">
-                <div class="d-flex flex-column mb-4">
-                  <span class="text-caption font-weight-bold text-medium-emphasis mb-1">ID:</span>
-                  <span class="text-body-1">{{ character.id || 'Nicht verfügbar' }}</span>
-                </div>
-              </v-col>
-              <v-col cols="12" sm="6">
-                <div class="d-flex flex-column mb-4">
-                  <span class="text-caption font-weight-bold text-medium-emphasis mb-1">Erstellt am:</span>
-                  <span class="text-body-1">{{ formatDate(character.createdAt) }}</span>
-                </div>
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
-      </div>
-    </template>
+        </v-card-text>
+      </v-card>
+    </div>
 
     <div v-else class="d-flex flex-column align-center justify-center pa-8" style="min-height: 50vh">
       <v-alert
@@ -393,6 +410,258 @@ onMounted(() => {
     }
   });
 });
+
+// Object to store extracted fantasy character properties
+const extractedProperties = ref({
+  baseAnimal: '',
+  elementType: '',
+  dominantColor: '',
+  styleType: '',
+  traits: [] as string[]
+});
+
+// Define known properties and their patterns for extraction from prompt
+const propertyPatterns = {
+  baseAnimal: [
+    /a\s+([\w-]+\s+\([^)]+\)|\w+)\s*,\s*with/i,
+    /a\s+magical\s+fantasy\s+character\s+that\s+is\s+a\s+([\w-]+\s+\([^)]+\)|\w+)/i
+  ],
+  elementType: [
+    /with\s+(\w+)\s+powers/i
+  ],
+  dominantColor: [
+    /predominantly\s+(\w+)\s+in\s+color/i
+  ],
+  styleType: [
+    /in\s+the\s+style\s+of\s+(\w+)/i,
+    /designed\s+in\s+the\s+style\s+of\s+(\w+)/i
+  ]
+};
+
+// Watch for character changes to extract properties
+watch(cleanedPrompt, (newPrompt) => {
+  if (newPrompt) {
+    extractPropertiesFromPrompt(newPrompt);
+  }
+});
+
+// Extract properties from prompt text
+function extractPropertiesFromPrompt(prompt: string) {
+  // Make sure we have a valid prompt string
+  if (!prompt) {
+    extractedProperties.value = {
+      baseAnimal: '',
+      elementType: '',
+      dominantColor: '',
+      styleType: '',
+      traits: []
+    };
+    return;
+  }
+
+  try {
+    // Reset extracted properties
+    extractedProperties.value = {
+      baseAnimal: '',
+      elementType: '',
+      dominantColor: '',
+      styleType: '',
+      traits: []
+    };
+
+    // Try to extract base animal
+    for (const pattern of propertyPatterns.baseAnimal) {
+      const match = prompt.match(pattern);
+      if (match && match[1]) {
+        extractedProperties.value.baseAnimal = match[1].toUpperCase();
+        break;
+      }
+    }
+
+    // Extract from keywords if no match was found
+    if (!extractedProperties.value.baseAnimal) {
+      const animalKeywords = {
+        'deer': 'DEER',
+        'cat': 'CAT',
+        'fox': 'FOX', 
+        'bird': 'BIRD',
+        'lizard': 'LIZARD',
+        'frog': 'FROG',
+        'snake': 'SNAKE',
+        'horse': 'HORSE',
+        'turtle': 'TURTLE',
+        'eagle': 'EAGLE',
+        'lion': 'LION',
+        'dragon': 'LIZARD',
+        'phoenix': 'BIRD'
+      };
+      
+      const promptLower = prompt.toLowerCase();
+      for (const [keyword, value] of Object.entries(animalKeywords)) {
+        if (promptLower.includes(keyword)) {
+          extractedProperties.value.baseAnimal = value;
+          break;
+        }
+      }
+    }
+
+    // Try to extract element type
+    for (const pattern of propertyPatterns.elementType) {
+      const match = prompt.match(pattern);
+      if (match && match[1]) {
+        extractedProperties.value.elementType = match[1].toUpperCase();
+        break;
+      }
+    }
+
+    // Extract from keywords if no match was found
+    if (!extractedProperties.value.elementType) {
+      const elementKeywords = {
+        'fire': 'FIRE',
+        'water': 'WATER',
+        'earth': 'EARTH',
+        'wind': 'WIND',
+        'electric': 'ELECTRIC',
+        'ice': 'ICE',
+        'nature': 'NATURE',
+        'shadow': 'SHADOW',
+        'light': 'LIGHT',
+        'poison': 'POISON'
+      };
+      
+      const promptLower = prompt.toLowerCase();
+      for (const [keyword, value] of Object.entries(elementKeywords)) {
+        if (promptLower.includes(keyword)) {
+          extractedProperties.value.elementType = value;
+          break;
+        }
+      }
+    }
+
+    // Try to extract dominant color
+    for (const pattern of propertyPatterns.dominantColor) {
+      const match = prompt.match(pattern);
+      if (match && match[1]) {
+        extractedProperties.value.dominantColor = match[1].toUpperCase();
+        break;
+      }
+    }
+
+    // Extract from keywords if no match was found
+    if (!extractedProperties.value.dominantColor) {
+      const colorKeywords = {
+        'red': 'RED',
+        'blue': 'BLUE',
+        'green': 'GREEN',
+        'yellow': 'YELLOW',
+        'purple': 'PURPLE',
+        'orange': 'ORANGE', 
+        'black': 'BLACK',
+        'white': 'WHITE',
+        'pink': 'PINK',
+        'brown': 'BROWN'
+      };
+      
+      const promptLower = prompt.toLowerCase();
+      for (const [keyword, value] of Object.entries(colorKeywords)) {
+        if (promptLower.includes(keyword)) {
+          extractedProperties.value.dominantColor = value;
+          break;
+        }
+      }
+    }
+
+    // Try to extract style type
+    for (const pattern of propertyPatterns.styleType) {
+      const match = prompt.match(pattern);
+      if (match && match[1]) {
+        extractedProperties.value.styleType = match[1].toUpperCase();
+        break;
+      }
+    }
+
+    // Extract from keywords if no match was found
+    if (!extractedProperties.value.styleType) {
+      const styleKeywords = {
+        'disney': 'DISNEY',
+        'pixar': 'PIXAR',
+        'pokemon': 'POKEMON',
+        'ghibli': 'STUDIO_GHIBLI',
+        'dreamworks': 'DREAMWORKS'
+      };
+      
+      const promptLower = prompt.toLowerCase();
+      for (const [keyword, value] of Object.entries(styleKeywords)) {
+        if (promptLower.includes(keyword)) {
+          extractedProperties.value.styleType = value;
+          break;
+        }
+      }
+    }
+
+    // Try to extract traits
+    const traitOptions = ['CUTE', 'SCARY', 'MYSTERIOUS', 'MAJESTIC', 'FUNNY', 'SMALL', 'GIANT', 'BABY', 'ELDER'];
+    extractedProperties.value.traits = traitOptions.filter(trait => 
+      prompt.toLowerCase().includes(trait.toLowerCase())
+    );
+  } catch (error) {
+    console.error('Error extracting properties from prompt:', error);
+    // Ensure we have default values in case of error
+    extractedProperties.value = {
+      baseAnimal: '',
+      elementType: '',
+      dominantColor: '',
+      styleType: '',
+      traits: []
+    };
+  }
+}
+
+// Get color for each property type
+function getPropertyColor(propertyType: string): string {
+  const colorMap: Record<string, string> = {
+    'baseAnimal': '#A8A878', // Normal (like the Pokemon normal type)
+    'elementType': '#F08030', // Fire-like color
+    'dominantColor': '#6890F0', // Water-like color
+    'styleType': '#78C850', // Grass-like color
+    'trait': '#A040A0' // Poison-like color for traits
+  };
+
+  // Element-specific colors
+  const elementColors: Record<string, string> = {
+    'FIRE': '#F08030',     // Fire color
+    'WATER': '#6890F0',    // Water color
+    'EARTH': '#E0C068',    // Ground color
+    'WIND': '#A890F0',     // Flying color
+    'ELECTRIC': '#F8D030', // Electric color
+    'ICE': '#98D8D8',      // Ice color
+    'NATURE': '#78C850',   // Grass color
+    'SHADOW': '#705848',   // Dark color
+    'LIGHT': '#F8D030',    // Yellow/light color
+    'POISON': '#A040A0'    // Poison color
+  };
+
+  // If it's elementType and we have a specific color for it
+  if (propertyType === 'elementType' && extractedProperties.value.elementType && 
+      elementColors[extractedProperties.value.elementType]) {
+    return elementColors[extractedProperties.value.elementType];
+  }
+
+  return colorMap[propertyType] || '#705898'; // Default to ghost-like color if not found
+}
+
+// Initial extraction when character loads
+watch(character, (newCharacter) => {
+  if (newCharacter && newCharacter.prompt) {
+    extractPropertiesFromPrompt(newCharacter.prompt);
+  }
+}, { immediate: true });
+
+// Get simple animal name without parentheses
+function getSimpleAnimalName(animalName: string): string {
+  // Remove the part in parentheses if it exists
+  return animalName.split('(')[0].trim();
+}
 </script>
 
 <style scoped>
