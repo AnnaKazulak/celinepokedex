@@ -105,7 +105,7 @@
       </div>
       
       <!-- Footer mit Aktionen -->
-      <div :class="$style.fantasyFooter" class="d-flex justify-center align-center py-4 px-6" style="background: #6890F0">
+      <div :class="$style.fantasyFooter" class="d-flex justify-center align-center py-4 px-6">
         <div class="d-flex w-100 justify-center">
           <v-spacer></v-spacer>
           <v-btn 
@@ -308,6 +308,7 @@ const updateCharacter = async () => {
 .fantasyFooter {
   color: white;
   transition: background-color 0.5s ease;
+  background: linear-gradient(135deg, #6890F0 0%, #705898 100%);
 }
 
 .saveBtn {
