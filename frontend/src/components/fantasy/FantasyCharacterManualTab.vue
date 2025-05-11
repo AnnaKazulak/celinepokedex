@@ -1,80 +1,91 @@
 <template>
   <div class="pa-4 fantasy-tab-container">
-    <!-- Image display -->
-    <div v-if="manualImageUrl" class="d-flex justify-center my-5">
-      <v-img
-        :src="manualImageUrl"
-        max-width="240"
-        max-height="240"
-        class="rounded-lg elevation-8"
-        contain
-      ></v-img>
-    </div>
-    
-    <v-form @submit.prevent="onSaveCharacter" class="mt-2">
-      <!-- Character Name Input -->
-      <v-text-field
-        v-model="characterName"
-        label="Name des Charakters"
-        variant="underlined"
-        density="compact"
-        required
-        :rules="[v => !!v || 'Name wird benötigt']"
-      ></v-text-field>
-
-      <!-- Character Description Input -->
-      <v-textarea
-        v-model="characterDescription"
-        label="Beschreibe deinen Fantasy-Charakter"
-        rows="3"
-        auto-grow
-        variant="underlined"
-        density="compact"
-        required
-        :rules="[v => !!v || 'Beschreibung wird benötigt']"
-      ></v-textarea>
-      
-      <!-- Image Upload -->
-      <v-card class="mt-4 bg-grey-lighten-5" variant="outlined" rounded="lg" flat>
-        <v-card-text>
-          <v-file-input
-            v-model="imageFile"
-            label="Bild hochladen"
-            accept="image/*"
+    <v-row>
+      <v-col cols="12" md="6">
+        <v-form @submit.prevent="onSaveCharacter">
+          <!-- Character Name Input -->
+          <v-text-field
+            v-model="characterName"
+            label="Name des Charakters"
             variant="underlined"
             density="compact"
-            prepend-icon="mdi-camera"
-            :rules="[v => !!manualImageUrl || !!v || 'Bild wird benötigt']"
-            @update:model-value="handleImageFileChange"
-          ></v-file-input>
+            required
+            :rules="[v => !!v || 'Name wird benötigt']"
+          ></v-text-field>
 
-          <div class="text-caption mt-2">
-            Unterstützt werden JPG, PNG, GIF und WebP. Maximal 5MB.
+          <!-- Character Description Input -->
+          <v-textarea
+            v-model="characterDescription"
+            label="Beschreibe deinen Fantasy-Charakter"
+            rows="3"
+            auto-grow
+            variant="underlined"
+            density="compact"
+            required
+            :rules="[v => !!v || 'Beschreibung wird benötigt']"
+          ></v-textarea>
+          
+          <!-- Image Upload -->
+          <v-card class="mt-4 bg-grey-lighten-5" variant="outlined" rounded="lg" flat>
+            <v-card-text>
+              <v-file-input
+                v-model="imageFile"
+                label="Bild hochladen"
+                accept="image/*"
+                variant="underlined"
+                density="compact"
+                prepend-icon="mdi-camera"
+                :rules="[v => !!manualImageUrl || !!v || 'Bild wird benötigt']"
+                @update:model-value="handleImageFileChange"
+              ></v-file-input>
+
+              <div class="text-caption mt-2">
+                Unterstützt werden JPG, PNG, GIF und WebP. Maximal 5MB.
+              </div>
+            </v-card-text>
+          </v-card>
+          
+          <div class="d-flex justify-center mt-4">
+            <v-btn
+              color="primary"
+              min-width="200"
+              height="44"
+              type="submit"
+              :disabled="!isFormValid || isSaving"
+              :loading="isSaving"
+              class="text-none font-weight-medium elevation-2"
+            >
+              Charakter speichern
+            </v-btn>
           </div>
-        </v-card-text>
-      </v-card>
-      
-      <div class="d-flex justify-center mt-4">
-        <v-btn
-          color="primary"
-          min-width="200"
-          height="44"
-          type="submit"
-          :disabled="!isFormValid || isSaving"
-          :loading="isSaving"
-          class="text-none font-weight-medium elevation-2"
-        >
-          Charakter speichern
-        </v-btn>
-      </div>
 
-      <!-- Error message -->
-      <div v-if="error" class="mt-4">
-        <v-alert type="error" variant="tonal" closable>
-          {{ error }}
-        </v-alert>
-      </div>
-    </v-form>
+          <!-- Error message -->
+          <div v-if="error" class="mt-4">
+            <v-alert type="error" variant="tonal" closable>
+              {{ error }}
+            </v-alert>
+          </div>
+        </v-form>
+      </v-col>
+      
+      <v-col cols="12" md="6" class="d-flex align-center">
+        <div v-if="manualImageUrl" class="text-center w-100">
+          <v-img
+            :src="manualImageUrl"
+            max-width="240"
+            max-height="240"
+            class="rounded-lg elevation-8 mx-auto mb-3"
+            contain
+          ></v-img>
+          <p v-if="characterName" class="text-caption mt-2">{{ characterName }}</p>
+        </div>
+        
+        <div v-else class="text-center w-100">
+          <v-icon size="64" color="grey-lighten-1">mdi-image-outline</v-icon>
+          <div class="mt-2 text-medium-emphasis">Bild hochladen, um deinen Charakter zu erstellen</div>
+        </div>
+      </v-col>
+    </v-row>
 
     <!-- Spacer to maintain minimum height -->
     <div class="flex-grow-1 min-height-spacer"></div>
