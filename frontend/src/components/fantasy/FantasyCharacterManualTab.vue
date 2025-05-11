@@ -47,22 +47,64 @@
             :rules="[v => !!v || 'Beschreibung wird benötigt']"
           ></v-textarea>
           
-          <!-- Image Upload -->
-          <v-card class="mt-4 bg-grey-lighten-5" variant="outlined" rounded="lg" flat>
-            <v-card-text>
-              <v-file-input
-                v-model="imageFile"
-                label="Bild hochladen"
-                accept="image/*"
-                variant="underlined"
-                density="compact"
-                prepend-icon="mdi-camera"
-                :rules="[v => !!manualImageUrl || !!v || 'Bild wird benötigt']"
-                @update:model-value="handleImageFileChange"
-              ></v-file-input>
+          <!-- Image Upload mit Drag & Drop -->
+          <v-card class="mt-4 bg-grey-lighten-5 upload-zone" variant="outlined" rounded="lg" flat>
+            <v-card-text class="pa-2">
+              <div 
+                class="dropzone-container compact" 
+                @dragover.prevent="isDragging = true"
+                @dragleave.prevent="isDragging = false"
+                @drop.prevent="handleFileDrop"
+                :class="{ 'dropzone-dragging': isDragging }"
+              >
+                <div class="upload-content text-center">
+                  <v-icon size="32" class="mb-1" :color="manualImageUrl ? 'primary' : 'grey-lighten-1'">
+                    {{ manualImageUrl ? 'mdi-check-circle' : 'mdi-cloud-upload' }}
+                  </v-icon>
+                  
+                  <div v-if="!manualImageUrl" class="upload-text">
+                    <div class="text-body-2 font-weight-medium">Bild hierher ziehen</div>
+                    <div class="text-caption text-medium-emphasis">oder</div>
+                    <v-btn 
+                      class="mt-1" 
+                      color="primary" 
+                      variant="tonal"
+                      size="small"
+                      density="comfortable"
+                      @click="triggerFileInput"
+                    >
+                      Bild auswählen
+                    </v-btn>
+                  </div>
+                  
+                  <div v-else class="upload-text">
+                    <div class="text-caption">{{ imageFile?.name || 'Bild hochgeladen' }}</div>
+                    <v-btn
+                      class="mt-1" 
+                      color="grey-darken-1" 
+                      size="x-small"
+                      variant="text"
+                      @click="resetImage"
+                    >
+                      Ändern
+                    </v-btn>
+                  </div>
 
-              <div class="text-caption mt-2">
-                Unterstützt werden JPG, PNG, GIF und WebP. Maximal 5MB.
+                  <!-- Versteckter File Input -->
+                  <v-file-input
+                    ref="fileInput"
+                    v-model="imageFile"
+                    class="d-none"
+                    accept="image/*"
+                    :rules="[v => !!manualImageUrl || !!v || 'Bild wird benötigt']"
+                    @update:model-value="handleImageFileChange"
+                  ></v-file-input>
+                </div>
+              </div>
+
+              <div class="text-caption mt-1 ps-1">
+                <v-icon size="x-small" class="me-1">mdi-information-outline</v-icon>
+                JPG, PNG, GIF, WebP. Max 5MB.
               </div>
             </v-card-text>
           </v-card>
@@ -148,6 +190,7 @@ const characterDescription = ref(props.characterDescription);
 const baseAnimal = ref(props.baseAnimal || '');
 const elementType = ref(props.elementType || '');
 const imageFile = ref<File | null>(null);
+const isDragging = ref(false);
 
 // Default options for selects if not provided
 const baseAnimalOptions = props.baseAnimalOptions || [
@@ -222,6 +265,26 @@ const handleImageFileChange = (file: File | null) => {
   emit('update:imageFile', file);
 };
 
+const handleFileDrop = (event: DragEvent) => {
+  const files = event.dataTransfer?.files;
+  if (files && files.length > 0) {
+    handleImageFileChange(files[0]);
+  }
+  isDragging.value = false;
+};
+
+const triggerFileInput = () => {
+  const fileInput = document.querySelector<HTMLInputElement>('.upload-zone input[type="file"]');
+  if (fileInput) {
+    fileInput.click();
+  }
+};
+
+const resetImage = () => {
+  imageFile.value = null;
+  emit('update:manualImageUrl', '');
+};
+
 const onSaveCharacter = () => {
   if (!isFormValid.value || props.isSaving) return;
   emit('save-character');
@@ -237,5 +300,40 @@ const onSaveCharacter = () => {
 
 .min-height-spacer {
   min-height: 20px;
+}
+
+.upload-zone {
+  position: relative;
+  overflow: hidden;
+}
+
+.dropzone-container {
+  border: 2px dashed var(--v-theme-on-surface);
+  border-radius: var(--v-border-radius-lg);
+  padding: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.dropzone-container.compact {
+  padding: 12px 8px;
+  min-height: 120px;
+}
+
+.dropzone-dragging {
+  background-color: var(--v-theme-primary-lighten-5);
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.upload-text {
+  margin-top: 10px;
+}
+
+.compact .upload-text {
+  margin-top: 4px;
 }
 </style>
