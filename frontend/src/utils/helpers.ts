@@ -63,6 +63,31 @@ export function cleanText(text: string): string {
 }
 
 /**
+ * Cleans fantasy character description by truncating to a maximum length and adding ellipsis
+ * @param description The original description/prompt text
+ * @param maxLength Maximum length of the description (default: 100 characters)
+ * @returns The cleaned and truncated description text
+ */
+export function cleanFantasyDescription(description: string, maxLength: number = 100): string {
+  if (!description) return '';
+  
+  // Clean the text first
+  let cleanedText = cleanText(description);
+  
+  // Truncate to maxLength characters if needed
+  if (cleanedText.length > maxLength) {
+    // Find the last complete word within the maxLength limit
+    const lastSpaceIndex = cleanedText.lastIndexOf(' ', maxLength);
+    const truncateIndex = lastSpaceIndex > 0 ? lastSpaceIndex : maxLength;
+    
+    // Truncate and add ellipsis
+    cleanedText = cleanedText.substring(0, truncateIndex) + '...';
+  }
+  
+  return cleanedText;
+}
+
+/**
  * Übersetzt den englischen Pokémon-Typ in die deutsche Version
  */
 export const translatePokemonType = (englishType: string): string | null => {

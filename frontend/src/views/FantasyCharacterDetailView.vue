@@ -52,7 +52,7 @@
                 <p class="text-body-1 mb-4 white-space-pre-line" 
                   :class="{'text-body-2': $vuetify.display.xs}"
                   style="line-height: 1.6; color: rgba(0, 0, 0, 0.8);">
-                  {{ character.prompt }}
+                  {{ cleanedPrompt }}
                 </p>
                 
                 <div class="d-flex flex-wrap gap-2" :class="{'justify-center': $vuetify.display.smAndDown}">
@@ -206,6 +206,7 @@ import axios from 'axios';
 import { type FantasyCharacter } from '@/types/pokemon';
 import { eventBus } from '@/utils/eventBus';
 import { extractDominantColor } from '@/utils/colorUtils';
+import { cleanFantasyDescription } from '@/utils/helpers';
 import FantasyCharacterEditDialog from '@/components/FantasyCharacterEditDialog.vue';
 
 // Disable automatic attribute inheritance
@@ -228,6 +229,11 @@ const isDeleting = ref(false); // State-Variable für den Löschvorgang
 // Character ID aus der URL lesen
 const characterId = computed(() => {
   return route.params.id as string;
+});
+
+// Computed property for the full prompt text (not truncated)
+const cleanedPrompt = computed(() => {
+  return character.value ? character.value.prompt : '';
 });
 
 onMounted(async () => {

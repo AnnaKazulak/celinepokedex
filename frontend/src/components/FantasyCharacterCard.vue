@@ -21,7 +21,7 @@
           <div class="fantasy-title">{{ character.name || 'Fantasy Character' }}</div>
           
           <div class="description">
-            {{ character.prompt }}
+            {{ cleanedPrompt }}
           </div>
         </div>
 
@@ -46,10 +46,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { extractDominantColor } from '../utils/colorUtils';
 import { eventBus } from '../utils/eventBus';
+import { cleanFantasyDescription } from '../utils/helpers';
 import { type FantasyCharacter } from '../types/pokemon';
 
 const props = defineProps<{
@@ -59,6 +60,11 @@ const props = defineProps<{
 const router = useRouter();
 const dominantColor = ref('#6890F0'); // Default fantasy color (water pokemon)
 const cardElement = ref<HTMLElement | null>(null);
+
+// Computed property for cleaned prompt text
+const cleanedPrompt = computed(() => {
+  return cleanFantasyDescription(props.character.prompt);
+});
 
 // Extract the dominant color from the fantasy character image
 async function extractColorFromImage() {
