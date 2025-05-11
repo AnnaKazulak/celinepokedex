@@ -26,9 +26,9 @@
       </div>
       
       <!-- Fantasy Character Generator button -->
-      <div v-if="contentType === 'fantasy' || contentType === 'all'" class="mb-4">
+      <!-- <div v-if="contentType === 'fantasy' || contentType === 'all'" class="mb-4">
         <FantasyCharacterGenerator @character-created="handleNewFantasyCharacter" />
-      </div>
+      </div> -->
       
       <!-- Suchfeld-Komponente -->
       <SearchBar

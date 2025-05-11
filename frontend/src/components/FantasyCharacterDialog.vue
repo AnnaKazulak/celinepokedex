@@ -1,30 +1,32 @@
 <template>
   <v-dialog 
     v-model="dialogVisible" 
-    max-width="800px"
+    max-width="800"
     content-class="fantasy-dialog-wrapper"
   >
-    <v-card class="fantasy-main-card" :class="{'has-image': generatedImageUrl || (activeTab === 'manual' && manualImageUrl)}">
-      <!-- Title first - ganz oben -->
-      <v-card-title class="dialog-title">
+    <v-card class="rounded-lg overflow-hidden" :class="{'has-image': shouldShowImage}">
+      <!-- Title header -->
+      <v-card-title class="text-center text-white py-4 bg-gradient">
         Create Fantasy Character
+        
+        <v-btn
+          icon
+          variant="text"
+          color="white"
+          @click="closeDialog"
+          size="small"
+          class="dialog-close-btn"
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
       </v-card-title>
-
-      <!-- Close-Button nach rechts oben positioniert -->
-      <v-btn
-        icon
-        @click="closeDialog"
-        class="close-btn"
-      >
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
       
       <!-- Tabs for selection -->
       <v-tabs
         v-model="activeTab"
         centered
         color="primary"
-        class="fantasy-tabs"
+        class="bg-primary-lighten-4"
       >
         <v-tab value="ai">KI-Generierung</v-tab>
         <v-tab value="manual">Manuell erstellen</v-tab>
@@ -35,325 +37,80 @@
       <v-window v-model="activeTab" class="card-content">
         <!-- AI Generation Tab -->
         <v-window-item value="ai">
-          <div class="card-header">
-            <!-- Schwebendes Bild etwas nach unten versetzt -->
-            <div v-if="generatedImageUrl" class="floating-image-container">
-              <v-img
-                :src="generatedImageUrl"
-                class="fantasy-floating-image"
-                contain
-              ></v-img>
-            </div>
-            
-            <!-- Beschreibung unter dem Bild, außerhalb des Footers -->
-            <div v-if="generatedImageUrl && !isGenerating" class="character-description">
-              <p class="description-text">{{ prompt }}</p>
-            </div>
-            
-            <div class="level-text"></div>
-            
-            <v-form @submit.prevent="generateImage">
-              <!-- Eingabefeld nur anzeigen, wenn kein Bild generiert wurde -->
-              <div v-if="!generatedImageUrl || isGenerating" class="fantasy-form">
-                <div class="form-section">
-                  <v-textarea
-                    v-model="prompt"
-                    label="Beschreibe deinen Fantasy-Charakter"
-                    hint="Je detaillierter die Beschreibung, desto besser das Ergebnis"
-                    rows="3"
-                    auto-grow
-                    counter
-                    variant="underlined"
-                    density="compact"
-                    :disabled="isGenerating"
-                  ></v-textarea>
-                  
-                  <div class="text-center mt-4 mb-4">
-                    <v-btn 
-                      color="primary" 
-                      :loading="isGenerating"
-                      :disabled="!prompt || isGenerating"
-                      @click="generateImage"
-                      class="generate-btn"
-                    >
-                      {{ isGenerating ? 'Generiere...' : 'Charakter erstellen' }}
-                    </v-btn>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Einfacherer Ladebildschirm, der garantiert sichtbar ist -->
-              <v-card v-if="isGenerating" class="mt-4 mb-4 pa-4 loading-status" variant="outlined">
-                <div class="text-center">
-                  <v-icon size="x-large" color="primary" class="mb-3">mdi-creation</v-icon>
-                  <h3 class="text-h6 mb-2">Dein Fantasy-Charakter wird erstellt</h3>
-                  <p class="text-body-2 mb-4">Die KI arbeitet an deinem einzigartigen Charakter...</p>
-                  
-                  <v-progress-linear
-                    indeterminate
-                    color="primary"
-                    class="mb-3"
-                    height="6"
-                    rounded
-                  ></v-progress-linear>
-                  
-                  <!-- Vereinfachte Schrittanzeige -->
-                  <div class="d-flex justify-space-between mb-2">
-                    <v-chip
-                      size="small"
-                      :color="loadingStep >= 1 ? 'primary' : 'grey-lighten-1'" 
-                      :variant="loadingStep >= 1 ? 'elevated' : 'flat'"
-                    >
-                      <v-icon size="x-small" start>mdi-pencil</v-icon>Analysieren
-                    </v-chip>
-                    <v-chip
-                      size="small"
-                      :color="loadingStep >= 2 ? 'primary' : 'grey-lighten-1'"
-                      :variant="loadingStep >= 2 ? 'elevated' : 'flat'"
-                    >
-                      <v-icon size="x-small" start>mdi-brush</v-icon>Zeichnen
-                    </v-chip>
-                    <v-chip
-                      size="small"
-                      :color="loadingStep >= 3 ? 'primary' : 'grey-lighten-1'"
-                      :variant="loadingStep >= 3 ? 'elevated' : 'flat'"
-                    >
-                      <v-icon size="x-small" start>mdi-palette</v-icon>Details
-                    </v-chip>
-                    <v-chip
-                      size="small"
-                      :color="loadingStep >= 4 ? 'primary' : 'grey-lighten-1'"
-                      :variant="loadingStep >= 4 ? 'elevated' : 'flat'"
-                    >
-                      <v-icon size="x-small" start>mdi-image</v-icon>Fertigstellen
-                    </v-chip>
-                  </div>
-                  <p class="text-caption mt-3">Dieser Vorgang kann 15-30 Sekunden dauern</p>
-                </div>
-              </v-card>
-              
-              <div v-if="error" class="error-message mt-4">
-                <v-alert type="error" dismissible>
-                  {{ error }}
-                </v-alert>
-              </div>
-            </v-form>
-          </div>
+          <fantasy-character-a-i-tab
+            :prompt="prompt"
+            :is-generating="isGenerating"
+            :generated-image-url="generatedImageUrl"
+            :error="error"
+            :loading-step="loadingStep"
+            @update:prompt="prompt = $event"
+            @update:error="error = $event"
+            @generate="generateImage"
+          />
         </v-window-item>
 
         <!-- Manual Creation Tab -->
         <v-window-item value="manual">
-          <div class="card-header">
-            <!-- Manual Image Display -->
-            <div v-if="manualImageUrl" class="floating-image-container">
-              <v-img
-                :src="manualImageUrl"
-                class="fantasy-floating-image"
-                contain
-              ></v-img>
-            </div>
-            
-            <v-form @submit.prevent="saveManualCharacter" class="manual-form">
-              <!-- Character Name Input -->
-              <v-text-field
-                v-model="manualCharacterName"
-                label="Name des Charakters"
-                variant="underlined"
-                density="compact"
-                required
-                :rules="[v => !!v || 'Name wird benötigt']"
-              ></v-text-field>
-
-              <!-- Character Description Input -->
-              <v-textarea
-                v-model="manualCharacterDescription"
-                label="Beschreibe deinen Fantasy-Charakter"
-                rows="3"
-                auto-grow
-                variant="underlined"
-                density="compact"
-                required
-                :rules="[v => !!v || 'Beschreibung wird benötigt']"
-              ></v-textarea>
-              
-              <!-- Image Upload -->
-              <div class="image-upload-section mt-4">
-                <v-file-input
-                  v-model="imageFile"
-                  label="Bild hochladen"
-                  accept="image/*"
-                  variant="underlined"
-                  density="compact"
-                  prepend-icon="mdi-camera"
-                  :rules="[v => !!manualImageUrl || !!v || 'Bild wird benötigt']"
-                  @update:model-value="handleImageFileChange"
-                ></v-file-input>
-
-                <div class="text-caption mt-2">
-                  Unterstützt werden JPG, PNG, GIF und WebP. Maximal 5MB.
-                </div>
-                
-                <div class="text-center mt-4">
-                  <v-btn
-                    color="primary"
-                    class="generate-btn"
-                    type="submit"
-                    :disabled="!isManualFormValid || isManualSaving"
-                    :loading="isManualSaving"
-                  >
-                    Charakter speichern
-                  </v-btn>
-                </div>
-              </div>
-
-              <div v-if="manualError" class="error-message mt-4">
-                <v-alert type="error" dismissible>
-                  {{ manualError }}
-                </v-alert>
-              </div>
-            </v-form>
-          </div>
+          <fantasy-character-manual-tab
+            :character-name="manualCharacterName"
+            :character-description="manualCharacterDescription"
+            :manual-image-url="manualImageUrl"
+            :is-saving="isManualSaving"
+            :error="manualError"
+            @update:character-name="manualCharacterName = $event"
+            @update:character-description="manualCharacterDescription = $event"
+            @update:manual-image-url="manualImageUrl = $event"
+            @update:image-file="imageFile = $event"
+            @update:error="manualError = $event"
+            @save-character="saveManualCharacter"
+          />
         </v-window-item>
         
-        <!-- Generator Tab (with select fields) -->
+        <!-- Generator Tab -->
         <v-window-item value="generator">
-          <div class="card-header generator-tab-content">
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="generatorBaseAnimal"
-                  :items="baseAnimalOptions"
-                  label="Base Animal"
-                  required
-                ></v-select>
-                
-                <v-select
-                  v-model="generatorElementType"
-                  :items="elementTypeOptions"
-                  label="Element Type"
-                  required
-                ></v-select>
-                
-                <v-select
-                  v-model="generatorDominantColor"
-                  :items="colorOptions"
-                  label="Dominant Color"
-                  required
-                ></v-select>
-                
-                <v-select
-                  v-model="generatorStyleType"
-                  :items="styleTypeOptions"
-                  label="Art Style"
-                  required
-                ></v-select>
-                
-                <v-select
-                  v-model="generatorTraits"
-                  :items="characterTraitOptions"
-                  label="Character Traits"
-                  multiple
-                  chips
-                ></v-select>
-                
-                <div class="text-center mt-4 mb-4">
-                  <v-btn 
-                    color="primary" 
-                    :loading="isGeneratorGenerating"
-                    :disabled="!isGeneratorFormValid || isGeneratorGenerating"
-                    @click="generateGeneratorCharacter"
-                    class="generate-btn"
-                  >
-                    {{ isGeneratorGenerating ? 'Generiere...' : 'Charakter erstellen' }}
-                  </v-btn>
-                </div>
-              </v-col>
-              
-              <v-col cols="12" md="6" class="preview-container">
-                <div v-if="isGeneratorGenerating" class="text-center">
-                  <v-progress-circular 
-                    indeterminate 
-                    color="primary"
-                    size="64"
-                  ></v-progress-circular>
-                  <div class="mt-3">Generating character...</div>
-                </div>
-                
-                <div v-else-if="generatorImageData" class="preview-image">
-                  <img :src="generatorImageData" alt="Generated character" width="100%" />
-                  <div class="mt-2 text-caption">{{ generatorGeneratedPrompt }}</div>
-                </div>
-                
-                <div v-else class="text-center preview-placeholder">
-                  <v-icon size="64">mdi-image-outline</v-icon>
-                  <div class="mt-2">Select options and generate a character</div>
-                </div>
-              </v-col>
-            </v-row>
-          </div>
-          
-          <!-- Footer for generator tab with save button (only shown when an image is generated) -->
-          <div v-if="generatorImageData" class="fantasy-footer" :style="{ background: '#6890F0' }">
-            <div class="footer-section actions">
-              <v-spacer></v-spacer>
-              <v-btn 
-                color="white" 
-                variant="text" 
-                @click="resetGeneratorForm"
-                class="cancel-btn"
-              >
-                Neuer Charakter
-              </v-btn>
-              <v-btn 
-                color="white" 
-                variant="text" 
-                @click="saveGeneratorCharacter"
-                class="save-btn"
-                :loading="isSavingGenerator"
-              >
-                <v-icon start>mdi-content-save</v-icon>
-                Speichern
-              </v-btn>
-              <v-spacer></v-spacer>
-            </div>
-          </div>
+          <fantasy-character-generator-tab
+            :base-animal="generatorBaseAnimal"
+            :element-type="generatorElementType"
+            :dominant-color="generatorDominantColor"
+            :style-type="generatorStyleType"
+            :traits="generatorTraits"
+            :image-data="generatorImageData"
+            :generated-prompt="generatorGeneratedPrompt"
+            :is-generating="isGeneratorGenerating"
+            :base-animal-options="baseAnimalOptions"
+            :element-type-options="elementTypeOptions"
+            :color-options="colorOptions"
+            :style-type-options="styleTypeOptions"
+            :character-trait-options="characterTraitOptions"
+            @update:base-animal="generatorBaseAnimal = $event"
+            @update:element-type="generatorElementType = $event"
+            @update:dominant-color="generatorDominantColor = $event"
+            @update:style-type="generatorStyleType = $event"
+            @update:traits="generatorTraits = $event"
+            @generate-character="generateGeneratorCharacter"
+          />
         </v-window-item>
       </v-window>
       
-      <!-- Footer nur mit Aktionen für AI tab -->
-      <div v-if="activeTab === 'ai' && generatedImageUrl && !isGenerating" class="fantasy-footer" :style="{ background: '#6890F0' }">
-        <div class="footer-section actions">
-          <v-spacer></v-spacer>
-          <v-btn 
-            color="white" 
-            variant="text" 
-            @click="resetForm"
-            class="cancel-btn"
-          >
-            Neuer Charakter
-          </v-btn>
-          <v-btn 
-            color="white" 
-            variant="text" 
-            @click="saveCharacter"
-            class="save-btn"
-            :loading="isSaving"
-          >
-            <v-icon start>mdi-content-save</v-icon>
-            Speichern
-          </v-btn>
-          <v-btn 
-            color="white" 
-            variant="elevated" 
-            @click="downloadImage"
-            class="download-btn"
-          >
-            <v-icon start>mdi-download</v-icon>
-            Download
-          </v-btn>
-          <v-spacer></v-spacer>
-        </div>
-      </div>
+      <!-- AI tab footer -->
+      <fantasy-character-footer 
+        v-if="activeTab === 'ai' && generatedImageUrl && !isGenerating"
+        :reset-label="'Neuer Charakter'"
+        :show-save="true"
+        :show-download="true"
+        :is-saving="isSaving"
+        @reset="resetForm"
+        @save="saveCharacter"
+        @download="downloadImage"
+      />
+
+      <!-- Generator tab footer -->
+      <fantasy-character-footer
+        v-if="activeTab === 'generator' && generatorImageData"
+        :is-saving="isSavingGenerator"
+        @reset="resetGeneratorForm"
+        @save="saveGeneratorCharacter"
+      />
     </v-card>
   </v-dialog>
 </template>
@@ -365,9 +122,12 @@ import axios from 'axios';
 import { API_ENDPOINTS } from '../utils/constants';
 import { eventBus } from '../utils/eventBus';
 import type { FantasyCharacter } from '../types/pokemon';
-import FantasyCharacterGenerator from './FantasyCharacterGenerator.vue';
+import FantasyCharacterAITab from './fantasy/FantasyCharacterAITab.vue';
+import FantasyCharacterManualTab from './fantasy/FantasyCharacterManualTab.vue';
+import FantasyCharacterGeneratorTab from './fantasy/FantasyCharacterGeneratorTab.vue';
+import FantasyCharacterFooter from './fantasy/FantasyCharacterFooter.vue';
 
-// Router initialisieren
+// Router
 const router = useRouter();
 
 // Props and emits
@@ -389,8 +149,8 @@ const prompt = ref('');
 const isGenerating = ref(false);
 const generatedImageUrl = ref('');
 const error = ref('');
-const loadingStep = ref(0); // Status für den Ladebalken-Fortschritt
-const isSaving = ref(false); // Status für den Speichervorgang
+const loadingStep = ref(0);
+const isSaving = ref(false);
 
 // Manual creation variables
 const manualCharacterName = ref('');
@@ -437,7 +197,7 @@ const characterTraitOptions = [
   'FUNNY', 'SMALL', 'GIANT', 'BABY', 'ELDER'
 ];
 
-// Fantasy transformations map - needed for backend communication
+// Fantasy transformations map
 const fantasyTransformations: Record<string, string> = {
   'CAT': 'Bakeneko (mystical cat)',
   'LIZARD': 'Dragon',
@@ -452,19 +212,11 @@ const fantasyTransformations: Record<string, string> = {
   'DEER': 'Celestial Deer (glowing antlers)'
 };
 
-// Computed property to check if manual form is valid
-const isManualFormValid = computed(() => {
-  return !!manualCharacterName.value && 
-         !!manualCharacterDescription.value && 
-         (!!imageFile.value || !!manualImageUrl.value);
-});
-
-// Computed property to check if generator form is valid
-const isGeneratorFormValid = computed(() => {
-  return !!generatorBaseAnimal.value && 
-         !!generatorElementType.value && 
-         !!generatorDominantColor.value && 
-         !!generatorStyleType.value;
+// Computed properties
+const shouldShowImage = computed(() => {
+  return generatedImageUrl.value || 
+         (activeTab.value === 'manual' && manualImageUrl.value) ||
+         (activeTab.value === 'generator' && generatorImageData.value);
 });
 
 // Watch for dialog prop changes
@@ -477,7 +229,7 @@ watch(dialogVisible, (newVal) => {
   emit('update:dialog', newVal);
 });
 
-// Close the dialog
+// Methods
 const closeDialog = () => {
   dialogVisible.value = false;
   resetForm();
@@ -485,7 +237,6 @@ const closeDialog = () => {
   resetGeneratorForm();
 };
 
-// Reset the AI form
 const resetForm = () => {
   prompt.value = '';
   generatedImageUrl.value = '';
@@ -493,7 +244,6 @@ const resetForm = () => {
   loadingStep.value = 0;
 };
 
-// Reset the manual form
 const resetManualForm = () => {
   manualCharacterName.value = '';
   manualCharacterDescription.value = '';
@@ -502,7 +252,6 @@ const resetManualForm = () => {
   manualError.value = '';
 };
 
-// Reset the generator form
 const resetGeneratorForm = () => {
   generatorBaseAnimal.value = '';
   generatorElementType.value = '';
@@ -511,32 +260,158 @@ const resetGeneratorForm = () => {
   generatorTraits.value = [];
   generatorImageData.value = '';
   generatorGeneratedPrompt.value = '';
-  isGeneratorGenerating.value = false;
-  isSavingGenerator.value = false;
 };
 
-// Handle file change for manual image upload
-const handleImageFileChange = (file: File | null) => {
-  if (!file) {
-    manualImageUrl.value = '';
+// AI Tab methods
+const generateImage = async () => {
+  if (!prompt.value || isGenerating.value) return;
+  
+  isGenerating.value = true;
+  error.value = '';
+  generatedImageUrl.value = '';
+  loadingStep.value = 0;
+  
+  // Simulate progress animation for loading steps
+  const loadingInterval = setInterval(() => {
+    if (loadingStep.value < 4) {
+      loadingStep.value++;
+    }
+  }, 3000);
+  
+  // Maximum number of retry attempts
+  const maxRetries = 2;
+  let retryCount = 0;
+  let success = false;
+  
+  while (retryCount <= maxRetries && !success) {
+    try {
+      // First step is triggered immediately
+      loadingStep.value = 1;
+      
+      if (retryCount > 0) {
+        console.log(`Retry attempt ${retryCount} of ${maxRetries}`);
+      }
+      
+      const response = await axios.post(API_ENDPOINTS.GENERATE_IMAGE, {
+        prompt: prompt.value
+      }, {
+        // Increased timeout for axios request (60 seconds)
+        timeout: 60000
+      });
+      
+      if (response.data && response.data.imageUrl) {
+        generatedImageUrl.value = response.data.imageUrl;
+        success = true;
+      } else {
+        throw new Error('No image URL returned from server');
+      }
+    } catch (err) {
+      console.error('Error generating image:', err);
+      
+      // If we've reached max retries, show error to user
+      if (retryCount === maxRetries) {
+        if (err.response) {
+          if (err.response.status === 504) {
+            error.value = `Gateway Timeout Error: The image generation server is taking too long to respond. Please try a simpler description or try again later.`;
+          } else if (err.response.data && err.response.data.error) {
+            error.value = `Error: ${err.response.data.error}`;
+          } else {
+            error.value = `Server error (${err.response.status}): Please try again later`;
+          }
+        } else if (err.request) {
+          error.value = 'No response from server. Please check if the backend is running.';
+        } else {
+          error.value = 'Failed to generate image: ' + (err.message || 'Unknown error');
+        }
+      } else {
+        retryCount++;
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+  }
+  
+  clearInterval(loadingInterval);
+  loadingStep.value = 4; // Set to the last step when done
+  isGenerating.value = false;
+};
+
+const downloadImage = () => {
+  if (!generatedImageUrl.value) return;
+  
+  // For base64 images
+  if (generatedImageUrl.value.startsWith('data:')) {
+    const link = document.createElement('a');
+    link.href = generatedImageUrl.value;
+    link.download = `fantasy-character-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     return;
   }
   
-  // Check file size (5MB limit)
-  const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-  if (file.size > maxSize) {
-    manualError.value = 'Die Datei ist zu groß. Maximale Größe: 5MB';
-    imageFile.value = null;
-    return;
-  }
-  
-  // Create URL for preview
-  manualImageUrl.value = URL.createObjectURL(file);
+  // For URL images
+  const link = document.createElement('a');
+  link.href = generatedImageUrl.value;
+  link.download = `fantasy-character-${Date.now()}.png`;
+  link.target = '_blank';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
-// Save manual character
+const saveCharacter = async () => {
+  if (!generatedImageUrl.value || isSaving.value) return;
+
+  isSaving.value = true;
+  error.value = '';
+
+  try {
+    const response = await axios.post(API_ENDPOINTS.SAVE_CHARACTER, {
+      prompt: prompt.value,
+      imageUrl: generatedImageUrl.value
+    });
+
+    if (response.data) {
+      const savedCharacter = response.data;
+      
+      dialogVisible.value = false;
+      eventBus.emit('fantasy-character-created', savedCharacter);
+      
+      if (savedCharacter.id) {
+        router.push({
+          name: 'fantasyCharacterDetail',
+          params: { id: savedCharacter.id }
+        });
+      }
+      
+      setTimeout(() => {
+        resetForm();
+      }, 300);
+    } else {
+      throw new Error('Failed to save character');
+    }
+  } catch (err) {
+    console.error('Error saving character:', err);
+
+    if (err.response) {
+      if (err.response.data && err.response.data.error) {
+        error.value = `Error: ${err.response.data.error}`;
+      } else {
+        error.value = `Server error (${err.response.status}): Please try again later`;
+      }
+    } else if (err.request) {
+      error.value = 'No response from server. Please check if the backend is running.';
+    } else {
+      error.value = 'Failed to save character: ' + (err.message || 'Unknown error');
+    }
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+// Manual Tab methods
 const saveManualCharacter = async () => {
-  if (!isManualFormValid.value || isManualSaving.value) return;
+  if (isManualSaving.value) return;
   
   isManualSaving.value = true;
   manualError.value = '';
@@ -563,7 +438,7 @@ const saveManualCharacter = async () => {
       }
     }
     
-    // Now save the character directly with the regular save endpoint
+    // Now save the character
     const response = await axios.post(API_ENDPOINTS.SAVE_CHARACTER, {
       name: manualCharacterName.value,
       prompt: manualCharacterDescription.value,
@@ -573,13 +448,9 @@ const saveManualCharacter = async () => {
     if (response.data) {
       const savedCharacter = response.data;
       
-      // Close dialog
       dialogVisible.value = false;
-      
-      // Emit via event bus for global updates
       eventBus.emit('fantasy-character-created', savedCharacter);
       
-      // Navigate to detail page
       if (savedCharacter.id) {
         router.push({
           name: 'fantasyCharacterDetail',
@@ -587,7 +458,6 @@ const saveManualCharacter = async () => {
         });
       }
       
-      // Reset form after successful save
       setTimeout(() => {
         resetManualForm();
       }, 300);
@@ -613,90 +483,8 @@ const saveManualCharacter = async () => {
   }
 };
 
-// Generate image
-const generateImage = async () => {
-  if (!prompt.value || isGenerating.value) return;
-  
-  isGenerating.value = true;
-  error.value = '';
-  generatedImageUrl.value = '';
-  loadingStep.value = 0;
-  
-  // Simuliere Fortschrittsanimation für den Ladebalken
-  const loadingInterval = setInterval(() => {
-    if (loadingStep.value < 4) {
-      loadingStep.value++;
-    }
-  }, 3000); // Alle 3 Sekunden ein neuer Schritt
-  
-  // Maximum number of retry attempts
-  const maxRetries = 2;
-  let retryCount = 0;
-  let success = false;
-  
-  while (retryCount <= maxRetries && !success) {
-    try {
-      // Erster Schritt wird direkt ausgelöst
-      loadingStep.value = 1;
-      
-      if (retryCount > 0) {
-        console.log(`Retry attempt ${retryCount} of ${maxRetries}`);
-      }
-      
-      const response = await axios.post(API_ENDPOINTS.GENERATE_IMAGE, {
-        prompt: prompt.value
-      }, {
-        // Increased timeout for axios request (60 seconds)
-        timeout: 60000
-      });
-      
-      if (response.data && response.data.imageUrl) {
-        generatedImageUrl.value = response.data.imageUrl;
-        success = true;
-      } else {
-        throw new Error('No image URL returned from server');
-      }
-    } catch (err) {
-      console.error('Error generating image:', err);
-      
-      // If we've reached max retries, show error to user
-      if (retryCount === maxRetries) {
-        // More detailed error handling
-        if (err.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          if (err.response.status === 504) {
-            error.value = `Gateway Timeout Error: The image generation server is taking too long to respond. Please try a simpler description or try again later.`;
-          } else if (err.response.data && err.response.data.error) {
-            error.value = `Error: ${err.response.data.error}`;
-          } else {
-            error.value = `Server error (${err.response.status}): Please try again later`;
-          }
-        } else if (err.request) {
-          // The request was made but no response was received
-          error.value = 'No response from server. Please check if the backend is running.';
-        } else {
-          // Something happened in setting up the request
-          error.value = 'Failed to generate image: ' + (err.message || 'Unknown error');
-        }
-      } else {
-        // If we haven't reached max retries yet, continue to next attempt
-        retryCount++;
-        // Wait a bit before retrying
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-    }
-  }
-  
-  clearInterval(loadingInterval);
-  loadingStep.value = 4; // Setze auf den letzten Schritt, falls es fertig ist
-  isGenerating.value = false;
-};
-
-// Generate character using generator
+// Generator Tab methods
 const generateGeneratorCharacter = async () => {
-  if (!isGeneratorFormValid.value || isGeneratorGenerating.value) return;
-  
   isGeneratorGenerating.value = true;
   generatorImageData.value = '';
   generatorGeneratedPrompt.value = '';
@@ -711,7 +499,7 @@ const generateGeneratorCharacter = async () => {
       dominantColor: generatorDominantColor.value,
       styleType: generatorStyleType.value,
       traits: generatorTraits.value,
-      fantasyCreature: fantasyCreature // Pass the fantasy transformation
+      fantasyCreature: fantasyCreature
     });
     
     if (response.data && response.data.imageData) {
@@ -728,7 +516,6 @@ const generateGeneratorCharacter = async () => {
   }
 };
 
-// Save the generated character from generator
 const saveGeneratorCharacter = async () => {
   if (!generatorImageData.value || isSavingGenerator.value) return;
 
@@ -743,13 +530,9 @@ const saveGeneratorCharacter = async () => {
     if (response.data) {
       const savedCharacter = response.data;
       
-      // Close dialog
       dialogVisible.value = false;
-      
-      // Only emit via event bus for global updates
       eventBus.emit('fantasy-character-created', savedCharacter);
       
-      // Navigiere zur Detail-Seite des erstellten Fantasy Characters
       if (savedCharacter.id) {
         router.push({
           name: 'fantasyCharacterDetail',
@@ -757,7 +540,6 @@ const saveGeneratorCharacter = async () => {
         });
       }
       
-      // Reset form after successful save and close
       setTimeout(() => {
         resetGeneratorForm();
       }, 300);
@@ -770,289 +552,27 @@ const saveGeneratorCharacter = async () => {
     isSavingGenerator.value = false;
   }
 };
-
-// Download the generated image
-const downloadImage = () => {
-  if (!generatedImageUrl.value) return;
-  
-  // For base64 images
-  if (generatedImageUrl.value.startsWith('data:')) {
-    const link = document.createElement('a');
-    link.href = generatedImageUrl.value;
-    link.download = `fantasy-character-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    return;
-  }
-  
-  // For URL images
-  const link = document.createElement('a');
-  link.href = generatedImageUrl.value;
-  link.download = `fantasy-character-${Date.now()}.png`;
-  link.target = '_blank';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
-// Save the character
-const saveCharacter = async () => {
-  if (!generatedImageUrl.value || isSaving.value) return;
-
-  isSaving.value = true;
-  error.value = '';
-
-  try {
-    const response = await axios.post(API_ENDPOINTS.SAVE_CHARACTER, {
-      prompt: prompt.value,
-      imageUrl: generatedImageUrl.value
-    });
-
-    if (response.data) {
-      const savedCharacter = response.data;
-      
-      // Close dialog
-      dialogVisible.value = false;
-      
-      // Only emit via event bus for global updates
-      eventBus.emit('fantasy-character-created', savedCharacter);
-      
-      // Navigiere zur Detail-Seite des erstellten Fantasy Characters
-      if (savedCharacter.id) {
-        router.push({
-          name: 'fantasyCharacterDetail',
-          params: { id: savedCharacter.id }
-        });
-      }
-      
-      // Reset form after successful save and close
-      setTimeout(() => {
-        resetForm();
-      }, 300);
-    } else {
-      throw new Error('Failed to save character');
-    }
-  } catch (err) {
-    console.error('Error saving character:', err);
-
-    if (err.response) {
-      if (err.response.data && err.response.data.error) {
-        error.value = `Error: ${err.response.data.error}`;
-      } else {
-        error.value = `Server error (${err.response.status}): Please try again later`;
-      }
-    } else if (err.request) {
-      error.value = 'No response from server. Please check if the backend is running.';
-    } else {
-      error.value = 'Failed to save character: ' + (err.message || 'Unknown error');
-    }
-  } finally {
-    isSaving.value = false;
-  }
-};
 </script>
 
 <style scoped>
-/* Styling für den Dialog selbst */
-:deep(.fantasy-dialog-wrapper) {
+.fantasy-dialog-wrapper {
   box-shadow: none;
   background: transparent;
 }
 
-/* Dialog Card mit festgelegter Höhe */
-.fantasy-main-card {
-  width: 100%;
-  max-width: 600px;
-  min-height: 520px;
-  background: white;
-  padding-top: 0;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  margin: 0 auto;
-  overflow: hidden;
-  position: relative;
-}
-
-.fantasy-main-card.has-image {
-  padding-top: 0; /* Kein Padding mehr, da Titel über dem Bild */
-}
-
-.dialog-title {
+.bg-gradient {
   background: linear-gradient(135deg, #6890F0 0%, #705898 100%);
-  color: white;
-  padding: 16px 20px;
-  position: relative;
-  z-index: 25;
-  text-align: center;
-  font-weight: 500;
-  letter-spacing: 0.5px;
 }
 
-/* Tabs styling */
-.fantasy-tabs {
-  background: rgba(104, 144, 240, 0.1);
-  border-bottom: 1px solid rgba(104, 144, 240, 0.2);
-}
-
-/* Card content container */
-.card-content {
-  flex-grow: 1;
-  overflow: auto;
-}
-
-/* Neu positionierter Close-Button */
-.close-btn {
+.dialog-close-btn {
   position: absolute;
   top: 8px;
   right: 8px;
   z-index: 30;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
 }
 
-.close-btn:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-}
-
-.floating-image-container {
-  position: relative;
-  margin: 20px auto;
-  width: 240px;
-  display: flex;
-  justify-content: center;
-  z-index: 5;
-}
-
-.fantasy-floating-image {
-  width: 240px;
-  height: 240px;
-  border-radius: 8px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
-/* Neue Styling für die Beschreibung unter dem Bild */
-.character-description {
-  text-align: center;
-  margin: 0 auto 16px;
-  max-width: 80%;
-}
-
-.description-text {
-  font-size: 0.95rem;
-  color: rgba(0, 0, 0, 0.7);
-  font-style: italic;
-  line-height: 1.4;
-}
-
-.card-header {
-  padding: 16px 24px;
+.card-content {
   flex-grow: 1;
-}
-
-.level-text {
-  font-size: 16px;
-  color: #6890F0;
-  font-weight: 600;
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-.fantasy-form, .manual-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.form-section {
-  margin-bottom: 8px;
-}
-
-.image-upload-section {
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px dashed rgba(104, 144, 240, 0.4);
-  background-color: rgba(104, 144, 240, 0.05);
-}
-
-.generate-btn {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-transform: none;
-  font-weight: 500;
-  padding: 0 24px;
-  min-width: 200px;
-  height: 44px;
-}
-
-.generate-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-.loading-status {
-  border-radius: 12px;
-  background-color: white !important;
-  position: relative;
-  z-index: 5;
-}
-
-.error-message {
-  margin-top: 16px;
-}
-
-.fantasy-footer {
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 16px 24px;
-  margin-top: auto;
-  transition: background-color 0.5s ease;
-}
-
-.footer-section {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  width: 100%;
-}
-
-.actions {
-  display: flex;
-  gap: 16px;
-}
-
-.save-btn {
-  background-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-/* Mobile Anpassungen */
-@media (max-width: 600px) {
-  .floating-image-container {
-    width: 180px;
-    margin: 15px auto;
-  }
-  
-  .fantasy-floating-image {
-    width: 180px;
-    height: 180px;
-  }
-  
-  .character-description {
-    max-width: 95%;
-    margin-bottom: 12px;
-  }
-  
-  .description-text {
-    font-size: 0.9rem;
-  }
-  
-  .fantasy-footer {
-    flex-direction: column;
-    gap: 16px;
-  }
+  overflow: auto;
 }
 </style>
