@@ -54,23 +54,23 @@
               </p>
             </div>
 
-            <!-- Fantasy Character Properties (similar to Pokemon types) -->
+            <!-- Fantasy Character Properties as Chips -->
             <div class="d-flex flex-wrap mb-4" :class="{'justify-center': $vuetify.display.smAndDown}">
               <v-chip
-                v-if="extractedProperties.baseAnimal"
+                v-if="character.baseAnimal"
                 class="mr-2 mb-2"
-                :color="getPropertyColor('baseAnimal')"
+                color="grey-darken-1"
                 text-color="white"
               >
-                {{ getSimpleAnimalName(extractedProperties.baseAnimal) }}
+                {{ formatChipText(character.baseAnimal) }}
               </v-chip>
               <v-chip
-                v-if="extractedProperties.elementType"
+                v-if="character.elementType"
                 class="mr-2 mb-2"
-                :color="getPropertyColor('elementType')"
+                :color="getElementTypeColor(character.elementType)"
                 text-color="white"
               >
-                {{ extractedProperties.elementType }}
+                {{ formatChipText(character.elementType) }}
               </v-chip>
             </div>
               
@@ -661,6 +661,29 @@ watch(character, (newCharacter) => {
 function getSimpleAnimalName(animalName: string): string {
   // Remove the part in parentheses if it exists
   return animalName.split('(')[0].trim();
+}
+
+// Helper functions for type chips
+function formatChipText(text: string): string {
+  if (!text) return '';
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+}
+
+function getElementTypeColor(elementType: string): string {
+  const typeColors: Record<string, string> = {
+    'FIRE': 'red',
+    'WATER': 'blue',
+    'EARTH': 'brown',
+    'WIND': 'teal',
+    'ELECTRIC': 'amber',
+    'ICE': 'light-blue',
+    'NATURE': 'green',
+    'SHADOW': 'deep-purple',
+    'LIGHT': 'yellow',
+    'POISON': 'purple'
+  };
+  
+  return typeColors[elementType] || 'grey';
 }
 </script>
 

@@ -18,6 +18,11 @@ public class FantasyCharacter {
 
     @Column(columnDefinition = "TEXT")
     private String imageUrl;
+    
+    // Add new fields for baseAnimal and elementType
+    private String baseAnimal;
+    
+    private String elementType;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -39,6 +44,16 @@ public class FantasyCharacter {
         this.name = name;
         this.prompt = prompt;
         this.imageUrl = imageUrl;
+        this.createdAt = LocalDateTime.now();
+    }
+    
+    // Constructor with all fields including baseAnimal and elementType
+    public FantasyCharacter(String name, String prompt, String imageUrl, String baseAnimal, String elementType) {
+        this.name = name;
+        this.prompt = prompt;
+        this.imageUrl = imageUrl;
+        this.baseAnimal = baseAnimal;
+        this.elementType = elementType;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -74,6 +89,22 @@ public class FantasyCharacter {
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
+    
+    public String getBaseAnimal() {
+        return baseAnimal;
+    }
+    
+    public void setBaseAnimal(String baseAnimal) {
+        this.baseAnimal = baseAnimal;
+    }
+    
+    public String getElementType() {
+        return elementType;
+    }
+    
+    public void setElementType(String elementType) {
+        this.elementType = elementType;
+    }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
@@ -90,6 +121,8 @@ public class FantasyCharacter {
                 ", name='" + name + '\'' +
                 ", prompt='" + prompt + '\'' +
                 ", imageUrl='" + (imageUrl != null ? imageUrl.substring(0, Math.min(30, imageUrl.length())) + "..." : null) + '\'' +
+                ", baseAnimal='" + baseAnimal + '\'' +
+                ", elementType='" + elementType + '\'' +
                 ", createdAt=" + createdAt +
                 '}';
     }

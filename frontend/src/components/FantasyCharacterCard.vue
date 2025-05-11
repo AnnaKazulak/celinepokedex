@@ -20,6 +20,29 @@
         <div class="fantasy-header">
           <div class="fantasy-title">{{ character.name || 'Fantasy Character' }}</div>
           
+          <!-- Type and Base Animal Chips -->
+          <div class="chip-container">
+            <v-chip
+              v-if="character.elementType"
+              size="small"
+              :color="getElementTypeColor(character.elementType)"
+              class="element-chip"
+              text-color="white"
+            >
+              {{ formatChipText(character.elementType) }}
+            </v-chip>
+            
+            <v-chip
+              v-if="character.baseAnimal"
+              size="small"
+              color="grey-darken-1"
+              class="animal-chip"
+              text-color="white"
+            >
+              {{ formatChipText(character.baseAnimal) }}
+            </v-chip>
+          </div>
+          
           <div class="description">
             {{ cleanedPrompt }}
           </div>
@@ -65,6 +88,29 @@ const cardElement = ref<HTMLElement | null>(null);
 const cleanedPrompt = computed(() => {
   return cleanFantasyDescription(props.character.prompt);
 });
+
+// Helper functions for type chips
+function formatChipText(text: string): string {
+  if (!text) return '';
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+}
+
+function getElementTypeColor(elementType: string): string {
+  const typeColors: Record<string, string> = {
+    'FIRE': 'red',
+    'WATER': 'blue',
+    'EARTH': 'brown',
+    'WIND': 'teal',
+    'ELECTRIC': 'amber',
+    'ICE': 'light-blue',
+    'NATURE': 'green',
+    'SHADOW': 'deep-purple',
+    'LIGHT': 'yellow',
+    'POISON': 'purple'
+  };
+  
+  return typeColors[elementType] || 'grey';
+}
 
 // Extract the dominant color from the fantasy character image
 async function extractColorFromImage() {
@@ -241,6 +287,18 @@ onBeforeUnmount(() => {
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 8px;
+}
+
+.chip-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.element-chip, .animal-chip {
+  font-size: 11px;
 }
 
 .description {

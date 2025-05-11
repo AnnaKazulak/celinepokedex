@@ -57,12 +57,27 @@ public class FantasyCharacterController {
     public ResponseEntity<FantasyCharacter> saveCharacter(@RequestBody Map<String, String> payload) {
         String prompt = payload.get("prompt");
         String imageUrl = payload.get("imageUrl");
+        String name = payload.get("name");
+        String baseAnimal = payload.get("baseAnimal");
+        String elementType = payload.get("elementType");
         
         if (prompt == null || imageUrl == null) {
             return ResponseEntity.badRequest().build();
         }
         
-        FantasyCharacter character = new FantasyCharacter(prompt, imageUrl);
+        FantasyCharacter character;
+        
+        if (name != null && baseAnimal != null && elementType != null) {
+            // Create with all fields including baseAnimal and elementType
+            character = new FantasyCharacter(name, prompt, imageUrl, baseAnimal, elementType);
+        } else if (name != null) {
+            // Create with name
+            character = new FantasyCharacter(name, prompt, imageUrl);
+        } else {
+            // Create with basic fields only
+            character = new FantasyCharacter(prompt, imageUrl);
+        }
+        
         FantasyCharacter savedCharacter = fantasyCharacterService.saveFantasyCharacter(character);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedCharacter);
     }
@@ -208,5 +223,53 @@ public class FantasyCharacterController {
         
         FantasyCharacter savedCharacter = fantasyCharacterService.saveFantasyCharacter(updatedCharacter);
         return ResponseEntity.ok(savedCharacter);
+    }
+
+    /**
+     * Generate a description for an uploaded character
+     * POST /api/characters/generate-description
+     */
+    @PostMapping("/generate-description")
+    public ResponseEntity<Map<String, String>> generateDescription(@RequestBody Map<String, Object> request) {
+        String baseAnimal = (String) request.get("baseAnimal");
+        String elementType = (String) request.get("elementType");
+        String fantasyCreature = (String) request.get("fantasyCreature");
+        
+        if (baseAnimal == null || elementType == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        // Generate a short, creative description using the base animal and element type
+        String description = PromptBuilder.generateFantasyDescription(baseAnimal, elementType, fantasyCreature);
+        
+        Map<String, String> response = Map.of(
+            "description", description
+        );
+        
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Generate a name for an uploaded character
+     * POST /api/characters/generate-name
+     */
+    @PostMapping("/generate-name")
+    public ResponseEntity<Map<String, String>> generateName(@RequestBody Map<String, Object> request) {
+        String baseAnimal = (String) request.get("baseAnimal");
+        String elementType = (String) request.get("elementType");
+        String fantasyCreature = (String) request.get("fantasyCreature");
+        
+        if (baseAnimal == null || elementType == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        // Generate a creative name using the base animal and element type
+        String name = PromptBuilder.generateFantasyName(baseAnimal, elementType, fantasyCreature);
+        
+        Map<String, String> response = Map.of(
+            "name", name
+        );
+        
+        return ResponseEntity.ok(response);
     }
 }
