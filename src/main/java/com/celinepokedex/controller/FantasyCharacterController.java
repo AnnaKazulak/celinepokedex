@@ -272,4 +272,41 @@ public class FantasyCharacterController {
         
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * Generate a character image from a text prompt
+     * POST /api/characters/generate-prompt
+     */
+    @PostMapping("/generate-prompt")
+    public ResponseEntity<Map<String, Object>> generateCharacterFromPrompt(@RequestBody Map<String, Object> request) {
+        String name = (String) request.get("name");
+        String description = (String) request.get("description");
+        String baseAnimal = (String) request.get("baseAnimal"); // Optional
+        String elementType = (String) request.get("elementType"); // Optional
+        
+        if (description == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        // Enhance the description with base animal and element type if provided
+        String enhancedDescription = description;
+        if (baseAnimal != null && !baseAnimal.isEmpty()) {
+            enhancedDescription += " The character is based on a " + baseAnimal.toLowerCase() + ".";
+        }
+        if (elementType != null && !elementType.isEmpty()) {
+            enhancedDescription += " It has " + elementType.toLowerCase() + " elemental powers.";
+        }
+        
+        // Generate the image using the description
+        String imageData = imageGenerationService.generateImageFromPrompt(enhancedDescription);
+        
+        // Return the generated image data and the enhanced prompt
+        Map<String, Object> response = Map.of(
+            "prompt", enhancedDescription,
+            "imageData", imageData,
+            "name", name != null ? name : "Fantasy Character"
+        );
+        
+        return ResponseEntity.ok(response);
+    }
 }

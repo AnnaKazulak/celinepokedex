@@ -157,4 +157,22 @@ public class ImageGenerationService {
             throw new RuntimeException("Error calling Hugging Face API: " + e.getMessage());
         }
     }
+    
+    /**
+     * Generates an image from a user-provided text prompt
+     *
+     * @param prompt The user's description of the fantasy character
+     * @return Base64 encoded image data
+     * @throws RuntimeException if image generation fails
+     */
+    public String generateImageFromPrompt(String prompt) {
+        logger.info("Generating image from user prompt: " + prompt);
+        
+        // Enhance the prompt to create better fantasy character images
+        String enhancedPrompt = "A high quality, detailed fantasy character: " + prompt + 
+                               ", digital art, concept art, vibrant colors, highly detailed";
+        
+        // Call the existing generateImage method with our enhanced prompt
+        return generateImage(enhancedPrompt);
+    }
 }

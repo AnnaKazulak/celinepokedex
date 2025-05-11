@@ -11,58 +11,53 @@
         <span class="text-h5">Fantasy Character Generator</span>
       </v-card-title>
       
-      <!-- Add tabs to switch between AI generation and manual upload -->
+      <!-- Add tabs to switch between manual prompt, upload, and generator -->
       <v-tabs v-model="activeTab" centered>
-        <v-tab value="ai">
-          <v-icon start>mdi-robot</v-icon>
-          AI Generate
+        <v-tab value="prompt">
+          <v-icon start>mdi-text-box-outline</v-icon>
+          Prompt Entry
         </v-tab>
         <v-tab value="upload">
           <v-icon start>mdi-upload</v-icon>
           Upload Your Own
         </v-tab>
+        <v-tab value="generator">
+          <v-icon start>mdi-robot</v-icon>
+          AI Generator
+        </v-tab>
       </v-tabs>
       
       <v-card-text>
-        <!-- AI Generator Tab -->
         <v-window v-model="activeTab">
-          <v-window-item value="ai">
+          <!-- Prompt Entry Tab (New) -->
+          <v-window-item value="prompt">
             <v-row>
               <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="promptCharacterName"
+                  label="Character Name"
+                  required
+                ></v-text-field>
+                
+                <v-textarea
+                  v-model="promptDescription"
+                  label="Describe your fantasy character"
+                  rows="4"
+                  counter
+                  hint="Be detailed and descriptive for best results"
+                  required
+                ></v-textarea>
+                
                 <v-select
-                  v-model="baseAnimal"
+                  v-model="promptBaseAnimal"
                   :items="baseAnimalOptions"
-                  label="Base Animal"
-                  required
+                  label="Base Animal (Optional)"
                 ></v-select>
                 
                 <v-select
-                  v-model="elementType"
+                  v-model="promptElementType"
                   :items="elementTypeOptions"
-                  label="Element Type"
-                  required
-                ></v-select>
-                
-                <v-select
-                  v-model="dominantColor"
-                  :items="colorOptions"
-                  label="Dominant Color"
-                  required
-                ></v-select>
-                
-                <v-select
-                  v-model="styleType"
-                  :items="styleTypeOptions"
-                  label="Art Style"
-                  required
-                ></v-select>
-                
-                <v-select
-                  v-model="traits"
-                  :items="characterTraitOptions"
-                  label="Character Traits"
-                  multiple
-                  chips
+                  label="Element Type (Optional)"
                 ></v-select>
               </v-col>
               
@@ -76,20 +71,20 @@
                   <div class="mt-3">Generating character...</div>
                 </div>
                 
-                <div v-else-if="imageData" class="preview-image">
-                  <img :src="imageData" alt="Generated character" width="100%" />
-                  <div class="mt-2 text-caption">{{ generatedPrompt }}</div>
+                <div v-else-if="promptImageData" class="preview-image">
+                  <img :src="promptImageData" alt="Generated character" width="100%" />
+                  <div class="mt-2 text-caption">{{ promptGeneratedPrompt }}</div>
                 </div>
                 
                 <div v-else class="text-center preview-placeholder">
-                  <v-icon size="64">mdi-image-outline</v-icon>
-                  <div class="mt-2">Select options and generate a character</div>
+                  <v-icon size="64">mdi-text-box-edit-outline</v-icon>
+                  <div class="mt-2">Enter a detailed description and generate a character</div>
                 </div>
               </v-col>
             </v-row>
           </v-window-item>
           
-          <!-- Manual Upload Tab -->
+          <!-- Upload Tab -->
           <v-window-item value="upload">
             <v-row>
               <v-col cols="12" md="6">
@@ -213,6 +208,70 @@
               </v-col>
             </v-row>
           </v-window-item>
+          
+          <!-- Generator Tab (moved from first position to third) -->
+          <v-window-item value="generator">
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="baseAnimal"
+                  :items="baseAnimalOptions"
+                  label="Base Animal"
+                  required
+                ></v-select>
+                
+                <v-select
+                  v-model="elementType"
+                  :items="elementTypeOptions"
+                  label="Element Type"
+                  required
+                ></v-select>
+                
+                <v-select
+                  v-model="dominantColor"
+                  :items="colorOptions"
+                  label="Dominant Color"
+                  required
+                ></v-select>
+                
+                <v-select
+                  v-model="styleType"
+                  :items="styleTypeOptions"
+                  label="Art Style"
+                  required
+                ></v-select>
+                
+                <v-select
+                  v-model="traits"
+                  :items="characterTraitOptions"
+                  label="Character Traits"
+                  multiple
+                  chips
+                ></v-select>
+              </v-col>
+              
+              <v-col cols="12" md="6" class="preview-container">
+                <div v-if="isLoading" class="text-center">
+                  <v-progress-circular 
+                    indeterminate 
+                    color="primary"
+                    size="64"
+                  ></v-progress-circular>
+                  <div class="mt-3">Generating character...</div>
+                </div>
+                
+                <div v-else-if="imageData" class="preview-image">
+                  <img :src="imageData" alt="Generated character" width="100%" />
+                  <div class="mt-2 text-caption">{{ generatedPrompt }}</div>
+                </div>
+                
+                <div v-else class="text-center preview-placeholder">
+                  <v-icon size="64">mdi-image-outline</v-icon>
+                  <div class="mt-2">Select options and generate a character</div>
+                </div>
+              </v-col>
+            </v-row>
+          </v-window-item>
         </v-window>
       </v-card-text>
       
@@ -226,7 +285,7 @@
         </v-btn>
         
         <!-- Conditionally show buttons based on active tab -->
-        <template v-if="activeTab === 'ai'">
+        <template v-if="activeTab === 'generator'">
           <v-btn 
             color="primary" 
             :disabled="!isFormValid || isLoading" 
@@ -238,6 +297,23 @@
             color="success" 
             :disabled="!imageData || isLoading" 
             @click="saveCharacter"
+          >
+            Save Character
+          </v-btn>
+        </template>
+        
+        <template v-else-if="activeTab === 'prompt'">
+          <v-btn 
+            color="primary" 
+            :disabled="!isPromptFormValid || isLoading" 
+            @click="generatePromptCharacter"
+          >
+            Generate
+          </v-btn>
+          <v-btn 
+            color="success" 
+            :disabled="!promptImageData || isLoading" 
+            @click="savePromptCharacter"
           >
             Save Character
           </v-btn>
@@ -272,7 +348,7 @@ export default defineComponent({
     const isLoading = ref(false);
     const imageData = ref('');
     const generatedPrompt = ref('');
-    const activeTab = ref('ai');
+    const activeTab = ref('prompt');
     const fileInput = ref<HTMLInputElement | null>(null);
     const isGeneratingDescription = ref(false);
     const isGeneratingName = ref(false);
@@ -290,6 +366,14 @@ export default defineComponent({
     const uploadedBaseAnimal = ref('');
     const uploadedElementType = ref('');
     const uploadedDescription = ref('');
+    
+    // Form values for manual prompt entry
+    const promptCharacterName = ref('');
+    const promptDescription = ref('');
+    const promptBaseAnimal = ref('');
+    const promptElementType = ref('');
+    const promptImageData = ref('');
+    const promptGeneratedPrompt = ref('');
     
     // Options for dropdowns
     const baseAnimalOptions = [
@@ -343,6 +427,10 @@ export default defineComponent({
              uploadedBaseAnimal.value && 
              uploadedElementType.value && 
              uploadedDescription.value;
+    });
+    
+    const isPromptFormValid = computed(() => {
+      return promptCharacterName.value && promptDescription.value;
     });
     
     // Methods
@@ -505,6 +593,52 @@ export default defineComponent({
         isGeneratingName.value = false;
       }
     };
+
+    const generatePromptCharacter = async () => {
+      if (!isPromptFormValid.value) return;
+
+      isLoading.value = true;
+      try {
+        const response = await axios.post('/api/characters/generate-prompt', {
+          name: promptCharacterName.value,
+          description: promptDescription.value,
+          baseAnimal: promptBaseAnimal.value,
+          elementType: promptElementType.value
+        });
+
+        promptImageData.value = response.data.imageData;
+        promptGeneratedPrompt.value = response.data.prompt;
+      } catch (error) {
+        console.error('Error generating character from prompt:', error);
+        alert('Failed to generate character. Please try again.');
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    const savePromptCharacter = async () => {
+      if (!promptImageData.value) return;
+
+      isLoading.value = true;
+      try {
+        const response = await axios.post('/api/characters/save', {
+          name: promptCharacterName.value,
+          prompt: promptGeneratedPrompt.value,
+          imageUrl: promptImageData.value
+        });
+
+        const savedCharacter = response.data;
+        eventBus.emit('fantasy-character-created', savedCharacter);
+
+        dialog.value = false;
+        resetForm();
+      } catch (error) {
+        console.error('Error saving character from prompt:', error);
+        alert('Failed to save character. Please try again.');
+      } finally {
+        isLoading.value = false;
+      }
+    };
     
     const resetForm = () => {
       // Reset AI generation form
@@ -522,6 +656,14 @@ export default defineComponent({
       uploadedBaseAnimal.value = '';
       uploadedElementType.value = '';
       uploadedDescription.value = '';
+      
+      // Reset prompt form
+      promptCharacterName.value = '';
+      promptDescription.value = '';
+      promptBaseAnimal.value = '';
+      promptElementType.value = '';
+      promptImageData.value = '';
+      promptGeneratedPrompt.value = '';
       
       if (fileInput.value) {
         fileInput.value.value = '';
@@ -563,7 +705,17 @@ export default defineComponent({
       generateAIDescription,
       isGeneratingDescription,
       generateAIName,
-      isGeneratingName
+      isGeneratingName,
+      // New properties for prompt entry functionality
+      promptCharacterName,
+      promptDescription,
+      promptBaseAnimal,
+      promptElementType,
+      promptImageData,
+      promptGeneratedPrompt,
+      isPromptFormValid,
+      generatePromptCharacter,
+      savePromptCharacter
     };
   }
 });

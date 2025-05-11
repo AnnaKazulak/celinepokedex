@@ -28,6 +28,7 @@
       >
         <v-tab value="ai">KI-Generierung</v-tab>
         <v-tab value="manual">Manuell erstellen</v-tab>
+        <v-tab value="generator">Generator</v-tab>
       </v-tabs>
 
       <!-- Tab content -->
@@ -213,6 +214,110 @@
             </v-form>
           </div>
         </v-window-item>
+        
+        <!-- Generator Tab (with select fields) -->
+        <v-window-item value="generator">
+          <div class="card-header generator-tab-content">
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="generatorBaseAnimal"
+                  :items="baseAnimalOptions"
+                  label="Base Animal"
+                  required
+                ></v-select>
+                
+                <v-select
+                  v-model="generatorElementType"
+                  :items="elementTypeOptions"
+                  label="Element Type"
+                  required
+                ></v-select>
+                
+                <v-select
+                  v-model="generatorDominantColor"
+                  :items="colorOptions"
+                  label="Dominant Color"
+                  required
+                ></v-select>
+                
+                <v-select
+                  v-model="generatorStyleType"
+                  :items="styleTypeOptions"
+                  label="Art Style"
+                  required
+                ></v-select>
+                
+                <v-select
+                  v-model="generatorTraits"
+                  :items="characterTraitOptions"
+                  label="Character Traits"
+                  multiple
+                  chips
+                ></v-select>
+                
+                <div class="text-center mt-4 mb-4">
+                  <v-btn 
+                    color="primary" 
+                    :loading="isGeneratorGenerating"
+                    :disabled="!isGeneratorFormValid || isGeneratorGenerating"
+                    @click="generateGeneratorCharacter"
+                    class="generate-btn"
+                  >
+                    {{ isGeneratorGenerating ? 'Generiere...' : 'Charakter erstellen' }}
+                  </v-btn>
+                </div>
+              </v-col>
+              
+              <v-col cols="12" md="6" class="preview-container">
+                <div v-if="isGeneratorGenerating" class="text-center">
+                  <v-progress-circular 
+                    indeterminate 
+                    color="primary"
+                    size="64"
+                  ></v-progress-circular>
+                  <div class="mt-3">Generating character...</div>
+                </div>
+                
+                <div v-else-if="generatorImageData" class="preview-image">
+                  <img :src="generatorImageData" alt="Generated character" width="100%" />
+                  <div class="mt-2 text-caption">{{ generatorGeneratedPrompt }}</div>
+                </div>
+                
+                <div v-else class="text-center preview-placeholder">
+                  <v-icon size="64">mdi-image-outline</v-icon>
+                  <div class="mt-2">Select options and generate a character</div>
+                </div>
+              </v-col>
+            </v-row>
+          </div>
+          
+          <!-- Footer for generator tab with save button (only shown when an image is generated) -->
+          <div v-if="generatorImageData" class="fantasy-footer" :style="{ background: '#6890F0' }">
+            <div class="footer-section actions">
+              <v-spacer></v-spacer>
+              <v-btn 
+                color="white" 
+                variant="text" 
+                @click="resetGeneratorForm"
+                class="cancel-btn"
+              >
+                Neuer Charakter
+              </v-btn>
+              <v-btn 
+                color="white" 
+                variant="text" 
+                @click="saveGeneratorCharacter"
+                class="save-btn"
+                :loading="isSavingGenerator"
+              >
+                <v-icon start>mdi-content-save</v-icon>
+                Speichern
+              </v-btn>
+              <v-spacer></v-spacer>
+            </div>
+          </div>
+        </v-window-item>
       </v-window>
       
       <!-- Footer nur mit Aktionen für AI tab -->
@@ -260,6 +365,7 @@ import axios from 'axios';
 import { API_ENDPOINTS } from '../utils/constants';
 import { eventBus } from '../utils/eventBus';
 import type { FantasyCharacter } from '../types/pokemon';
+import FantasyCharacterGenerator from './FantasyCharacterGenerator.vue';
 
 // Router initialisieren
 const router = useRouter();
@@ -294,11 +400,71 @@ const manualImageUrl = ref('');
 const isManualSaving = ref(false);
 const manualError = ref('');
 
+// Generator variables
+const generatorBaseAnimal = ref('');
+const generatorElementType = ref('');
+const generatorDominantColor = ref('');
+const generatorStyleType = ref('');
+const generatorTraits = ref<string[]>([]);
+const isGeneratorGenerating = ref(false);
+const generatorImageData = ref('');
+const generatorGeneratedPrompt = ref('');
+const isSavingGenerator = ref(false);
+
+// Options for generator selects - EXACT same values as backend expects
+const baseAnimalOptions = [
+  'CAT', 'LIZARD', 'BIRD', 
+  'FROG', 'FOX', 'SNAKE', 'HORSE', 'TURTLE',
+  'LION', 'EAGLE', 'DEER'
+];
+
+const elementTypeOptions = [
+  'FIRE', 'WATER', 'EARTH', 'WIND', 'ELECTRIC', 
+  'ICE', 'NATURE', 'SHADOW', 'LIGHT', 'POISON'
+];
+
+const colorOptions = [
+  'RED', 'BLUE', 'GREEN', 'YELLOW', 'PURPLE', 
+  'ORANGE', 'BLACK', 'WHITE', 'PINK', 'BROWN'
+];
+
+const styleTypeOptions = [
+  'DISNEY', 'PIXAR', 'POKEMON', 'STUDIO_GHIBLI', 'DREAMWORKS'
+];
+
+const characterTraitOptions = [
+  'CUTE', 'SCARY', 'MYSTERIOUS', 'MAJESTIC',
+  'FUNNY', 'SMALL', 'GIANT', 'BABY', 'ELDER'
+];
+
+// Fantasy transformations map - needed for backend communication
+const fantasyTransformations: Record<string, string> = {
+  'CAT': 'Bakeneko (mystical cat)',
+  'LIZARD': 'Dragon',
+  'BIRD': 'Phoenix',
+  'FROG': 'Frog Prince',
+  'FOX': 'Kitsune (nine-tailed fox)',
+  'SNAKE': 'Naga (half-snake, half-human)',
+  'HORSE': 'Pegasus (winged horse)',
+  'TURTLE': 'Koopa (Mario-like turtle)',
+  'LION': 'Manticore (lion with scorpion tail)',
+  'EAGLE': 'Griffin (eagle-lion hybrid)',
+  'DEER': 'Celestial Deer (glowing antlers)'
+};
+
 // Computed property to check if manual form is valid
 const isManualFormValid = computed(() => {
   return !!manualCharacterName.value && 
          !!manualCharacterDescription.value && 
          (!!imageFile.value || !!manualImageUrl.value);
+});
+
+// Computed property to check if generator form is valid
+const isGeneratorFormValid = computed(() => {
+  return !!generatorBaseAnimal.value && 
+         !!generatorElementType.value && 
+         !!generatorDominantColor.value && 
+         !!generatorStyleType.value;
 });
 
 // Watch for dialog prop changes
@@ -316,6 +482,7 @@ const closeDialog = () => {
   dialogVisible.value = false;
   resetForm();
   resetManualForm();
+  resetGeneratorForm();
 };
 
 // Reset the AI form
@@ -333,6 +500,19 @@ const resetManualForm = () => {
   imageFile.value = null;
   manualImageUrl.value = '';
   manualError.value = '';
+};
+
+// Reset the generator form
+const resetGeneratorForm = () => {
+  generatorBaseAnimal.value = '';
+  generatorElementType.value = '';
+  generatorDominantColor.value = '';
+  generatorStyleType.value = '';
+  generatorTraits.value = [];
+  generatorImageData.value = '';
+  generatorGeneratedPrompt.value = '';
+  isGeneratorGenerating.value = false;
+  isSavingGenerator.value = false;
 };
 
 // Handle file change for manual image upload
@@ -511,6 +691,84 @@ const generateImage = async () => {
   clearInterval(loadingInterval);
   loadingStep.value = 4; // Setze auf den letzten Schritt, falls es fertig ist
   isGenerating.value = false;
+};
+
+// Generate character using generator
+const generateGeneratorCharacter = async () => {
+  if (!isGeneratorFormValid.value || isGeneratorGenerating.value) return;
+  
+  isGeneratorGenerating.value = true;
+  generatorImageData.value = '';
+  generatorGeneratedPrompt.value = '';
+  
+  try {
+    // Transform the base animal into its fantasy version for better AI generation
+    const fantasyCreature = fantasyTransformations[generatorBaseAnimal.value] || generatorBaseAnimal.value;
+    
+    const response = await axios.post(API_ENDPOINTS.GENERATE_CHARACTER, {
+      baseAnimal: generatorBaseAnimal.value,
+      elementType: generatorElementType.value,
+      dominantColor: generatorDominantColor.value,
+      styleType: generatorStyleType.value,
+      traits: generatorTraits.value,
+      fantasyCreature: fantasyCreature // Pass the fantasy transformation
+    });
+    
+    if (response.data && response.data.imageData) {
+      generatorImageData.value = response.data.imageData;
+      generatorGeneratedPrompt.value = response.data.prompt;
+    } else {
+      throw new Error('No image data returned from server');
+    }
+  } catch (err) {
+    console.error('Error generating character:', err);
+    alert('Failed to generate character. Please try again.');
+  } finally {
+    isGeneratorGenerating.value = false;
+  }
+};
+
+// Save the generated character from generator
+const saveGeneratorCharacter = async () => {
+  if (!generatorImageData.value || isSavingGenerator.value) return;
+
+  isSavingGenerator.value = true;
+
+  try {
+    const response = await axios.post(API_ENDPOINTS.SAVE_CHARACTER, {
+      prompt: generatorGeneratedPrompt.value,
+      imageUrl: generatorImageData.value
+    });
+
+    if (response.data) {
+      const savedCharacter = response.data;
+      
+      // Close dialog
+      dialogVisible.value = false;
+      
+      // Only emit via event bus for global updates
+      eventBus.emit('fantasy-character-created', savedCharacter);
+      
+      // Navigiere zur Detail-Seite des erstellten Fantasy Characters
+      if (savedCharacter.id) {
+        router.push({
+          name: 'fantasyCharacterDetail',
+          params: { id: savedCharacter.id }
+        });
+      }
+      
+      // Reset form after successful save and close
+      setTimeout(() => {
+        resetGeneratorForm();
+      }, 300);
+    } else {
+      throw new Error('Failed to save character');
+    }
+  } catch (err) {
+    console.error('Error saving character:', err);
+  } finally {
+    isSavingGenerator.value = false;
+  }
 };
 
 // Download the generated image
