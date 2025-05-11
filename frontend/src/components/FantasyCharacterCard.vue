@@ -381,8 +381,8 @@ onBeforeUnmount(() => {
   
   .description {
     font-size: 13px;
-    max-height: 100px;
-    -webkit-line-clamp: 4;
+    max-height: 60px; /* Reduced from 100px */
+    -webkit-line-clamp: 2; /* Changed from 4 to 2 lines */
     margin-top: 6px;
   }
   
