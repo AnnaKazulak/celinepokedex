@@ -13,6 +13,28 @@
             :rules="[v => !!v || 'Name wird benötigt']"
           ></v-text-field>
 
+          <!-- Base Animal select -->
+          <v-select
+            v-model="baseAnimal"
+            :items="baseAnimalOptions"
+            label="Base Animal"
+            variant="underlined"
+            density="compact"
+            class="mb-4"
+            @update:model-value="$emit('update:baseAnimal', baseAnimal)"
+          ></v-select>
+          
+          <!-- Element Type select -->
+          <v-select
+            v-model="elementType"
+            :items="elementTypeOptions"
+            label="Element Type"
+            variant="underlined"
+            density="compact"
+            class="mb-4"
+            @update:model-value="$emit('update:elementType', elementType)"
+          ></v-select>
+
           <!-- Character Description Input -->
           <v-textarea
             v-model="characterDescription"
@@ -102,6 +124,10 @@ const props = defineProps<{
   manualImageUrl: string;
   isSaving: boolean;
   error: string;
+  baseAnimal?: string;
+  elementType?: string;
+  baseAnimalOptions?: string[];
+  elementTypeOptions?: string[];
 }>();
 
 // Emits
@@ -112,12 +138,28 @@ const emit = defineEmits<{
   'update:manualImageUrl': [value: string];
   'update:imageFile': [value: File | null];
   'update:error': [value: string];
+  'update:baseAnimal': [value: string];
+  'update:elementType': [value: string];
 }>();
 
 // Local state
 const characterName = ref(props.characterName);
 const characterDescription = ref(props.characterDescription);
+const baseAnimal = ref(props.baseAnimal || '');
+const elementType = ref(props.elementType || '');
 const imageFile = ref<File | null>(null);
+
+// Default options for selects if not provided
+const baseAnimalOptions = props.baseAnimalOptions || [
+  'CAT', 'LIZARD', 'BIRD', 
+  'FROG', 'FOX', 'SNAKE', 'HORSE', 'TURTLE',
+  'LION', 'EAGLE', 'DEER'
+];
+
+const elementTypeOptions = props.elementTypeOptions || [
+  'FIRE', 'WATER', 'EARTH', 'WIND', 'ELECTRIC', 
+  'ICE', 'NATURE', 'SHADOW', 'LIGHT', 'POISON'
+];
 
 // Watch for prop changes
 watch(() => props.characterName, (newVal) => {
@@ -128,6 +170,14 @@ watch(() => props.characterDescription, (newVal) => {
   characterDescription.value = newVal;
 });
 
+watch(() => props.baseAnimal, (newVal) => {
+  if (newVal !== undefined) baseAnimal.value = newVal;
+});
+
+watch(() => props.elementType, (newVal) => {
+  if (newVal !== undefined) elementType.value = newVal;
+});
+
 // Watch for local changes and update parent
 watch(characterName, (newVal) => {
   emit('update:characterName', newVal);
@@ -135,6 +185,14 @@ watch(characterName, (newVal) => {
 
 watch(characterDescription, (newVal) => {
   emit('update:characterDescription', newVal);
+});
+
+watch(baseAnimal, (newVal) => {
+  emit('update:baseAnimal', newVal);
+});
+
+watch(elementType, (newVal) => {
+  emit('update:elementType', newVal);
 });
 
 // Computed properties

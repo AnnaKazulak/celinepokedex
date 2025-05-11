@@ -39,12 +39,20 @@
         <v-window-item value="ai">
           <fantasy-character-a-i-tab
             :prompt="prompt"
+            :character-name="characterName"
+            :base-animal="selectedBaseAnimal"
+            :element-type="selectedElementType"
             :is-generating="isGenerating"
             :generated-image-url="generatedImageUrl"
             :error="error"
             :loading-step="loadingStep"
+            :base-animal-options="baseAnimalOptions"
+            :element-type-options="elementTypeOptions"
             @update:prompt="prompt = $event"
             @update:error="error = $event"
+            @update:character-name="characterName = $event"
+            @update:base-animal="selectedBaseAnimal = $event"
+            @update:element-type="selectedElementType = $event"
             @generate="generateImage"
           />
         </v-window-item>
@@ -57,11 +65,17 @@
             :manual-image-url="manualImageUrl"
             :is-saving="isManualSaving"
             :error="manualError"
-            @update:character-name="manualCharacterName = $event"
-            @update:character-description="manualCharacterDescription = $event"
-            @update:manual-image-url="manualImageUrl = $event"
-            @update:image-file="imageFile = $event"
+            :base-animal="manualBaseAnimal"
+            :element-type="manualElementType"
+            :base-animal-options="baseAnimalOptions"
+            :element-type-options="elementTypeOptions"
+            @update:characterName="manualCharacterName = $event"
+            @update:characterDescription="manualCharacterDescription = $event"
+            @update:manualImageUrl="manualImageUrl = $event"
+            @update:imageFile="imageFile = $event"
             @update:error="manualError = $event"
+            @update:baseAnimal="manualBaseAnimal = $event"
+            @update:elementType="manualElementType = $event"
             @save-character="saveManualCharacter"
           />
         </v-window-item>
@@ -146,6 +160,9 @@ const activeTab = ref('ai'); // Default to AI generation tab
 
 // AI generation variables
 const prompt = ref('');
+const characterName = ref('');
+const selectedBaseAnimal = ref('');
+const selectedElementType = ref('');
 const isGenerating = ref(false);
 const generatedImageUrl = ref('');
 const error = ref('');
@@ -159,6 +176,8 @@ const imageFile = ref<File | null>(null);
 const manualImageUrl = ref('');
 const isManualSaving = ref(false);
 const manualError = ref('');
+const manualBaseAnimal = ref('');
+const manualElementType = ref('');
 
 // Generator variables
 const generatorBaseAnimal = ref('');
@@ -239,6 +258,9 @@ const closeDialog = () => {
 
 const resetForm = () => {
   prompt.value = '';
+  characterName.value = '';
+  selectedBaseAnimal.value = '';
+  selectedElementType.value = '';
   generatedImageUrl.value = '';
   error.value = '';
   loadingStep.value = 0;
@@ -250,6 +272,8 @@ const resetManualForm = () => {
   imageFile.value = null;
   manualImageUrl.value = '';
   manualError.value = '';
+  manualBaseAnimal.value = '';
+  manualElementType.value = '';
 };
 
 const resetGeneratorForm = () => {
@@ -262,6 +286,26 @@ const resetGeneratorForm = () => {
   generatorGeneratedPrompt.value = '';
 };
 
+// Enhance prompt with base animal and element type if selected
+const getEnhancedPrompt = () => {
+  let enhancedPrompt = prompt.value;
+  
+  // Add base animal info if selected
+  if (selectedBaseAnimal.value) {
+    const fantasyCreature = fantasyTransformations[selectedBaseAnimal.value] || selectedBaseAnimal.value;
+    if (!enhancedPrompt.toLowerCase().includes(fantasyCreature.toLowerCase())) {
+      enhancedPrompt = `A ${fantasyCreature.toLowerCase()}, with ${enhancedPrompt}`;
+    }
+  }
+  
+  // Add element type if selected
+  if (selectedElementType.value && !enhancedPrompt.toLowerCase().includes(selectedElementType.value.toLowerCase())) {
+    enhancedPrompt += ` with ${selectedElementType.value.toLowerCase()} powers`;
+  }
+  
+  return enhancedPrompt;
+};
+
 // AI Tab methods
 const generateImage = async () => {
   if (!prompt.value || isGenerating.value) return;
@@ -270,6 +314,9 @@ const generateImage = async () => {
   error.value = '';
   generatedImageUrl.value = '';
   loadingStep.value = 0;
+  
+  // Enhance the prompt with selected animal and element type
+  const enhancedPrompt = getEnhancedPrompt();
   
   // Simulate progress animation for loading steps
   const loadingInterval = setInterval(() => {
@@ -293,7 +340,7 @@ const generateImage = async () => {
       }
       
       const response = await axios.post(API_ENDPOINTS.GENERATE_IMAGE, {
-        prompt: prompt.value
+        prompt: enhancedPrompt
       }, {
         // Increased timeout for axios request (60 seconds)
         timeout: 60000
@@ -367,6 +414,9 @@ const saveCharacter = async () => {
 
   try {
     const response = await axios.post(API_ENDPOINTS.SAVE_CHARACTER, {
+      name: characterName.value || 'Fantasy Character',
+      baseAnimal: selectedBaseAnimal.value || null,
+      elementType: selectedElementType.value || null,
       prompt: prompt.value,
       imageUrl: generatedImageUrl.value
     });
@@ -442,7 +492,9 @@ const saveManualCharacter = async () => {
     const response = await axios.post(API_ENDPOINTS.SAVE_CHARACTER, {
       name: manualCharacterName.value,
       prompt: manualCharacterDescription.value,
-      imageUrl: finalImageUrl
+      imageUrl: finalImageUrl,
+      baseAnimal: manualBaseAnimal.value,
+      elementType: manualElementType.value
     });
     
     if (response.data) {
@@ -524,7 +576,9 @@ const saveGeneratorCharacter = async () => {
   try {
     const response = await axios.post(API_ENDPOINTS.SAVE_CHARACTER, {
       prompt: generatorGeneratedPrompt.value,
-      imageUrl: generatorImageData.value
+      imageUrl: generatorImageData.value,
+      baseAnimal: generatorBaseAnimal.value,
+      elementType: generatorElementType.value
     });
 
     if (response.data) {

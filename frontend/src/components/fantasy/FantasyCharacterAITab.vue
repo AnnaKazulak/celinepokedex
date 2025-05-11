@@ -3,6 +3,41 @@
     <v-row>
       <v-col cols="12" md="6">
         <v-form @submit.prevent="onGenerateImage" v-if="!isGenerating || !generatedImageUrl">
+          <!-- Name input field -->
+          <v-text-field
+            v-model="characterName"
+            label="Name des Charakters"
+            variant="underlined"
+            density="compact"
+            class="mb-4"
+            :disabled="isGenerating"
+            @update:model-value="$emit('update:character-name', characterName)"
+          ></v-text-field>
+          
+          <!-- Base Animal select -->
+          <v-select
+            v-model="baseAnimal"
+            :items="baseAnimalOptions"
+            label="Base Animal"
+            variant="underlined"
+            density="compact"
+            class="mb-4"
+            :disabled="isGenerating"
+            @update:model-value="$emit('update:base-animal', baseAnimal)"
+          ></v-select>
+          
+          <!-- Element Type select -->
+          <v-select
+            v-model="elementType"
+            :items="elementTypeOptions"
+            label="Element Type"
+            variant="underlined"
+            density="compact"
+            class="mb-4"
+            :disabled="isGenerating"
+            @update:model-value="$emit('update:element-type', elementType)"
+          ></v-select>
+          
           <v-textarea
             v-model="prompt"
             label="Beschreibe deinen Fantasy-Charakter"
@@ -81,24 +116,38 @@ const emit = defineEmits<{
   'download': [];
   'update:prompt': [value: string];
   'update:error': [value: string];
+  'update:character-name': [value: string];
+  'update:base-animal': [value: string];
+  'update:element-type': [value: string];
 }>();
 
 // Props
 const props = defineProps<{
   prompt: string;
+  characterName?: string;
+  baseAnimal?: string;
+  elementType?: string;
   isGenerating: boolean;
   generatedImageUrl: string;
   error: string;
   loadingStep: number;
+  baseAnimalOptions?: string[];
+  elementTypeOptions?: string[];
 }>();
 
 // Local data binding with updates to parent
 const prompt = ref(props.prompt);
+const characterName = ref(props.characterName || '');
+const baseAnimal = ref(props.baseAnimal || '');
+const elementType = ref(props.elementType || '');
 
 // Methods
 const onGenerateImage = () => {
   if (!prompt.value || props.isGenerating) return;
   emit('update:prompt', prompt.value);
+  emit('update:character-name', characterName.value);
+  emit('update:base-animal', baseAnimal.value);
+  emit('update:element-type', elementType.value);
   emit('generate', prompt.value);
 };
 </script>
