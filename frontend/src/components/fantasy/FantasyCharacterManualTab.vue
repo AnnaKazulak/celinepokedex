@@ -1,5 +1,5 @@
 <template>
-  <div class="pa-4">
+  <div class="pa-4 fantasy-tab-container">
     <!-- Image display -->
     <div v-if="manualImageUrl" class="d-flex justify-center my-5">
       <v-img
@@ -75,6 +75,9 @@
         </v-alert>
       </div>
     </v-form>
+
+    <!-- Spacer to maintain minimum height -->
+    <div class="flex-grow-1 min-height-spacer"></div>
   </div>
 </template>
 
@@ -155,3 +158,15 @@ const onSaveCharacter = () => {
   emit('save-character');
 };
 </script>
+
+<style scoped>
+.fantasy-tab-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+}
+
+.min-height-spacer {
+  min-height: 20px;
+}
+</style>

@@ -573,6 +573,31 @@ const saveGeneratorCharacter = async () => {
 
 .card-content {
   flex-grow: 1;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 500px; /* Consistent height across all tabs */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make v-window fill the entire container height */
+:deep(.v-window) {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+:deep(.v-window__container) {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+:deep(.v-window-item) {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* Ensure card takes at least the minimum height */
+.has-image {
+  min-height: 580px;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="pa-4">
+  <div class="pa-4 fantasy-tab-container">
     <v-row>
       <v-col cols="12" md="6">
         <v-select
@@ -81,6 +81,9 @@
         </div>
       </v-col>
     </v-row>
+
+    <!-- Spacer to maintain minimum height -->
+    <div class="flex-grow-1 min-height-spacer"></div>
   </div>
 </template>
 
@@ -149,3 +152,15 @@ const onGenerateCharacter = () => {
   emit('generate-character');
 };
 </script>
+
+<style scoped>
+.fantasy-tab-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+}
+
+.min-height-spacer {
+  min-height: 20px;
+}
+</style>

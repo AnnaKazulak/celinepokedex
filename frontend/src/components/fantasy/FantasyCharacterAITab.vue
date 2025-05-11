@@ -1,5 +1,5 @@
 <template>
-  <div class="pa-4">
+  <div class="pa-4 fantasy-tab-container">
     <!-- Floating image display -->
     <div v-if="generatedImageUrl" class="d-flex justify-center my-5">
       <v-img
@@ -16,7 +16,7 @@
       <p class="text-body-2 font-italic text-medium-emphasis">{{ prompt }}</p>
     </div>
     
-    <v-form @submit.prevent="onGenerateImage" v-if="!generatedImageUrl || isGenerating">
+    <v-form @submit.prevent="onGenerateImage" v-if="!generatedImageUrl || isGenerating" class="prompt-form">
       <v-textarea
         v-model="prompt"
         label="Beschreibe deinen Fantasy-Charakter"
@@ -57,6 +57,9 @@
         {{ error }}
       </v-alert>
     </div>
+
+    <!-- Spacer to maintain minimum height -->
+    <div class="flex-grow-1 min-height-spacer"></div>
   </div>
 </template>
 
@@ -92,3 +95,20 @@ const onGenerateImage = () => {
   emit('generate', prompt.value);
 };
 </script>
+
+<style scoped>
+.fantasy-tab-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+}
+
+.prompt-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.min-height-spacer {
+  min-height: 20px;
+}
+</style>
