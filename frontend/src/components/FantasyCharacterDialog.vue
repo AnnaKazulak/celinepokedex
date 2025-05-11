@@ -38,7 +38,7 @@
           <span class="d-none d-md-inline ml-2">Manuell erstellen</span>
         </v-tab>
         <v-tab value="generator">
-          <v-icon>mdi-auto-fix</v-icon>
+          <v-icon>mdi-creation-outline</v-icon>
           <span class="d-none d-md-inline ml-2">Generator</span>
         </v-tab>
       </v-tabs>
