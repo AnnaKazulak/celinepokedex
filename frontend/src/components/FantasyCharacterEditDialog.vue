@@ -140,7 +140,7 @@ const emit = defineEmits<{
 
 // Reactive variables
 const dialogVisible = ref(props.dialog);
-const editedName = ref('');
+const editedName = ref<string>('');
 const editedPrompt = ref('');
 const editedBaseAnimal = ref('');
 const editedElementType = ref('');
@@ -167,10 +167,10 @@ watch(() => props.dialog, (newVal) => {
 // Watch for character prop changes
 watch(() => props.character, (newVal) => {
   if (newVal) {
-    editedName.value = newVal.name;
-    editedPrompt.value = newVal.prompt;
-    editedBaseAnimal.value = newVal.baseAnimal;
-    editedElementType.value = newVal.elementType;
+    editedName.value = newVal.name || '';
+    editedPrompt.value = newVal.prompt || '';
+    editedBaseAnimal.value = newVal.baseAnimal || '';
+    editedElementType.value = newVal.elementType || '';
   }
 });
 
@@ -182,10 +182,10 @@ watch(dialogVisible, (newVal) => {
 onMounted(() => {
   // Initialize with character data
   if (props.character) {
-    editedName.value = props.character.name;
-    editedPrompt.value = props.character.prompt;
-    editedBaseAnimal.value = props.character.baseAnimal;
-    editedElementType.value = props.character.elementType;
+    editedName.value = props.character.name || '';
+    editedPrompt.value = props.character.prompt || '';
+    editedBaseAnimal.value = props.character.baseAnimal || '';
+    editedElementType.value = props.character.elementType || '';
   }
 });
 
@@ -231,7 +231,7 @@ const updateCharacter = async () => {
     } else {
       throw new Error('Failed to update character');
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error('Error updating character:', err);
 
     if (err.response) {
