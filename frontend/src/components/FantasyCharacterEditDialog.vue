@@ -347,7 +347,7 @@ const handleImageFileChange = (file: File) => {
 <style>
 /* Benutzerdefinierte Klassen für die Komponentendarstellung */
 .bg-gradient-primary {
-  background: linear-gradient(135deg, #6890F0 0%, #705898 100%);
+  background: var(--gradient-primary);
   z-index: 25;
 }
 
