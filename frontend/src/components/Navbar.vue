@@ -42,7 +42,7 @@
         <v-btn
           class="mr-2"
           :class="{ 'text-white': isScrolled || isDetailPage }"
-          color="white"
+          color="black"
           :elevation="isScrolled || isDetailPage ? 2 : 1"
           rounded="pill"
           prepend-icon="mdi-magic-staff"
@@ -52,7 +52,7 @@
         </v-btn>
         <v-btn
           :class="{ 'text-white': isScrolled || isDetailPage }"
-          color="white"
+          color="black"
           :elevation="isScrolled || isDetailPage ? 2 : 1"
           rounded="pill"
           prepend-icon="mdi-plus"
