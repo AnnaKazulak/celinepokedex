@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pokemon, FantasyCharacter } from '@/types/pokemon';
+import type { Pokemon, FantasyCharacter } from '@/types/pokemon';
 import { useRouter } from 'vue-router';
 
 const props = defineProps<{
