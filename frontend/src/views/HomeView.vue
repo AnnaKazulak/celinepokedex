@@ -24,11 +24,25 @@
           </v-btn>
         </v-btn-toggle>
       </div>
-      
-      <!-- Fantasy Character Generator button -->
-      <!-- <div v-if="contentType === 'fantasy' || contentType === 'all'" class="mb-4">
-        <FantasyCharacterGenerator @character-created="handleNewFantasyCharacter" />
-      </div> -->
+  
+      <!-- View Mode Toggle -->
+      <div class="view-toggle-container mb-4">
+        <v-btn-toggle
+          v-model="viewMode"
+          color="secondary"
+          density="comfortable"
+          rounded
+        >
+          <v-btn value="cards" :ripple="false">
+            <v-icon>mdi-view-grid-outline</v-icon>
+            <span class="ml-1 d-none d-sm-inline">Karten</span>
+          </v-btn>
+          <v-btn value="gallery" :ripple="false">
+            <v-icon>mdi-image-multiple-outline</v-icon>
+            <span class="ml-1 d-none d-sm-inline">Galerie</span>
+          </v-btn>
+        </v-btn-toggle>
+      </div>
       
       <!-- Suchfeld-Komponente -->
       <SearchBar
@@ -60,8 +74,9 @@
       :content-type="contentType"
     />
     
-    <v-row class="justify-center content-grid">
-      <!-- Pokémon Cards -->
+    <!-- Cards Ansicht -->
+    <v-row v-if="viewMode === 'cards'" class="justify-center content-grid">
+      <!-- Pokémon/Fantasy Cards -->
       <template v-for="item in filteredContent" :key="getItemKey(item)">
         <v-col
           cols="12"
@@ -79,6 +94,9 @@
         </v-col>
       </template>
     </v-row>
+    
+    <!-- Galerie Ansicht -->
+    <GalleryView v-else-if="viewMode === 'gallery'" :items="filteredContent" />
     
     <!-- Ladeindikator -->
     <LoadingIndicator v-if="isLoading" />
@@ -101,6 +119,7 @@ import LoadingIndicator from '@/components/home/LoadingIndicator.vue';
 import PokemonCard from '@/components/PokemonCard.vue';
 import FantasyCharacterCard from '@/components/FantasyCharacterCard.vue';
 import FantasyCharacterGenerator from '@/components/FantasyCharacterGenerator.vue';
+import GalleryView from '@/components/home/GalleryView.vue';
 
 // Content type toggle - 'all', 'pokemon', or 'fantasy'
 const contentType = ref('all');
@@ -111,6 +130,7 @@ const fantasyCharacters = ref<FantasyCharacter[]>([]);
 const searchQuery = ref('');
 const isLoading = ref(false);
 const selectedTypes = ref<PokemonType[]>([]);
+const viewMode = ref('cards'); // 'cards' or 'gallery'
 
 // Ensure each Pokemon has an imageUrl
 function ensureImageUrls(pokemonList: Pokemon[]): Pokemon[] {
