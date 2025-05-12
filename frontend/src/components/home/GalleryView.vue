@@ -1,51 +1,38 @@
 <template>
   <div class="gallery-container">
-    <v-row>
-      <template v-for="item in items" :key="getItemKey(item)">
-        <v-col
-          cols="6"
-          sm="4"
-          md="3"
-          lg="2"
-          xl="1"
+    <div class="masonry-gallery">
+      <div 
+        v-for="(item, index) in items" 
+        :key="getItemKey(item)"
+        class="masonry-item"
+        :class="getImageSizeClass(item, index)"
+        @click="openDetailView(item)"
+      >
+        <v-img
+          :src="getItemImageUrl(item)"
+          :aspect-ratio="getAspectRatio(item, index)"
+          cover
+          class="gallery-image rounded-lg"
         >
-          <v-card
-            class="gallery-card"
-            @click="openDetailView(item)"
-            elevation="2"
-          >
-            <v-img
-              :src="getItemImageUrl(item)"
-              class="gallery-image"
-              height="200"
-              cover
-              :alt="getItemName(item)"
-            >
-              <template v-slot:placeholder>
-                <v-row
-                  class="fill-height ma-0"
-                  align="center"
-                  justify="center"
-                >
-                  <v-progress-circular
-                    indeterminate
-                    color="grey-lighten-5"
-                  ></v-progress-circular>
-                </v-row>
-              </template>
-            </v-img>
-            <div class="gallery-overlay d-flex flex-column justify-end">
-              <div class="gallery-name pa-2">
-                {{ getItemName(item) }}
-                <div class="gallery-subtitle" v-if="isPokemon(item)">
-                  #{{ item.pokedexNumber }}
-                </div>
+          <template v-slot:placeholder>
+            <div class="d-flex align-center justify-center fill-height">
+              <v-progress-circular
+                indeterminate
+                color="grey-lighten-5"
+              ></v-progress-circular>
+            </div>
+          </template>
+          <div class="gallery-overlay d-flex flex-column justify-end">
+            <div class="gallery-name pa-2">
+              {{ getItemName(item) }}
+              <div class="gallery-subtitle" v-if="isPokemon(item)">
+                #{{ item.pokedexNumber }}
               </div>
             </div>
-          </v-card>
-        </v-col>
-      </template>
-    </v-row>
+          </div>
+        </v-img>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -88,6 +75,53 @@ function getItemName(item: Pokemon | FantasyCharacter): string {
   }
 }
 
+function getImageSizeClass(item: Pokemon | FantasyCharacter, index: number): string {
+  // For Pokémon, use a pattern based on pokedex number
+  if (isPokemon(item)) {
+    const pokedexNumber = typeof item.pokedexNumber === 'number' ? 
+      item.pokedexNumber : parseInt(item.pokedexNumber.toString(), 10);
+    
+    const pattern = pokedexNumber % 12;
+    if (pattern === 0 || pattern === 7) {
+      return 'wide-horizontal';
+    } else if (pattern === 3 || pattern === 9) {
+      return 'square-large';
+    } else if (pattern === 5) {
+      return 'vertical-tall';
+    }
+  }
+  
+  // For fantasy characters or as fallback
+  const pattern = index % 12;
+  if (pattern === 0 || pattern === 7) {
+    return 'wide-horizontal';
+  } else if (pattern === 3 || pattern === 9) {
+    return 'square-large';
+  } else if (pattern === 5) {
+    return 'vertical-tall';
+  } else if (pattern === 1 || pattern === 8 || pattern === 11) {
+    return 'vertical-medium';
+  } else if (pattern === 6) {
+    return 'square-small';
+  } else {
+    return 'square-medium';
+  }
+}
+
+function getAspectRatio(item: Pokemon | FantasyCharacter, index: number): number {
+  const sizeClass = getImageSizeClass(item, index);
+  
+  switch (sizeClass) {
+    case 'wide-horizontal': return 16/9;
+    case 'vertical-tall': return 3/4;
+    case 'vertical-medium': return 2/3;
+    case 'square-large':
+    case 'square-medium':
+    case 'square-small':
+    default: return 1;
+  }
+}
+
 function openDetailView(item: Pokemon | FantasyCharacter) {
   if (isPokemon(item)) {
     router.push({ name: 'pokemonDetail', params: { id: item.pokedexNumber } });
@@ -99,26 +133,83 @@ function openDetailView(item: Pokemon | FantasyCharacter) {
 
 <style scoped>
 .gallery-container {
-  padding: 8px;
+  width: 100%;
+  padding: 2px;
 }
 
-.gallery-card {
+.masonry-gallery {
+  column-count: 2;
+  column-gap: 2px;
+}
+
+/* Responsive column adjustments */
+@media (min-width: 600px) {
+  .masonry-gallery {
+    column-count: 3;
+  }
+}
+
+@media (min-width: 960px) {
+  .masonry-gallery {
+    column-count: 4;
+  }
+}
+
+@media (min-width: 1264px) {
+  .masonry-gallery {
+    column-count: 5;
+  }
+}
+
+@media (min-width: 1904px) {
+  .masonry-gallery {
+    column-count: 6;
+  }
+}
+
+.masonry-item {
   position: relative;
+  cursor: pointer;
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 2px;
+  break-inside: avoid;
   overflow: hidden;
-  transition: transform 0.3s ease;
-  height: 200px;
 }
 
-.gallery-card:hover {
-  transform: scale(1.05);
+.wide-horizontal {
+  width: 100%;
+}
+
+.vertical-tall {
+  width: 100%;
+}
+
+.vertical-medium {
+  width: 100%;
+}
+
+.square-large {
+  width: 100%;
+}
+
+.square-medium {
+  width: 100%;
+}
+
+.square-small {
+  width: 100%;
 }
 
 .gallery-image {
-  transition: transform 0.5s ease;
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform 0.3s ease;
 }
 
-.gallery-card:hover .gallery-image {
-  transform: scale(1.1);
+.masonry-item:hover .gallery-image {
+  transform: scale(1.03);
 }
 
 .gallery-overlay {
@@ -126,7 +217,7 @@ function openDetailView(item: Pokemon | FantasyCharacter) {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
   color: white;
   height: 100%;
   pointer-events: none;
@@ -134,23 +225,30 @@ function openDetailView(item: Pokemon | FantasyCharacter) {
 
 .gallery-name {
   font-weight: bold;
-  font-size: 1rem;
+  font-size: 0.9rem;
   text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
 }
 
 .gallery-subtitle {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   opacity: 0.8;
 }
 
-/* Mobile Anpassungen */
 @media (max-width: 600px) {
-  .gallery-card {
-    height: 150px;
+  .gallery-container {
+    padding: 1px;
   }
   
+  .masonry-gallery {
+    column-gap: 1px;
+  }
+  
+  .masonry-item {
+    margin-bottom: 1px;
+  }
+
   .gallery-name {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
   
   .gallery-subtitle {
