@@ -403,17 +403,17 @@ export default defineComponent({
     
     // Fantasy transformations map
     const fantasyTransformations: Record<string, string> = {
-      'CAT': 'Bakeneko (mystical cat)',
-      'LIZARD': 'Dragon',
-      'BIRD': 'Phoenix',
-      'FROG': 'Frog Prince',
-      'FOX': 'Kitsune (nine-tailed fox)',
-      'SNAKE': 'Naga (half-snake, half-human)',
-      'HORSE': 'Pegasus (winged horse)',
-      'TURTLE': 'Koopa (Mario-like turtle)',
-      'LION': 'Manticore (lion with scorpion tail)',
-      'EAGLE': 'Griffin (eagle-lion hybrid)',
-      'DEER': 'Celestial Deer (glowing antlers)'
+      'CAT': 'Whisker Sprite (magical playful cat)',
+      'LIZARD': 'Sparkle Gecko (tiny glitter dragon)',
+      'BIRD': 'Featherling (tiny rainbow bird spirit)',
+      'FROG': 'Bubble Hopper (friendly marsh explorer)',
+      'FOX': 'Flufftail (clever forest helper)',
+      'SNAKE': 'Twinklecoil (shiny garden snake sprite)',
+      'HORSE': 'Dreampony (starry flying pony)',
+      'TURTLE': 'Shellbuddy (gentle forest guardian)',
+      'LION': 'Sunnymane (brave but kind lion hero)',
+      'EAGLE': 'Cloudglider (friendly sky messenger)',
+      'DEER': 'Stardancer (gentle glowing deer spirit)'
     };
     
     // Computed properties

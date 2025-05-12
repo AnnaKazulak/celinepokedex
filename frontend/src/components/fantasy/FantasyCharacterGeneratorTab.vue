@@ -42,13 +42,13 @@
           <v-btn 
             color="primary" 
             :loading="isGenerating"
-            :disabled="!isFormValid || isGenerating"
+            :disabled="!isFormValid || isGenerating || !!imageData"
             @click="onGenerateCharacter"
             min-width="200"
             height="44"
             class="text-none font-weight-medium elevation-2"
           >
-            {{ isGenerating ? 'Generiere...' : 'Charakter erstellen' }}
+            {{ isGenerating ? 'Generiere...' : !!imageData ? 'Charakter erstellt' : 'Charakter erstellen' }}
           </v-btn>
         </div>
       </v-col>

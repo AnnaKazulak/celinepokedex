@@ -561,32 +561,69 @@ const generateGeneratorCharacter = async () => {
   isGeneratorGenerating.value = true;
   generatorImageData.value = '';
   generatorGeneratedPrompt.value = '';
+  error.value = ''; // Nutze das existierende error Feld für Fehlermeldungen
   
-  try {
-    // Transform the base animal into its fantasy version for better AI generation
-    const fantasyCreature = fantasyTransformations[generatorBaseAnimal.value] || generatorBaseAnimal.value;
-    
-    const response = await axios.post(API_ENDPOINTS.GENERATE_CHARACTER, {
-      baseAnimal: generatorBaseAnimal.value,
-      elementType: generatorElementType.value,
-      dominantColor: generatorDominantColor.value,
-      styleType: generatorStyleType.value,
-      traits: generatorTraits.value,
-      fantasyCreature: fantasyCreature
-    });
-    
-    if (response.data && response.data.imageData) {
-      generatorImageData.value = response.data.imageData;
-      generatorGeneratedPrompt.value = response.data.prompt;
-    } else {
-      throw new Error('No image data returned from server');
+  // Maximum number of retry attempts
+  const maxRetries = 2;
+  let retryCount = 0;
+  let success = false;
+  
+  while (retryCount <= maxRetries && !success) {
+    try {
+      if (retryCount > 0) {
+        console.log(`Retry attempt ${retryCount} of ${maxRetries}`);
+      }
+      
+      // Transform the base animal into its fantasy version for better AI generation
+      const fantasyCreature = fantasyTransformations[generatorBaseAnimal.value] || generatorBaseAnimal.value;
+      
+      const response = await axios.post(API_ENDPOINTS.GENERATE_CHARACTER, {
+        baseAnimal: generatorBaseAnimal.value,
+        elementType: generatorElementType.value,
+        dominantColor: generatorDominantColor.value,
+        styleType: generatorStyleType.value,
+        traits: generatorTraits.value,
+        fantasyCreature: fantasyCreature
+      }, {
+        // Increased timeout for axios request (120 seconds)
+        timeout: 120000
+      });
+      
+      if (response.data && response.data.imageData) {
+        generatorImageData.value = response.data.imageData;
+        generatorGeneratedPrompt.value = response.data.prompt;
+        success = true;
+      } else {
+        throw new Error('No image data returned from server');
+      }
+    } catch (err) {
+      console.error('Error generating character:', err);
+      
+      // If we've reached max retries, set error message
+      if (retryCount === maxRetries) {
+        if (err.response) {
+          if (err.response.status === 504) {
+            error.value = `Gateway Timeout Error: Der Bildgenerierungsserver braucht zu lange. Bitte versuche eine einfachere Konfiguration oder versuche es später noch einmal.`;
+          } else if (err.response.data && err.response.data.error) {
+            error.value = `Error: ${err.response.data.error}`;
+          } else {
+            error.value = `Server error (${err.response.status}): Bitte versuche es später noch einmal`;
+          }
+        } else if (err.request) {
+          error.value = 'Keine Antwort vom Server. Bitte überprüfe deine Internetverbindung und versuche es erneut.';
+        } else if (err.code === 'ECONNABORTED') {
+          error.value = 'Zeitüberschreitung bei der Anfrage. Der Server braucht zu lange, um das Bild zu generieren. Bitte versuche es mit einfacheren Optionen.';
+        } else {
+          error.value = 'Fehler bei der Charaktergenerierung: ' + (err.message || 'Unbekannter Fehler');
+        }
+      } else {
+        retryCount++;
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
     }
-  } catch (err) {
-    console.error('Error generating character:', err);
-    alert('Failed to generate character. Please try again.');
-  } finally {
-    isGeneratorGenerating.value = false;
   }
+  
+  isGeneratorGenerating.value = false;
 };
 
 const saveGeneratorCharacter = async () => {
