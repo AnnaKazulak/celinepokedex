@@ -30,16 +30,40 @@
       </v-btn>
       
       <div class="content-wrapper px-6 flex-1 overflow-y-auto" style="max-height: calc(80vh - 140px);">
-        <!-- Schwebendes Bild etwas nach unten versetzt -->
-        <v-img
-          v-if="character.imageUrl"
-          :src="character.imageUrl"
-          class="mx-auto my-5 rounded floating-image"
-          contain
-          width="240"
-          height="240"
-          style="box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);"
-        ></v-img>
+        <!-- Schwebendes Bild etwas nach unten versetzt mit Edit-Option -->
+        <div class="position-relative mx-auto my-5" style="width: 240px; height: 240px;">
+          <v-img
+            v-if="character.imageUrl || previewImageUrl"
+            :src="previewImageUrl || character.imageUrl"
+            class="rounded floating-image"
+            contain
+            width="240"
+            height="240"
+            style="box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);"
+          ></v-img>
+          
+          <!-- Bild-Bearbeiten-Button -->
+          <v-btn
+            icon
+            color="white"
+            variant="tonal"
+            size="small"
+            class="position-absolute"
+            style="right: 8px; bottom: 8px; background-color: rgba(0, 0, 0, 0.5);"
+            @click="triggerFileInput"
+          >
+            <v-icon>mdi-camera</v-icon>
+          </v-btn>
+        </div>
+        
+        <!-- Versteckter File Input -->
+        <v-file-input
+          ref="fileInput"
+          v-model="imageFile"
+          class="d-none"
+          accept="image/*"
+          @update:model-value="handleImageFileChange"
+        ></v-file-input>
         
         <v-form @submit.prevent="updateCharacter">
           <div class="d-flex flex-column gap-4">
@@ -158,6 +182,9 @@ const editedBaseAnimal = ref('');
 const editedElementType = ref('');
 const error = ref('');
 const isSaving = ref(false);
+const imageFile = ref<File | null>(null);
+const previewImageUrl = ref<string | null>(null);
+const fileInput = ref<HTMLInputElement | null>(null);
 
 // Optionen für die Select-Felder mit den korrekten Werten aus dem System
 const baseAnimalOptions = [
@@ -221,13 +248,44 @@ const updateCharacter = async () => {
   }
 
   try {
-    const response = await axios.put(`${API_ENDPOINTS.FANTASY_CHARACTERS}/${props.character.id}`, {
+    let updatedImageUrl = props.character.imageUrl;
+    
+    // First, if we have a new image, upload it separately
+    if (imageFile.value) {
+      const imageFormData = new FormData();
+      imageFormData.append('image', imageFile.value);
+      
+      try {
+        const imageResponse = await axios.post(API_ENDPOINTS.UPLOAD_IMAGE, imageFormData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        if (imageResponse.data && imageResponse.data.imageUrl) {
+          updatedImageUrl = imageResponse.data.imageUrl;
+        }
+      } catch (imageErr) {
+        console.error('Error uploading image:', imageErr);
+        error.value = 'Failed to upload image. Please try again.';
+        isSaving.value = false;
+        return;
+      }
+    }
+    
+    // Now update the character with regular JSON data and the new image URL
+    const characterData = {
       name: nameToSave,
       prompt: editedPrompt.value,
       baseAnimal: editedBaseAnimal.value,
       elementType: editedElementType.value,
-      imageUrl: props.character.imageUrl
-    });
+      imageUrl: updatedImageUrl
+    };
+
+    const response = await axios.put(
+      `${API_ENDPOINTS.FANTASY_CHARACTERS}/${props.character.id}`, 
+      characterData
+    );
 
     if (response.data) {
       const updatedCharacter = response.data;
@@ -259,6 +317,29 @@ const updateCharacter = async () => {
     }
   } finally {
     isSaving.value = false;
+  }
+};
+
+// Trigger file input click
+const triggerFileInput = () => {
+  const input = fileInput.value;
+  if (input) {
+    input.click();
+  }
+};
+
+// Handle image file change
+const handleImageFileChange = (file: File) => {
+  if (file) {
+    imageFile.value = file;
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      previewImageUrl.value = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    imageFile.value = null;
+    previewImageUrl.value = null;
   }
 };
 </script>
