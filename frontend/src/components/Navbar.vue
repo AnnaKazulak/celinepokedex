@@ -124,8 +124,8 @@ const showFantasyDialog = ref(false);
 const route = useRoute();
 
 // Farben für die Navbar
-const psychicColor = POKEMON_COLORS.PSYCHIC_VIOLET;
-const ghostColor = POKEMON_COLORS.GHOST_PURPLE;
+const psychicColor = POKEMON_COLORS.PRIMARY_BLUE;
+const ghostColor = POKEMON_COLORS.PRIMARY_LILAC;
 
 // Scroll-Status
 const isScrolled = ref(false);

@@ -81,4 +81,6 @@ export const POKEMON_COLORS = {
   PSYCHIC_VIOLET: '#A27DFA',   // Psycho-Violett (Mewtwo)
   STEEL_BLUE: '#3C5AA6',       // Stahlblau (Lucario)
   BLAZE_ORANGE: '#ED8A0E',     // Glutorange (Charizard)
+  PRIMARY_BLUE: '#6890F0',     // Primärblau
+  PRIMARY_LILAC: '#705898',    // Primärlila
 };
