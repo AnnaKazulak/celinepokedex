@@ -107,7 +107,8 @@
 import { ref, onMounted, computed, onBeforeUnmount, watch } from 'vue';
 import axios from 'axios';
 import { eventBus } from '../utils/eventBus';
-import { Pokemon, PokemonType, FantasyCharacter } from '../types/pokemon';
+import { PokemonType } from '../types/pokemon';
+import type { Pokemon, FantasyCharacter } from '../types/pokemon';
 import { API_ENDPOINTS, EXTERNAL_API } from '../utils/constants';
 
 // Importiere die Unterkomponenten
@@ -116,9 +117,8 @@ import TypeFilter from '@/components/home/TypeFilter.vue';
 import SortToggle from '@/components/home/SortToggle.vue';
 import NoResultsMessage from '@/components/home/NoResultsMessage.vue';
 import LoadingIndicator from '@/components/home/LoadingIndicator.vue';
-import PokemonCard from '@/components/PokemonCard.vue';
-import FantasyCharacterCard from '@/components/FantasyCharacterCard.vue';
-import FantasyCharacterGenerator from '@/components/FantasyCharacterGenerator.vue';
+import PokemonCard from '../components/PokemonCard.vue';
+import FantasyCharacterCard from '../components/FantasyCharacterCard.vue';
 import GalleryView from '@/components/home/GalleryView.vue';
 
 // Content type toggle - 'all', 'pokemon', or 'fantasy'
