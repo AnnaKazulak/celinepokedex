@@ -222,7 +222,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import axios from 'axios';
+import axiosInstance from '@/utils/axiosConfig';
 import { type FantasyCharacter } from '@/types/pokemon';
 import { eventBus } from '@/utils/eventBus';
 import { extractDominantColor } from '@/utils/colorUtils';
@@ -274,8 +274,8 @@ async function fetchCharacterDetails() {
   error.value = null;
 
   try {
-    // Ändern des API-Pfades zum korrekten Backend-Endpunkt (/api/characters anstatt /api/fantasy-characters)
-    const response = await axios.get(`http://localhost:8080/api/characters/${characterId.value}`);
+    // Use axiosInstance with relative path instead of hardcoded URL
+    const response = await axiosInstance.get(`/characters/${characterId.value}`);
     character.value = response.data;
   } catch (err) {
     console.error('Fehler beim Laden der Fantasy-Character-Details:', err);
@@ -378,7 +378,8 @@ async function deleteCharacter() {
   isDeleting.value = true;
   
   try {
-    await axios.delete(`http://localhost:8080/api/characters/${character.value.id}`);
+    // Use axiosInstance with relative path instead of hardcoded URL
+    await axiosInstance.delete(`/characters/${character.value.id}`);
     showDeleteConfirmation.value = false;
     
     // Event emittieren, dass ein Fantasy Character gelöscht wurde

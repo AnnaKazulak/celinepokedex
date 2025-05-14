@@ -27,14 +27,17 @@ public class ImageGenerationService {
     private final RestTemplate restTemplate;
     private final String huggingfaceToken;
     private final String apiUrl = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0";
+    private final CloudinaryService cloudinaryService;
     
     // Added timeout constants
     private static final int CONNECTION_TIMEOUT = 60000; // 60 seconds
     private static final int READ_TIMEOUT = 120000;      // 120 seconds
 
-    public ImageGenerationService(@Value("${huggingface.token}") String huggingfaceToken) {
+    public ImageGenerationService(@Value("${huggingface.token}") String huggingfaceToken, 
+                                 CloudinaryService cloudinaryService) {
         // Create RestTemplate with increased timeouts
         this.restTemplate = new RestTemplate();
+        this.cloudinaryService = cloudinaryService;
         
         // Configure timeouts
         restTemplate.setRequestFactory(new org.springframework.http.client.SimpleClientHttpRequestFactory());
@@ -56,7 +59,7 @@ public class ImageGenerationService {
      * @param element The elemental power of the character
      * @param style The art style to generate the character in
      * @param traits List of character traits to apply
-     * @return Base64 encoded image data
+     * @return URL of the generated image in Cloudinary
      * @deprecated Use {@link #generateFantasyCharacterImage(BaseAnimal, ElementType, DominantColor, StyleType, List)} instead
      */
     @Deprecated
@@ -73,7 +76,7 @@ public class ImageGenerationService {
      * @param dominantColor The dominant color of the character (can be null)
      * @param style The art style to generate the character in
      * @param traits List of character traits to apply
-     * @return Base64 encoded image data
+     * @return URL of the generated image in Cloudinary
      */
     public String generateFantasyCharacterImage(BaseAnimal animal, ElementType element, DominantColor dominantColor, StyleType style, List<CharacterTrait> traits) {
         // Validate required parameters
@@ -97,7 +100,7 @@ public class ImageGenerationService {
      * Generates an image using the provided prompt text
      *
      * @param prompt The text prompt to generate an image from
-     * @return Base64 encoded image data
+     * @return URL of the generated image in Cloudinary
      * @throws RuntimeException if image generation fails
      */
     public String generateImage(String prompt) {
@@ -133,11 +136,10 @@ public class ImageGenerationService {
             logger.info("Response status: " + response.getStatusCode());
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                // In a production environment, you'd want to store this image somewhere
-                // For this example, we're using a temporary base64 encoding
-                String base64Image = java.util.Base64.getEncoder().encodeToString(response.getBody());
-                logger.info("Image successfully generated and encoded");
-                return "data:image/png;base64," + base64Image;
+                // Upload image data to Cloudinary instead of base64 encoding
+                String imageUrl = cloudinaryService.uploadImage(response.getBody());
+                logger.info("Image successfully generated and uploaded to Cloudinary");
+                return imageUrl;
             } else {
                 logger.warning("Unsuccessful response: " + response.getStatusCode());
                 throw new RuntimeException("Failed to generate image: " + response.getStatusCode());
@@ -162,7 +164,7 @@ public class ImageGenerationService {
      * Generates an image from a user-provided text prompt
      *
      * @param prompt The user's description of the fantasy character
-     * @return Base64 encoded image data
+     * @return URL of the generated image in Cloudinary
      * @throws RuntimeException if image generation fails
      */
     public String generateImageFromPrompt(String prompt) {
