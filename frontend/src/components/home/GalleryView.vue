@@ -13,6 +13,9 @@
           :aspect-ratio="getAspectRatio(item, index)"
           cover
           class="gallery-image rounded-lg"
+          :lazy-src="getPlaceholderUrl(item)"
+          :transition="'fade-transition'"
+          loading="lazy"
         >
           <template v-slot:placeholder>
             <div class="d-flex align-center justify-center fill-height">
@@ -59,12 +62,78 @@ function getItemKey(item: Pokemon | FantasyCharacter): string | number {
   }
 }
 
-function getItemImageUrl(item: Pokemon | FantasyCharacter): string {
+// Generate low-resolution placeholder for lazy loading
+function getPlaceholderUrl(item: Pokemon | FantasyCharacter): string {
+  let imageUrl = '';
+  
   if (isPokemon(item)) {
-    return item.imageUrl || '';
+    imageUrl = item.imageUrl || '';
   } else {
-    return item.imageUrl || '';
+    imageUrl = item.imageUrl || '';
   }
+  
+  // Add tiny placeholder transformation for Cloudinary images
+  if (imageUrl && imageUrl.includes('cloudinary.com')) {
+    const parts = imageUrl.split('/upload/');
+    if (parts.length === 2) {
+      // Create a tiny, blurred placeholder (10px wide, low quality)
+      const placeholderParams = 'w_10,h_10,q_10,e_blur:1000/';
+      imageUrl = `${parts[0]}/upload/${placeholderParams}${parts[1]}`;
+    }
+  }
+  
+  return imageUrl;
+}
+
+function getItemImageUrl(item: Pokemon | FantasyCharacter): string {
+  let imageUrl = '';
+  
+  if (isPokemon(item)) {
+    imageUrl = item.imageUrl || '';
+  } else {
+    imageUrl = item.imageUrl || '';
+  }
+  
+  // Add Cloudinary transformations if the URL contains cloudinary
+  if (imageUrl && imageUrl.includes('cloudinary.com')) {
+    // Get size class to determine appropriate dimensions
+    const sizeClass = getImageSizeClass(item, typeof item.id === 'number' ? item.id : 0);
+    
+    // Extract the base URL and path
+    const parts = imageUrl.split('/upload/');
+    if (parts.length === 2) {
+      // Define transformation parameters based on size class
+      let transformParams = '';
+      
+      switch (sizeClass) {
+        case 'wide-horizontal':
+          transformParams = 'c_fill,w_600,h_338,q_auto,f_auto/'; // 16:9 ratio
+          break;
+        case 'vertical-tall':
+          transformParams = 'c_fill,w_400,h_533,q_auto,f_auto/'; // 3:4 ratio
+          break;
+        case 'vertical-medium':
+          transformParams = 'c_fill,w_400,h_600,q_auto,f_auto/'; // 2:3 ratio
+          break;
+        case 'square-large':
+          transformParams = 'c_fill,w_500,h_500,q_auto,f_auto/'; // 1:1 ratio
+          break;
+        case 'square-medium':
+          transformParams = 'c_fill,w_400,h_400,q_auto,f_auto/'; // 1:1 ratio
+          break;
+        case 'square-small':
+          transformParams = 'c_fill,w_300,h_300,q_auto,f_auto/'; // 1:1 ratio
+          break;
+        default:
+          transformParams = 'c_fill,w_400,h_400,q_auto,f_auto/'; // Default square
+      }
+      
+      // Reconstruct URL with transformations
+      imageUrl = `${parts[0]}/upload/${transformParams}${parts[1]}`;
+    }
+  }
+  
+  return imageUrl;
 }
 
 function getItemName(item: Pokemon | FantasyCharacter): string {
@@ -254,5 +323,13 @@ function openDetailView(item: Pokemon | FantasyCharacter) {
   .gallery-subtitle {
     font-size: 0.7rem;
   }
+}
+
+/* Add fade transition for lazy loading */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 </style>
