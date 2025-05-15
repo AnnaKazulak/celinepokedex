@@ -132,7 +132,7 @@ const isLoading = ref(false);
 const selectedTypes = ref<PokemonType[]>([]);
 const viewMode = ref('cards'); // 'cards' or 'gallery'
 
-// Ensure each Pokemon has an imageUrl
+// Ensure each Pokemon has an imageUrl with Cloudinary optimizations
 function ensureImageUrls(pokemonList: Pokemon[]): Pokemon[] {
   return pokemonList.map(pokemon => {
     if (!pokemon.imageUrl && pokemon.pokedexNumber) {
@@ -140,9 +140,33 @@ function ensureImageUrls(pokemonList: Pokemon[]): Pokemon[] {
       const numericId = parseInt(pokemon.pokedexNumber.replace(/^0+/, ''));
       // Use the external API's sprite URL as fallback
       pokemon.imageUrl = EXTERNAL_API.SPRITE_URL(numericId);
+    } 
+    // Add Cloudinary transformations if it's a Cloudinary URL
+    else if (pokemon.imageUrl && pokemon.imageUrl.includes('cloudinary.com')) {
+      pokemon.imageUrl = optimizeCloudinaryUrl(pokemon.imageUrl, 'pokemon');
     }
     return pokemon;
   });
+}
+
+// Helper function to optimize Cloudinary URLs for different content types
+function optimizeCloudinaryUrl(url: string, contentType: 'pokemon' | 'fantasy' = 'pokemon'): string {
+  if (!url || !url.includes('cloudinary.com')) return url;
+  
+  const parts = url.split('/upload/');
+  if (parts.length !== 2) return url;
+  
+  let transformParams;
+  
+  if (contentType === 'pokemon') {
+    // For Pokemon cards - optimized for card view
+    transformParams = 'w_400,h_400,c_pad,q_auto,f_auto/';
+  } else {
+    // For Fantasy characters - might have different aspect ratios
+    transformParams = 'w_400,h_500,c_fill,q_auto,f_auto/';
+  }
+  
+  return `${parts[0]}/upload/${transformParams}${parts[1]}`;
 }
 
 // Erstelle eine Liste aller Pokémon-Typen für das Dropdown
@@ -307,7 +331,14 @@ async function loadAllFantasyCharacters(updateLoadingState = true) {
   
   try {
     const response = await axios.get<FantasyCharacter[]>(API_ENDPOINTS.FANTASY_CHARACTERS);
-    fantasyCharacters.value = response.data;
+    
+    // Apply Cloudinary optimizations to fantasy character images
+    fantasyCharacters.value = response.data.map(character => {
+      if (character.imageUrl && character.imageUrl.includes('cloudinary.com')) {
+        character.imageUrl = optimizeCloudinaryUrl(character.imageUrl, 'fantasy');
+      }
+      return character;
+    });
   } catch (error) {
     console.error('Error loading fantasy characters:', error);
   } finally {
