@@ -2,56 +2,81 @@
   <v-container class="pt-24 pb-5 px-2">
     <!-- Header und Suchfeld -->
     <div class="search-container">
-      <!-- Content Type Toggle -->
+      <!-- Content Type Toggle as chip-group -->
       <div class="content-toggle-container mb-5">
-        <v-btn-toggle
+        <v-chip-group
           v-model="contentType"
-          color="primary"
-          rounded="pill"
           mandatory
+          selected-class="primary"
+          class="filter-chips-group"
         >
-          <v-btn value="all" :ripple="false" class="toggle-btn">
-            <v-icon start>mdi-view-grid</v-icon>
+          <v-chip
+            value="all"
+            filter
+            variant="elevated"
+            class="filter-chip ma-1"
+          >
+            <v-icon start size="small">mdi-view-grid</v-icon>
             Alle
-          </v-btn>
-          <v-btn value="pokemon" :ripple="false" class="toggle-btn">
-            <v-icon start>mdi-pokeball</v-icon>
+          </v-chip>
+          <v-chip
+            value="pokemon"
+            filter
+            variant="elevated"
+            class="filter-chip ma-1"
+          >
+            <v-icon start size="small">mdi-pokeball</v-icon>
             Pokémon
-          </v-btn>
-          <v-btn value="fantasy" :ripple="false" class="toggle-btn">
-            <v-icon start>mdi-magic-staff</v-icon>
+          </v-chip>
+          <v-chip
+            value="fantasy"
+            filter
+            variant="elevated"
+            class="filter-chip ma-1"
+          >
+            <v-icon start size="small">mdi-magic-staff</v-icon>
             Fantasy
-          </v-btn>
-        </v-btn-toggle>
+          </v-chip>
+        </v-chip-group>
       </div>
   
       <!-- View Mode Toggle und Filter Button -->
       <div class="view-toggle-container mb-4">
-        <v-btn-toggle
+        <v-chip-group
           v-model="viewMode"
-          color="secondary"
-          density="comfortable"
-          rounded
+          mandatory
+          selected-class="secondary"
+          class="filter-chips-group view-mode-chips"
         >
-          <v-btn value="cards" :ripple="false">
-            <v-icon>mdi-view-grid-outline</v-icon>
-            <span class="ml-1 d-none d-sm-inline">Karten</span>
-          </v-btn>
-          <v-btn value="gallery" :ripple="false">
-            <v-icon>mdi-image-multiple-outline</v-icon>
-            <span class="ml-1 d-none d-sm-inline">Galerie</span>
-          </v-btn>
-        </v-btn-toggle>
+          <v-chip
+            value="cards"
+            filter
+            variant="elevated"
+            class="filter-chip ma-1"
+          >
+            <v-icon start size="small">mdi-view-grid-outline</v-icon>
+            <span class="d-none d-sm-inline">Karten</span>
+          </v-chip>
+          <v-chip
+            value="gallery"
+            filter
+            variant="elevated"
+            class="filter-chip ma-1"
+          >
+            <v-icon start size="small">mdi-image-multiple-outline</v-icon>
+            <span class="d-none d-sm-inline">Galerie</span>
+          </v-chip>
+        </v-chip-group>
         
         <!-- Filter Button zum Öffnen des Drawers -->
         <v-btn
-          class="ml-2"
+          class="ml-2 filter-btn"
           color="secondary"
           variant="outlined"
           @click="drawer = !drawer"
         >
-          <v-icon>mdi-filter</v-icon>
-          <span class="ml-1 d-none d-sm-inline">Filter</span>
+          <v-icon start size="small">mdi-filter</v-icon>
+          <span class="d-none d-sm-inline">Filter</span>
         </v-btn>
       </div>
       
@@ -111,7 +136,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, onBeforeUnmount, watch } from 'vue';
+import { ref, onMounted, computed, onBeforeUnmount, watch, nextTick } from 'vue';
 import axios from 'axios';
 import { eventBus } from '../utils/eventBus';
 import { PokemonType } from '../types/pokemon';
@@ -218,7 +243,7 @@ function getItemKey(item: Pokemon | FantasyCharacter): string | number {
   }
 }
 
-// Watch for content type changes
+// Watch for content type changes to ensure filtering works on button clicks
 watch(contentType, () => {
   if (contentType.value === 'all') {
     loadAllContent();
@@ -227,7 +252,15 @@ watch(contentType, () => {
   } else {
     loadAllFantasyCharacters();
   }
-});
+}, { flush: 'post' });
+
+// Watch for view mode changes to ensure re-rendering
+watch(viewMode, () => {
+  // Use nextTick to ensure DOM updates
+  nextTick(() => {
+    eventBus.emit('view-mode-changed', viewMode.value);
+  });
+}, { flush: 'post' });
 
 // Computed property to show combined and filtered content
 const filteredContent = computed(() => {
@@ -516,16 +549,47 @@ onBeforeUnmount(() => {
 .content-toggle-container {
   display: flex;
   justify-content: center;
-}
-
-.toggle-btn {
-  min-width: 100px;
-}
-
-.filter-container {
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
+  max-width: 400px;
+}
+
+/* Filter chip styles to match FilterDrawer */
+.filter-chips-group {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.filter-chip {
+  min-width: 80px;
+  margin: 4px;
+  flex-grow: 1;
+  text-align: center;
+  justify-content: center;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.filter-chip:hover {
+  transform: translateY(-2px);
+}
+
+/* View mode toggle container */
+.view-toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.view-mode-chips {
+  max-width: 240px;
+}
+
+.filter-btn {
+  height: 40px;
 }
 
 .content-grid {
@@ -554,9 +618,13 @@ onBeforeUnmount(() => {
     margin: 0 -3px;
   }
   
-  .toggle-btn {
-    min-width: 80px;
+  .filter-chip {
+    min-width: 70px;
     font-size: 0.85rem;
+  }
+
+  .view-mode-chips {
+    max-width: 180px;
   }
 }
 
@@ -589,6 +657,10 @@ onBeforeUnmount(() => {
   
   .content-col {
     padding: 10px 8px;
+  }
+  
+  .filter-chip {
+    min-width: 100px;
   }
 }
 

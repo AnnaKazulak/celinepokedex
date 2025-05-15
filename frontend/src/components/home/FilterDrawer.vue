@@ -165,6 +165,14 @@
 import { computed, watch } from 'vue';
 import SortToggle from '@/components/home/SortToggle.vue';
 import TypeFilter from '@/components/home/TypeFilter.vue';
+import { PokemonType } from '@/types/pokemon';
+
+// Interface für die Sortieroption
+interface SortOption {
+  text: string;
+  value: string;
+  icon?: string;
+}
 
 // Props für die Komponente
 const props = defineProps({
@@ -185,15 +193,15 @@ const props = defineProps({
     required: true
   },
   selectedTypes: {
-    type: Array,
+    type: Array as () => PokemonType[],
     required: true
   },
   pokemonTypes: {
-    type: Array,
+    type: Array as () => { label: string; value: PokemonType }[],
     required: true
   },
   sortOptions: {
-    type: Array,
+    type: Array as () => SortOption[],
     required: true
   }
 });
@@ -233,6 +241,16 @@ const sortOptionIndexModel = computed({
 const selectedTypesModel = computed({
   get: () => props.selectedTypes,
   set: (value) => emit('update:selectedTypes', value)
+});
+
+// Watchers für die Filterbuttons, um sicherzustellen, dass beim erneuten Klicken
+// auf den gleichen Button ebenfalls ein Event ausgelöst wird
+watch(contentTypeModel, () => {
+  onFilterChanged();
+});
+
+watch(viewModeModel, () => {
+  onFilterChanged();
 });
 
 // Event-Handler für Filter-Änderungen
