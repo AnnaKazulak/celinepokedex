@@ -71,12 +71,22 @@
         <!-- Filter Button zum Öffnen des Drawers -->
         <v-btn
           class="ml-2 filter-btn"
-          color="secondary"
-          variant="outlined"
+          :color="hasActiveFilters ? 'primary' : 'secondary'"
+          :variant="hasActiveFilters ? 'elevated' : 'outlined'"
           @click="drawer = !drawer"
+          elevation="2"
         >
           <v-icon start size="small">mdi-filter</v-icon>
           <span class="d-none d-sm-inline">Filter</span>
+          <v-badge
+            v-if="hasActiveFilters"
+            color="info"
+            content="!"
+            location="top end"
+            dot
+            inline
+            class="ml-1"
+          ></v-badge>
         </v-btn>
       </div>
       
@@ -224,6 +234,21 @@ const sortOptionIndex = ref(0); // Defaultwert ist 0 (Name)
 // Computed property für sortOption basierend auf dem sortOptionIndex
 const sortOption = computed(() => {
   return sortOptions[sortOptionIndex.value].value;
+});
+
+// Computed property um zu prüfen, ob aktive Filter vorhanden sind
+const hasActiveFilters = computed(() => {
+  // Prüfe, ob Typ-Filter gesetzt sind
+  if (selectedTypes.value.length > 0) {
+    return true;
+  }
+  
+  // Prüfe, ob eine andere Sortierung als der Standard (Name) ausgewählt ist
+  if (sortOptionIndex.value !== 0) {
+    return true;
+  }
+  
+  return false;
 });
 
 // Type-checking helpers
@@ -590,6 +615,13 @@ onBeforeUnmount(() => {
 
 .filter-btn {
   height: 40px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.filter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .content-grid {
