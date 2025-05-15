@@ -13,7 +13,7 @@
       elevation="8"
     >
       <!-- Title first - ganz oben -->
-      <v-card-title class="text-white text-center font-weight-medium letter-spacing-1 position-relative bg-gradient-primary">
+      <v-card-title class="text-white text-center text-h5position-relative bg-gradient-primary py-4 px-4">
         Bearbeiten
       </v-card-title>
 
@@ -347,7 +347,7 @@ const handleImageFileChange = (file: File) => {
 <style>
 /* Benutzerdefinierte Klassen für die Komponentendarstellung */
 .bg-gradient-primary {
-  background: var(--gradient-primary);
+  background: linear-gradient(135deg, #6890F0 0%, #705898 100%);
   z-index: 25;
 }
 
