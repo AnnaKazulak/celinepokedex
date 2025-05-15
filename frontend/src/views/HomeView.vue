@@ -25,7 +25,7 @@
         </v-btn-toggle>
       </div>
   
-      <!-- View Mode Toggle -->
+      <!-- View Mode Toggle und Filter Button -->
       <div class="view-toggle-container mb-4">
         <v-btn-toggle
           v-model="viewMode"
@@ -42,6 +42,17 @@
             <span class="ml-1 d-none d-sm-inline">Galerie</span>
           </v-btn>
         </v-btn-toggle>
+        
+        <!-- Filter Button zum Öffnen des Drawers -->
+        <v-btn
+          class="ml-2"
+          color="secondary"
+          variant="outlined"
+          @click="drawer = !drawer"
+        >
+          <v-icon>mdi-filter</v-icon>
+          <span class="ml-1 d-none d-sm-inline">Filter</span>
+        </v-btn>
       </div>
       
       <!-- Suchfeld-Komponente -->
@@ -49,24 +60,71 @@
         v-model:searchQuery="searchQuery"
         @search="searchContent"
       />
-      
-      <!-- Filter- und Sortieroptionen -->
-      <div class="filter-container">
-        <!-- Sortierung-Komponente -->
-        <SortToggle
-          :sort-options="sortOptions"
-          v-model:sortOptionIndex="sortOptionIndex"
-        />
-        
-        <!-- Typ-Filter-Komponente, nur für Pokemon-Ansicht -->
-        <TypeFilter
-          v-if="contentType !== 'fantasy'"
-          v-model:selectedTypes="selectedTypes"
-          :pokemon-types="pokemonTypes"
-          @filterChanged="filterPokemonsByType"
-        />
-      </div>
     </div>
+    
+    <!-- Drawer für Filter- und Sortieroptionen -->
+    <v-navigation-drawer
+      v-model="drawer"
+      location="end"
+      temporary
+      width="280"
+    >
+      <v-card flat>
+        <v-card-title class="py-4 d-flex align-center">
+          <v-icon class="mr-2">mdi-tune</v-icon>
+          Filter & Sortierung
+          <v-spacer></v-spacer>
+          <v-btn
+            icon
+            variant="text"
+            @click="drawer = false"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        
+        <v-divider></v-divider>
+        
+        <v-card-text class="py-4">
+          <h3 class="text-subtitle-1 mb-3">Sortierung</h3>
+          <!-- Sortierung-Komponente -->
+          <SortToggle
+            :sort-options="sortOptions"
+            v-model:sortOptionIndex="sortOptionIndex"
+          />
+          
+          <v-divider class="my-4"></v-divider>
+          
+          <!-- Typ-Filter-Komponente, nur für Pokemon-Ansicht -->
+          <div v-if="contentType !== 'fantasy'">
+            <h3 class="text-subtitle-1 mb-3">Pokémon-Typen</h3>
+            <TypeFilter
+              v-model:selectedTypes="selectedTypes"
+              :pokemon-types="pokemonTypes"
+              @filterChanged="filterPokemonsByType"
+            />
+          </div>
+        </v-card-text>
+        
+        <v-divider></v-divider>
+        
+        <v-card-actions class="py-3 px-4">
+          <v-spacer></v-spacer>
+          <v-btn
+            variant="text"
+            @click="resetFilters"
+          >
+            Filter zurücksetzen
+          </v-btn>
+          <v-btn
+            color="primary"
+            @click="drawer = false"
+          >
+            Anwenden
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-navigation-drawer>
     
     <!-- Keine Ergebnisse Nachricht -->
     <NoResultsMessage 
@@ -131,6 +189,7 @@ const searchQuery = ref('');
 const isLoading = ref(false);
 const selectedTypes = ref<PokemonType[]>([]);
 const viewMode = ref('cards'); // 'cards' or 'gallery'
+const drawer = ref(false); // For the filter drawer
 
 // Ensure each Pokemon has an imageUrl with Cloudinary optimizations
 function ensureImageUrls(pokemonList: Pokemon[]): Pokemon[] {
@@ -293,6 +352,20 @@ const filteredContent = computed(() => {
   
   return result;
 });
+
+// Function to reset all filters
+async function resetFilters() {
+  selectedTypes.value = [];
+  sortOptionIndex.value = 0; // Zurücksetzen der Sortierung auf "Name"
+  
+  if (contentType.value === 'all') {
+    await loadAllContent();
+  } else if (contentType.value === 'pokemon') {
+    await loadAllPokemons();
+  } else {
+    await loadAllFantasyCharacters();
+  }
+}
 
 // Load all content (both Pokemon and Fantasy Characters)
 async function loadAllContent() {
