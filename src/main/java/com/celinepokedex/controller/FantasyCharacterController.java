@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/characters")
@@ -33,8 +34,18 @@ public class FantasyCharacterController {
      * GET /api/characters
      */
     @GetMapping
-    public ResponseEntity<List<FantasyCharacter>> getAllCharacters() {
+    public ResponseEntity<List<FantasyCharacter>> getAllCharacters(
+            @RequestParam(required = false) List<String> elementTypes) {
         List<FantasyCharacter> characters = fantasyCharacterService.getAllFantasyCharacters();
+        
+        // Filter by element types if specified
+        if (elementTypes != null && !elementTypes.isEmpty()) {
+            characters = characters.stream()
+                    .filter(character -> character.getElementType() != null && 
+                                        elementTypes.contains(character.getElementType()))
+                    .collect(Collectors.toList());
+        }
+        
         return ResponseEntity.ok(characters);
     }
 

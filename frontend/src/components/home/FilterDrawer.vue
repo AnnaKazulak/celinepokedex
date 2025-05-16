@@ -133,6 +133,18 @@
             @filter-changed="onFilterChanged"
           />
         </div>
+        
+        <!-- Element-Type-Filter-Komponente, nur für Fantasy-Ansicht -->
+        <div v-else>
+          <h3 class="text-subtitle-1 font-weight-medium mb-3 d-flex align-center">
+            <v-icon class="mr-2" size="small" color="primary">mdi-filter-variant</v-icon>
+            Elemente-Typen
+          </h3>
+          <ElementTypeFilter
+            v-model:selected-element-types="selectedElementTypesModel"
+            @filter-changed="onFilterChanged"
+          />
+        </div>
       </v-card-text>
       
       <!-- Footer mit Gradient Hintergrund -->
@@ -165,6 +177,7 @@
 import { computed, watch } from 'vue';
 import SortToggle from '@/components/home/SortToggle.vue';
 import TypeFilter from '@/components/home/TypeFilter.vue';
+import ElementTypeFilter from '@/components/fantasy/ElementTypeFilter.vue';
 import { PokemonType } from '@/types/pokemon';
 
 // Interface für die Sortieroption
@@ -196,6 +209,10 @@ const props = defineProps({
     type: Array as () => PokemonType[],
     required: true
   },
+  selectedElementTypes: {
+    type: Array as () => string[],
+    required: true
+  },
   pokemonTypes: {
     type: Array as () => { label: string; value: PokemonType }[],
     required: true
@@ -213,6 +230,7 @@ const emit = defineEmits([
   'update:viewMode',
   'update:sortOptionIndex',
   'update:selectedTypes',
+  'update:selectedElementTypes',
   'filter-changed',
   'reset-filters'
 ]);
@@ -241,6 +259,11 @@ const sortOptionIndexModel = computed({
 const selectedTypesModel = computed({
   get: () => props.selectedTypes,
   set: (value) => emit('update:selectedTypes', value)
+});
+
+const selectedElementTypesModel = computed({
+  get: () => props.selectedElementTypes,
+  set: (value) => emit('update:selectedElementTypes', value)
 });
 
 // Watchers für die Filterbuttons, um sicherzustellen, dass beim erneuten Klicken

@@ -104,9 +104,10 @@
       v-model:view-mode="viewMode"
       v-model:sort-option-index="sortOptionIndex"
       v-model:selected-types="selectedTypes"
+      v-model:selected-element-types="selectedElementTypes"
       :pokemon-types="pokemonTypes"
       :sort-options="sortOptions"
-      @filter-changed="filterPokemonsByType"
+      @filter-changed="handleFilterChanged"
       @reset-filters="resetFilters"
     />
     
@@ -173,6 +174,7 @@ const fantasyCharacters = ref<FantasyCharacter[]>([]);
 const searchQuery = ref('');
 const isLoading = ref(false);
 const selectedTypes = ref<PokemonType[]>([]);
+const selectedElementTypes = ref<string[]>([]); // For filtering fantasy characters by element type
 const viewMode = ref('cards'); // 'cards' or 'gallery'
 const drawer = ref(false); // For the filter drawer
 
@@ -240,6 +242,11 @@ const sortOption = computed(() => {
 const hasActiveFilters = computed(() => {
   // Prüfe, ob Typ-Filter gesetzt sind
   if (selectedTypes.value.length > 0) {
+    return true;
+  }
+  
+  // Prüfe, ob Element-Typ-Filter gesetzt sind
+  if (selectedElementTypes.value.length > 0) {
     return true;
   }
   
@@ -315,6 +322,30 @@ const filteredContent = computed(() => {
         return contentType.value === 'all'; // Keep fantasy characters in 'all' mode
       });
     }
+  } else {
+    // Apply element type filter for Fantasy characters in fantasy-only mode
+    if (selectedElementTypes.value.length > 0) {
+      result = result.filter(item => {
+        if (isFantasyCharacter(item)) {
+          return item.elementType && selectedElementTypes.value.includes(item.elementType);
+        }
+        return false;
+      });
+    }
+  }
+  
+  // For 'all' mode, apply both pokemon type filters and fantasy element type filters
+  if (contentType.value === 'all') {
+    if (selectedElementTypes.value.length > 0) {
+      result = result.filter(item => {
+        if (isPokemon(item)) {
+          return true; // Keep all Pokemon items
+        } else if (isFantasyCharacter(item)) {
+          return item.elementType && selectedElementTypes.value.includes(item.elementType);
+        }
+        return false;
+      });
+    }
   }
   
   // Apply search filter
@@ -364,6 +395,7 @@ const filteredContent = computed(() => {
 // Function to reset all filters
 async function resetFilters() {
   selectedTypes.value = [];
+  selectedElementTypes.value = [];
   sortOptionIndex.value = 0; // Zurücksetzen der Sortierung auf "Name"
   
   if (contentType.value === 'all') {
@@ -455,6 +487,41 @@ async function filterPokemonsByType() {
   }
 }
 
+// Function to filter fantasy characters by element type
+async function filterFantasyCharactersByElementType() {
+  if (contentType.value === 'pokemon') return;
+  
+  isLoading.value = true;
+  try {
+    if (selectedElementTypes.value.length > 0) {
+      // When element types are selected, use the API endpoint with elementType parameters
+      const response = await axios.get<FantasyCharacter[]>(API_ENDPOINTS.FANTASY_CHARACTERS, {
+        params: { 
+          elementTypes: selectedElementTypes.value 
+        },
+        paramsSerializer: {
+          indexes: null // null means no indexes, so ?elementTypes=FIRE&elementTypes=WATER
+        }
+      });
+      
+      // Apply Cloudinary optimizations to fantasy character images
+      fantasyCharacters.value = response.data.map(character => {
+        if (character.imageUrl && character.imageUrl.includes('cloudinary.com')) {
+          character.imageUrl = optimizeCloudinaryUrl(character.imageUrl, 'fantasy');
+        }
+        return character;
+      });
+    } else {
+      // If no element type is selected, load all fantasy characters
+      await loadAllFantasyCharacters();
+    }
+  } catch (error) {
+    console.error('Error filtering by element type:', error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
 // Function to search content using the API
 async function searchContent() {
   // Only use the API search if the query is at least 2 characters
@@ -481,10 +548,19 @@ async function searchContent() {
       if (contentType.value !== 'pokemon') {
         const fantasyResponse = await axios.get<FantasyCharacter[]>(`${API_ENDPOINTS.FANTASY_CHARACTERS}/search`, {
           params: {
-            query: searchQuery.value
+            query: searchQuery.value,
+            elementTypes: selectedElementTypes.value.length > 0 ? selectedElementTypes.value : null
+          },
+          paramsSerializer: {
+            indexes: null
           }
         });
-        fantasyCharacters.value = fantasyResponse.data;
+        fantasyCharacters.value = fantasyResponse.data.map(character => {
+          if (character.imageUrl && character.imageUrl.includes('cloudinary.com')) {
+            character.imageUrl = optimizeCloudinaryUrl(character.imageUrl, 'fantasy');
+          }
+          return character;
+        });
       }
     } catch (error) {
       console.error('Error searching content:', error);
@@ -502,7 +578,11 @@ async function searchContent() {
         await loadAllPokemons();
       }
     } else {
-      await loadAllFantasyCharacters();
+      if (selectedElementTypes.value.length > 0) {
+        await filterFantasyCharactersByElementType();
+      } else {
+        await loadAllFantasyCharacters();
+      }
     }
   }
 }
@@ -525,6 +605,21 @@ function handleFantasyCharacterDeleted(characterId: number) {
   fantasyCharacters.value = fantasyCharacters.value.filter(
     character => character.id !== characterId
   );
+}
+
+// Handler for filter changed event from FilterDrawer
+async function handleFilterChanged() {
+  if (contentType.value === 'pokemon') {
+    await filterPokemonsByType();
+  } else if (contentType.value === 'fantasy') {
+    await filterFantasyCharactersByElementType();
+  } else {
+    // For 'all' content type, run both filters
+    await Promise.all([
+      filterPokemonsByType(),
+      filterFantasyCharactersByElementType()
+    ]);
+  }
 }
 
 // Register event listeners
