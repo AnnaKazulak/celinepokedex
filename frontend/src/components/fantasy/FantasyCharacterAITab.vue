@@ -109,6 +109,7 @@
 import { ref, defineEmits } from 'vue';
 import FantasyLoadingIndicator from './FantasyLoadingIndicator.vue';
 
+// Emit events to parent
 const emit = defineEmits<{
   'generate': [prompt: string];
   'reset': [];

@@ -154,7 +154,7 @@
 import { ref, watch, computed } from 'vue';
 import { useRouter } from 'vue-router'; 
 import axios from 'axios';
-import { API_ENDPOINTS } from '../utils/constants';
+import { API_ENDPOINTS, FANTASY_CHARACTER_OPTIONS, FANTASY_TRANSFORMATIONS } from '../utils/constants';
 import { eventBus } from '../utils/eventBus';
 import type { FantasyCharacter } from '../types/pokemon';
 import FantasyCharacterAITab from './fantasy/FantasyCharacterAITab.vue';
@@ -211,31 +211,12 @@ const generatorImageData = ref('');
 const generatorGeneratedPrompt = ref('');
 const isSavingGenerator = ref(false);
 
-// Options for generator selects - EXACT same values as backend expects
-const baseAnimalOptions = [
-  'CAT', 'LIZARD', 'BIRD', 
-  'FROG', 'FOX', 'SNAKE', 'HORSE', 'TURTLE',
-  'LION', 'EAGLE', 'DEER'
-];
-
-const elementTypeOptions = [
-  'FIRE', 'WATER', 'EARTH', 'WIND', 'ELECTRIC', 
-  'ICE', 'NATURE', 'SHADOW', 'LIGHT', 'POISON'
-];
-
-const colorOptions = [
-  'RED', 'BLUE', 'GREEN', 'YELLOW', 'PURPLE', 
-  'ORANGE', 'BLACK', 'WHITE', 'PINK', 'BROWN'
-];
-
-const styleTypeOptions = [
-  'DISNEY', 'PIXAR', 'POKEMON', 'STUDIO_GHIBLI', 'DREAMWORKS'
-];
-
-const characterTraitOptions = [
-  'CUTE', 'SCARY', 'MYSTERIOUS', 'MAJESTIC',
-  'FUNNY', 'SMALL', 'GIANT', 'BABY', 'ELDER'
-];
+// Options für die Dropdowns - Zugriff auf die zentralen Konstanten
+const baseAnimalOptions = FANTASY_CHARACTER_OPTIONS.BASE_ANIMALS;
+const elementTypeOptions = FANTASY_CHARACTER_OPTIONS.ELEMENT_TYPES;
+const colorOptions = FANTASY_CHARACTER_OPTIONS.COLORS;
+const styleTypeOptions = FANTASY_CHARACTER_OPTIONS.STYLE_TYPES;
+const characterTraitOptions = FANTASY_CHARACTER_OPTIONS.CHARACTER_TRAITS;
 
 // Fantasy transformations map
 const fantasyTransformations: Record<string, string> = {
