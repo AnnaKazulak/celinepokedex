@@ -339,7 +339,9 @@ const filteredContent = computed(() => {
     if (selectedElementTypes.value.length > 0) {
       result = result.filter(item => {
         if (isPokemon(item)) {
-          return true; // Keep all Pokemon items
+          return selectedTypes.value.length === 0 || selectedTypes.value.some(type => 
+            item.type1 === type || item.type2 === type
+          );
         } else if (isFantasyCharacter(item)) {
           return item.elementType && selectedElementTypes.value.includes(item.elementType);
         }

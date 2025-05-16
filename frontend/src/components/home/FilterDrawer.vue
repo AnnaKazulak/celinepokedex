@@ -121,7 +121,7 @@
         
         <v-divider class="my-4"></v-divider>
         
-        <!-- Typ-Filter-Komponente, nur für Pokemon-Ansicht -->
+        <!-- Typ-Filter-Komponente für Pokemon und "Alle" Ansicht -->
         <div v-if="contentTypeModel !== 'fantasy'">
           <h3 class="text-subtitle-1 font-weight-medium mb-3 d-flex align-center">
             <v-icon class="mr-2" size="small" color="primary">mdi-filter-variant</v-icon>
@@ -134,9 +134,9 @@
           />
         </div>
         
-        <!-- Element-Type-Filter-Komponente, nur für Fantasy-Ansicht -->
-        <div v-else>
-          <h3 class="text-subtitle-1 font-weight-medium mb-3 d-flex align-center">
+        <!-- Element-Type-Filter-Komponente für Fantasy und "Alle" Ansicht -->
+        <div v-if="contentTypeModel !== 'pokemon'">
+          <h3 class="text-subtitle-1 font-weight-medium mb-3 d-flex align-center mt-4">
             <v-icon class="mr-2" size="small" color="primary">mdi-filter-variant</v-icon>
             Elemente-Typen
           </h3>
