@@ -1,5 +1,5 @@
 <template>
-  <v-container class="pt-24 pb-5 px-2">
+  <v-container :class="['pt-24 pb-5 px-2', {'content-with-drawer': drawer && isLargeScreen}]">
     <!-- Header und Suchfeld -->
     <div class="search-container">
       <!-- Content Type Toggle as chip-group -->
@@ -109,6 +109,7 @@
       :sort-options="sortOptions"
       @filter-changed="handleFilterChanged"
       @reset-filters="resetFilters"
+      @screen-size-changed="handleScreenSizeChange"
     />
     
     <!-- Keine Ergebnisse Nachricht -->

@@ -2,7 +2,7 @@
   <v-navigation-drawer
     v-model="drawerModel"
     location="end"
-    temporary
+    :temporary="!isLargeScreen"
     width="300"
     class="filter-drawer"
   >
@@ -175,10 +175,17 @@
 
 <script setup lang="ts">
 import { computed, watch } from 'vue';
+import { useDisplay } from 'vuetify/lib/framework.mjs';
 import SortToggle from '@/components/home/SortToggle.vue';
 import TypeFilter from '@/components/home/TypeFilter.vue';
 import ElementTypeFilter from '@/components/fantasy/ElementTypeFilter.vue';
 import { PokemonType } from '@/types/pokemon';
+
+// Use Vuetify's display composable for responsive breakpoints
+const { mdAndUp } = useDisplay();
+
+// Computed property for large screen detection
+const isLargeScreen = computed(() => mdAndUp.value);
 
 // Interface für die Sortieroption
 interface SortOption {
@@ -232,7 +239,8 @@ const emit = defineEmits([
   'update:selectedTypes',
   'update:selectedElementTypes',
   'filter-changed',
-  'reset-filters'
+  'reset-filters',
+  'screen-size-changed'
 ]);
 
 // Lokale v-model Werte mit zwei-Wege-Bindung zu den Props
@@ -276,6 +284,14 @@ watch(viewModeModel, () => {
   onFilterChanged();
 });
 
+// When switching from mobile to desktop, adjust content padding
+watch(isLargeScreen, (newValue) => {
+  // Emit an event that can be used to adjust layout
+  setTimeout(() => {
+    emit('screen-size-changed', newValue);
+  }, 0);
+});
+
 // Event-Handler für Filter-Änderungen
 function onFilterChanged() {
   emit('filter-changed');
@@ -300,6 +316,14 @@ function resetFilters() {
 
 .filter-drawer :deep(.v-card-title) {
   font-weight: 500;
+}
+
+/* Responsive styles */
+@media (min-width: 960px) {
+  /* Hide scrim on desktop as we're not in overlay mode */
+  .filter-drawer :deep(.v-navigation-drawer__scrim) {
+    display: none !important;
+  }
 }
 
 .filter-drawer :deep(.v-divider) {
