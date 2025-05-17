@@ -3,7 +3,7 @@
     <!-- Header und Suchfeld -->
     <div class="search-container">
       <!-- Content Type Toggle as chip-group -->
-      <div class="content-toggle-container mb-5">
+      <div class="content-toggle-container">
         <v-chip-group
           v-model="contentType"
           mandatory
