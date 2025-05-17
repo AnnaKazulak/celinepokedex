@@ -7,13 +7,15 @@
     class="filter-drawer"
   >
     <v-card flat class="h-100 d-flex flex-column">
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          color="#705898"
-          size="small"
-          @click="drawerModel = false"
-        ></v-btn>
+      <div class="d-flex justify-end pa-2 mr-5">
+      <v-btn
+        icon="mdi-close"
+        variant="text"
+        color="#705898"
+        size="small"
+        @click="drawerModel = false"
+      ></v-btn>
+      </div>
       
       <!-- Drawer Content -->
       <v-card-text class="py-4 px-4 flex-grow-1 overflow-y-auto">
@@ -129,7 +131,7 @@
       <!-- Footer  -->
       <div class="footer-container d-flex justify-space-between py-3 px-4 py-md-4 px-md-6">
         <v-btn 
-            color="#705898"
+          color="#705898"
           variant="text" 
           @click="resetFilters"
           class="reset-btn"
@@ -140,8 +142,8 @@
         <v-spacer class="d-md-none"></v-spacer>
         
         <v-btn 
-          color="white" 
-          variant="elevated" 
+          color="#705898" 
+          variant="text" 
           @click="drawerModel = false"
           class="apply-btn"
         >
@@ -311,14 +313,11 @@ function resetFilters() {
 }
 
 .apply-btn {
-  /* background: linear-gradient(135deg, #6890F0 0%, #705898 100%); */
   color: #705898 ;
 }
 
 /* Styles für den Footer im Drawer */
 .footer-container {
-  /* background: linear-gradient(135deg, #705898 0%, #6890F0 100%); */
-  color: white;
   border-top: 1px solid #e0e0e0;
 }
 
