@@ -160,8 +160,8 @@ import TypeFilter from '@/components/home/TypeFilter.vue';
 import SortToggle from '@/components/home/SortToggle.vue';
 import NoResultsMessage from '@/components/home/NoResultsMessage.vue';
 import LoadingIndicator from '@/components/home/LoadingIndicator.vue';
-import PokemonCard from '../components/PokemonCard.vue';
-import FantasyCharacterCard from '../components/FantasyCharacterCard.vue';
+import PokemonCard from '@/components/pokemon/PokemonCard.vue';
+import FantasyCharacterCard from '../components/fantasy/FantasyCharacterCard.vue';
 import GalleryView from '@/components/home/GalleryView.vue';
 import FilterDrawer from '@/components/home/FilterDrawer.vue';
 

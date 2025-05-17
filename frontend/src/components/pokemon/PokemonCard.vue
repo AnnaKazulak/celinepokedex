@@ -69,9 +69,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
-import { extractDominantColor } from '../utils/colorUtils';
-import { eventBus } from '../utils/eventBus';
-import { Pokemon, PokemonType } from '../types/pokemon';
+import { extractDominantColor } from '../../utils/colorUtils';
+import { eventBus } from '../../utils/eventBus';
+import { Pokemon, PokemonType } from '../../types/pokemon';
 
 const props = defineProps<{
   pokemon: Pokemon

@@ -93,11 +93,11 @@ import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import { type Pokemon, type PokemonFormData } from '@/types/pokemon';
 import { eventBus } from '@/utils/eventBus';
-import PokemonHeader from '@/components/PokemonHeader.vue';
-import PokemonDetailsCard from '@/components/PokemonDetailsCard.vue';
-import EvolutionChainCard from '@/components/EvolutionChainCard.vue';
-import MissingPokemonDialog from '@/components/MissingPokemonDialog.vue';
-import PokemonFormDialog from '@/components/PokemonFormDialog.vue';
+import PokemonHeader from '@/components/pokemon/PokemonHeader.vue';
+import PokemonDetailsCard from '@/components/pokemon/PokemonDetailsCard.vue';
+import EvolutionChainCard from '@/components/pokemon/EvolutionChainCard.vue';
+import MissingPokemonDialog from '@/components/pokemon/MissingPokemonDialog.vue';
+import PokemonFormDialog from '@/components/pokemon/PokemonFormDialog.vue';
 
 // Dialog state variables for missing Pokemon
 const showMissingPokemonDialog = ref(false);

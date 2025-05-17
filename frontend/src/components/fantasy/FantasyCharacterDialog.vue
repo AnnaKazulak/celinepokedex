@@ -154,13 +154,13 @@
 import { ref, watch, computed } from 'vue';
 import { useRouter } from 'vue-router'; 
 import axios from 'axios';
-import { API_ENDPOINTS, FANTASY_CHARACTER_OPTIONS, FANTASY_TRANSFORMATIONS } from '../utils/constants';
-import { eventBus } from '../utils/eventBus';
-import type { FantasyCharacter } from '../types/pokemon';
-import FantasyCharacterAITab from './fantasy/FantasyCharacterAITab.vue';
-import FantasyCharacterManualTab from './fantasy/FantasyCharacterManualTab.vue';
-import FantasyCharacterGeneratorTab from './fantasy/FantasyCharacterGeneratorTab.vue';
-import FantasyCharacterFooter from './fantasy/FantasyCharacterFooter.vue';
+import { API_ENDPOINTS, FANTASY_CHARACTER_OPTIONS, FANTASY_TRANSFORMATIONS } from '../../utils/constants';
+import { eventBus } from '../../utils/eventBus';
+import type { FantasyCharacter } from '../../types/pokemon';
+import FantasyCharacterAITab from './FantasyCharacterAITab.vue';
+import FantasyCharacterManualTab from './FantasyCharacterManualTab.vue';
+import FantasyCharacterGeneratorTab from './FantasyCharacterGeneratorTab.vue';
+import FantasyCharacterFooter from './FantasyCharacterFooter.vue';
 
 // Router
 const router = useRouter();
@@ -354,23 +354,29 @@ const generateImage = async () => {
       } else {
         throw new Error('No image URL returned from server');
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error generating image:', err);
       
       // If we've reached max retries, show error to user
       if (retryCount === maxRetries) {
-        if (err.response) {
-          if (err.response.status === 504) {
-            error.value = `Gateway Timeout Error: The image generation server is taking too long to respond. Please try a simpler description or try again later.`;
-          } else if (err.response.data && err.response.data.error) {
-            error.value = `Error: ${err.response.data.error}`;
+        // Type guard to check if err is an axios error
+        if (axios.isAxiosError(err)) {
+          if (err.response) {
+            if (err.response.status === 504) {
+              error.value = `Gateway Timeout Error: The image generation server is taking too long to respond. Please try a simpler description or try again later.`;
+            } else if (err.response.data && typeof err.response.data === 'object' && 'error' in err.response.data) {
+              error.value = `Error: ${err.response.data.error}`;
+            } else {
+              error.value = `Server error (${err.response.status}): Please try again later`;
+            }
+          } else if (err.request) {
+            error.value = 'No response from server. Please check if the backend is running.';
           } else {
-            error.value = `Server error (${err.response.status}): Please try again later`;
+            error.value = 'Failed to generate image: ' + (err.message || 'Unknown error');
           }
-        } else if (err.request) {
-          error.value = 'No response from server. Please check if the backend is running.';
         } else {
-          error.value = 'Failed to generate image: ' + (err.message || 'Unknown error');
+          // Handle non-Axios errors
+          error.value = 'Failed to generate image: ' + ((err instanceof Error) ? err.message : 'Unknown error');
         }
       } else {
         retryCount++;
@@ -442,19 +448,23 @@ const saveCharacter = async () => {
     } else {
       throw new Error('Failed to save character');
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('Error saving character:', err);
 
-    if (err.response) {
-      if (err.response.data && err.response.data.error) {
-        error.value = `Error: ${err.response.data.error}`;
+    if (axios.isAxiosError(err)) {
+      if (err.response) {
+        if (err.response.data && typeof err.response.data === 'object' && 'error' in err.response.data) {
+          error.value = `Error: ${err.response.data.error}`;
+        } else {
+          error.value = `Server error (${err.response.status}): Please try again later`;
+        }
+      } else if (err.request) {
+        error.value = 'No response from server. Please check if the backend is running.';
       } else {
-        error.value = `Server error (${err.response.status}): Please try again later`;
+        error.value = 'Failed to save character: ' + (err.message || 'Unknown error');
       }
-    } else if (err.request) {
-      error.value = 'No response from server. Please check if the backend is running.';
     } else {
-      error.value = 'Failed to save character: ' + (err.message || 'Unknown error');
+      error.value = 'Failed to save character: ' + ((err instanceof Error) ? err.message : 'Unknown error');
     }
   } finally {
     isSaving.value = false;
@@ -518,19 +528,23 @@ const saveManualCharacter = async () => {
     } else {
       throw new Error('Failed to save character');
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('Error saving manual character:', err);
     
-    if (err.response) {
-      if (err.response.data && err.response.data.error) {
-        manualError.value = `Error: ${err.response.data.error}`;
+    if (axios.isAxiosError(err)) {
+      if (err.response) {
+        if (err.response.data && typeof err.response.data === 'object' && 'error' in err.response.data) {
+          manualError.value = `Error: ${err.response.data.error}`;
+        } else {
+          manualError.value = `Server error (${err.response.status}): Please try again later`;
+        }
+      } else if (err.request) {
+        manualError.value = 'No response from server. Please check if the backend is running.';
       } else {
-        manualError.value = `Server error (${err.response.status}): Please try again later`;
+        manualError.value = 'Failed to save character: ' + (err.message || 'Unknown error');
       }
-    } else if (err.request) {
-      manualError.value = 'No response from server. Please check if the backend is running.';
     } else {
-      manualError.value = 'Failed to save character: ' + (err.message || 'Unknown error');
+      manualError.value = 'Failed to save character: ' + ((err instanceof Error) ? err.message : 'Unknown error');
     }
   } finally {
     isManualSaving.value = false;
@@ -577,25 +591,29 @@ const generateGeneratorCharacter = async () => {
       } else {
         throw new Error('No image data returned from server');
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error generating character:', err);
       
       // If we've reached max retries, set error message
       if (retryCount === maxRetries) {
-        if (err.response) {
-          if (err.response.status === 504) {
-            error.value = `Gateway Timeout Error: Der Bildgenerierungsserver braucht zu lange. Bitte versuche eine einfachere Konfiguration oder versuche es später noch einmal.`;
-          } else if (err.response.data && err.response.data.error) {
-            error.value = `Error: ${err.response.data.error}`;
+        if (axios.isAxiosError(err)) {
+          if (err.response) {
+            if (err.response.status === 504) {
+              error.value = `Gateway Timeout Error: Der Bildgenerierungsserver braucht zu lange. Bitte versuche eine einfachere Konfiguration oder versuche es später noch einmal.`;
+            } else if (err.response.data && typeof err.response.data === 'object' && 'error' in err.response.data) {
+              error.value = `Error: ${err.response.data.error}`;
+            } else {
+              error.value = `Server error (${err.response.status}): Bitte versuche es später noch einmal`;
+            }
+          } else if (err.request) {
+            error.value = 'Keine Antwort vom Server. Bitte überprüfe deine Internetverbindung und versuche es erneut.';
+          } else if (err.code === 'ECONNABORTED') {
+            error.value = 'Zeitüberschreitung bei der Anfrage. Der Server braucht zu lange, um das Bild zu generieren. Bitte versuche es mit einfacheren Optionen.';
           } else {
-            error.value = `Server error (${err.response.status}): Bitte versuche es später noch einmal`;
+            error.value = 'Fehler bei der Charaktergenerierung: ' + (err.message || 'Unbekannter Fehler');
           }
-        } else if (err.request) {
-          error.value = 'Keine Antwort vom Server. Bitte überprüfe deine Internetverbindung und versuche es erneut.';
-        } else if (err.code === 'ECONNABORTED') {
-          error.value = 'Zeitüberschreitung bei der Anfrage. Der Server braucht zu lange, um das Bild zu generieren. Bitte versuche es mit einfacheren Optionen.';
         } else {
-          error.value = 'Fehler bei der Charaktergenerierung: ' + (err.message || 'Unbekannter Fehler');
+          error.value = 'Fehler bei der Charaktergenerierung: ' + ((err instanceof Error) ? err.message : 'Unbekannter Fehler');
         }
       } else {
         retryCount++;
@@ -639,7 +657,7 @@ const saveGeneratorCharacter = async () => {
     } else {
       throw new Error('Failed to save character');
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('Error saving character:', err);
   } finally {
     isSavingGenerator.value = false;

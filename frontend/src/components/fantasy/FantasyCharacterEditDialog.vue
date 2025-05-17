@@ -159,9 +159,9 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import axios from 'axios';
-import { API_ENDPOINTS } from '../utils/constants';
-import { eventBus } from '../utils/eventBus';
-import type { FantasyCharacter } from '../types/pokemon';
+import { API_ENDPOINTS } from '../../utils/constants';
+import { eventBus } from '../../utils/eventBus';
+import type { FantasyCharacter } from '../../types/pokemon';
 
 // Props and emits
 const props = defineProps<{

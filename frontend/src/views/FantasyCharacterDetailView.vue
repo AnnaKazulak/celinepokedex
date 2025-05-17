@@ -227,7 +227,7 @@ import { type FantasyCharacter } from '@/types/pokemon';
 import { eventBus } from '@/utils/eventBus';
 import { extractDominantColor } from '@/utils/colorUtils';
 import { cleanFantasyDescription } from '@/utils/helpers';
-import FantasyCharacterEditDialog from '@/components/FantasyCharacterEditDialog.vue';
+import FantasyCharacterEditDialog from '@/components/fantasy/FantasyCharacterEditDialog.vue';
 
 // Disable automatic attribute inheritance
 defineOptions({

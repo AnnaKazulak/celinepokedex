@@ -246,13 +246,13 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router'; // Router importieren
-import { eventBus } from '../utils/eventBus';
-import type { Pokemon, PokemonFormData } from '../types/pokemon';
-import { PokemonType } from '../types/pokemon';
+import { eventBus } from '../../utils/eventBus';
+import type { Pokemon, PokemonFormData } from '../../types/pokemon';
+import { PokemonType } from '../../types/pokemon';
 import type { VForm } from 'vuetify';
-import { extractDominantColor } from '../utils/colorUtils';
-import { API_ENDPOINTS, EXTERNAL_API, APP_CONFIG, TIMEOUTS, VALIDATION_RULES } from '../utils/constants';
-import { debounce, capitalizeFirstLetter, cleanText, translatePokemonType } from '../utils/helpers';
+import { extractDominantColor } from '../../utils/colorUtils';
+import { API_ENDPOINTS, EXTERNAL_API, APP_CONFIG, TIMEOUTS, VALIDATION_RULES } from '../../utils/constants';
+import { debounce, capitalizeFirstLetter, cleanText, translatePokemonType } from '../../utils/helpers';
 
 // Props und Emits
 const props = defineProps({

@@ -110,8 +110,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import PokemonFormDialog from './PokemonFormDialog.vue';
-import FantasyCharacterDialog from './FantasyCharacterDialog.vue';
+import PokemonFormDialog from './pokemon/PokemonFormDialog.vue';
+import FantasyCharacterDialog from './fantasy/FantasyCharacterDialog.vue';
 import type { Pokemon } from '../types/pokemon';
 import { POKEMON_COLORS } from '../utils/constants';
 import { eventBus } from '../utils/eventBus';

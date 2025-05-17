@@ -336,7 +336,7 @@
 <script lang="ts">
 import { defineComponent, ref, computed } from 'vue';
 import axios from 'axios';
-import { eventBus } from '../utils/eventBus';
+import { eventBus } from '../../utils/eventBus';
 
 export default defineComponent({
   name: 'FantasyCharacterGenerator',
