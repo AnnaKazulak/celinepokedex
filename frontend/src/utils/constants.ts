@@ -15,9 +15,9 @@ export const API_ENDPOINTS = {
   FANTASY_CHARACTER_BY_ID: (id: number) => `${API_BASE_URL}/characters/${id}`,
   DELETE_CHARACTER: (id: number) => `${API_BASE_URL}/characters/${id}`,
   GENERATE_IMAGE: `${API_BASE_URL}/images/generate`,
-  GENERATE_CHARACTER: `${API_BASE_URL}/characters/generate`, // Added missing endpoint for generator
+  GENERATE_CHARACTER: `${API_BASE_URL}/characters/generate`, 
   SAVE_CHARACTER: `${API_BASE_URL}/characters/save`,
-  UPLOAD_IMAGE: `${API_BASE_URL}/images/upload` // Added missing endpoint for image upload
+  UPLOAD_IMAGE: `${API_BASE_URL}/images/upload` 
 };
 
 // Externe Pokémon API (PokeAPI)

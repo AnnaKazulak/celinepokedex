@@ -252,7 +252,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { type Pokemon, type EvolutionChain, type EvolutionStage } from '@/types/pokemon';
+import { type Pokemon, type EvolutionChain, type EvolutionStage } from '../../types/pokemon';
 
 // Props
 const props = defineProps<{
