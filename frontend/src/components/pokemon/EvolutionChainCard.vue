@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-8 mx-auto" style="max-width: 1400px;">
+  <div class="mt-8 mx-auto" style="max-width: 1500px;">
     <v-card>
       <v-card-title class="text-white" 
                    :style="{ background: dominantColor || 'rgba(0,0,0,0.5)' }">
@@ -34,13 +34,13 @@
                 <router-link 
                   v-if="stage.pokemon.inUserCollection !== false"
                   :to="{ name: 'pokemonDetail', params: { id: stage.pokemon.pokedexNumber } }"
-                  class="text-decoration-none text-inherit d-flex flex-column align-center pa-3 rounded-lg transition-transform"
+                  class="text-decoration-none text-inherit d-flex flex-column align-center pa-4 rounded-lg transition-transform evolution-card"
                   :class="{ 'evolution-custom-card': stage.pokemon.pokedexNumber === currentPokemonId }"
                 >
                   <v-img
                     :src="stage.pokemon.imageUrl"
-                    height="120"
-                    width="120"
+                    height="150"
+                    width="150"
                     contain
                     class="evolution-custom-image"
                   ></v-img>
@@ -57,12 +57,12 @@
 
                 <!-- Ausgegraut wenn nicht in der Sammlung -->
                 <div v-else 
-                     class="text-decoration-none text-inherit d-flex flex-column align-center pa-3 rounded-lg bg-grey-lighten-5 opacity-medium" 
+                     class="text-decoration-none text-inherit d-flex flex-column align-center pa-4 rounded-lg bg-grey-lighten-5 opacity-medium evolution-card" 
                      @click="handleMissingPokemonClick(stage.pokemon)">
                   <v-img
                     :src="stage.pokemon.imageUrl"
-                    height="120"
-                    width="120"
+                    height="150"
+                    width="150"
                     contain
                     class="evolution-custom-greyed"
                   ></v-img>
@@ -154,13 +154,13 @@
                     <router-link 
                       v-if="branchStage.pokemon.inUserCollection !== false"
                       :to="{ name: 'pokemonDetail', params: { id: branchStage.pokemon.pokedexNumber } }"
-                      class="text-decoration-none text-inherit d-flex flex-column align-center pa-2 rounded-lg transition-transform"
+                      class="text-decoration-none text-inherit d-flex flex-column align-center pa-3 rounded-lg transition-transform evolution-branch-card"
                       :class="{ 'evolution-custom-card': branchStage.pokemon.pokedexNumber === currentPokemonId }"
                     >
                       <v-img
                         :src="branchStage.pokemon.imageUrl"
-                        height="100"
-                        width="100"
+                        height="130"
+                        width="130"
                         contain
                         class="evolution-custom-image"
                       ></v-img>
@@ -170,12 +170,12 @@
 
                     <!-- Ausgegraut wenn nicht in der Sammlung -->
                     <div v-else 
-                         class="text-decoration-none text-inherit d-flex flex-column align-center pa-2 rounded-lg bg-grey-lighten-5 opacity-medium" 
+                         class="text-decoration-none text-inherit d-flex flex-column align-center pa-3 rounded-lg bg-grey-lighten-5 opacity-medium evolution-branch-card" 
                          @click="handleMissingPokemonClick(branchStage.pokemon)">
                       <v-img
                         :src="branchStage.pokemon.imageUrl"
-                        height="100"
-                        width="100"
+                        height="130"
+                        width="130"
                         contain
                         class="evolution-custom-greyed"
                       ></v-img>
@@ -339,6 +339,18 @@ function handleMissingPokemonClick(pokemon: { name: string, pokedexNumber: strin
 
 .evolution-custom-image {
   transition: transform 0.3s ease;
+}
+
+.evolution-card {
+  min-width: 180px;
+  margin: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.evolution-branch-card {
+  min-width: 160px;
+  margin: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .evolution-custom-greyed {
