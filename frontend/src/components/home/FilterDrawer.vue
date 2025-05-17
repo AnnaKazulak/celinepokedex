@@ -7,31 +7,17 @@
     class="filter-drawer"
   >
     <v-card flat class="h-100 d-flex flex-column">
-      <!-- Drawer Header with Gradient -->
-      <v-card-title class="text-white py-4 px-6 bg-gradient d-flex align-center">
-        <v-icon class="mr-2" color="white">mdi-tune</v-icon>
-        Filter & Sortierung
-        <v-spacer></v-spacer>
         <v-btn
           icon="mdi-close"
           variant="text"
-          color="white"
+          color="#705898"
           size="small"
           @click="drawerModel = false"
         ></v-btn>
-      </v-card-title>
-      
-      <v-divider></v-divider>
       
       <!-- Drawer Content -->
       <v-card-text class="py-4 px-4 flex-grow-1 overflow-y-auto">
-        <!-- Content Type Filter -->
-        <h3 class="text-subtitle-1 font-weight-medium mb-3 d-flex align-center">
-          <v-icon class="mr-2" size="small" color="primary">mdi-view-grid</v-icon>
-          Inhaltstyp
-        </h3>
-        
-        <div class="mb-4 filter-buttons-container">
+       <div class="mb-4 filter-buttons-container">
           <v-chip-group
             v-model="contentTypeModel"
             mandatory
@@ -70,13 +56,6 @@
         </div>
         
         <v-divider class="my-4"></v-divider>
-
-        <!-- View Mode Toggle -->
-        <h3 class="text-subtitle-1 font-weight-medium mb-3 d-flex align-center">
-          <v-icon class="mr-2" size="small" color="primary">mdi-view-dashboard</v-icon>
-          Anzeigemodus
-        </h3>
-        
         <div class="mb-4 filter-buttons-container">
           <v-chip-group
             v-model="viewModeModel"
@@ -125,7 +104,7 @@
         <div v-if="contentTypeModel !== 'fantasy'">
           <h3 class="text-subtitle-1 font-weight-medium mb-3 d-flex align-center">
             <v-icon class="mr-2" size="small" color="primary">mdi-filter-variant</v-icon>
-            Pokémon-Typen
+            Sort Pokémons
           </h3>
           <TypeFilter
             v-model:selected-types="selectedTypesModel"
@@ -138,7 +117,7 @@
         <div v-if="contentTypeModel !== 'pokemon'">
           <h3 class="text-subtitle-1 font-weight-medium mb-3 d-flex align-center mt-4">
             <v-icon class="mr-2" size="small" color="primary">mdi-filter-variant</v-icon>
-            Elemente-Typen
+            Sort Fantasy Characters
           </h3>
           <ElementTypeFilter
             v-model:selected-element-types="selectedElementTypesModel"
@@ -147,10 +126,10 @@
         </div>
       </v-card-text>
       
-      <!-- Footer mit Gradient Hintergrund -->
+      <!-- Footer  -->
       <div class="footer-container d-flex justify-space-between py-3 px-4 py-md-4 px-md-6">
         <v-btn 
-          color="white" 
+            color="#705898"
           variant="text" 
           @click="resetFilters"
           class="reset-btn"
@@ -304,15 +283,7 @@ function resetFilters() {
 </script>
 
 <style scoped>
-/* Styles für den Filter-Drawer */
-.filter-drawer :deep(.v-card) {
-  background-color: #f4f4f9;
-  border-left: 4px solid #6200ee;
-}
 
-.bg-gradient {
-  background: linear-gradient(135deg, #6890F0 0%, #705898 100%);
-}
 
 .filter-drawer :deep(.v-card-title) {
   font-weight: 500;
@@ -327,12 +298,12 @@ function resetFilters() {
 }
 
 .filter-drawer :deep(.v-divider) {
-  background-color: #e0e0e0;
+  background-color:rgb(244, 243, 243);
 }
 
 .filter-drawer :deep(.v-card-actions) {
   background-color: #fafafa;
-  border-top: 1px solid #e0e0e0;
+  /* border-top: 1px solid #e0e0e0; */
 }
 
 .reset-btn {
@@ -340,13 +311,13 @@ function resetFilters() {
 }
 
 .apply-btn {
-  background: linear-gradient(135deg, #6890F0 0%, #705898 100%);
-  color: white;
+  /* background: linear-gradient(135deg, #6890F0 0%, #705898 100%); */
+  color: #705898 ;
 }
 
 /* Styles für den Footer im Drawer */
 .footer-container {
-  background: linear-gradient(135deg, #705898 0%, #6890F0 100%);
+  /* background: linear-gradient(135deg, #705898 0%, #6890F0 100%); */
   color: white;
   border-top: 1px solid #e0e0e0;
 }
