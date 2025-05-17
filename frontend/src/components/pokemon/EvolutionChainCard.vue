@@ -9,9 +9,9 @@
         <!-- Vollständige Evolutionskette anzeigen -->
         <div v-if="evolutionChain && (evolutionChain.stages || hasBranches)" class="pa-4">
           <div v-if="evolutionChain.stages && evolutionChain.stages.length > 0" 
-               class="d-flex flex-wrap justify-center align-center gap-2 pa-6">
+               class="d-flex flex-wrap justify-center align-center gap-2 pa-6 evolution-chain">
             <div v-for="(stage, index) in evolutionChain.stages" :key="index" 
-                 class="d-flex align-center">
+                 class="d-flex align-center evolution-stage">
               <!-- Pokemon in this stage -->
               <div class="d-flex flex-column align-center text-center">
                 <!-- Evolution stage label -->
@@ -46,6 +46,13 @@
                   ></v-img>
                   <div class="font-weight-bold mt-2">{{ stage.pokemon.name }}</div>
                   <div class="text-grey text-caption">#{{ stage.pokemon.pokedexNumber }}</div>
+                  
+                  <!-- Level Info (für Mobilgeräte) -->
+                  <div class="d-none d-flex-xs mt-2 text-caption text-grey-darken-1 align-center justify-center">
+                    <v-chip size="x-small" color="grey-lighten-3" class="text-caption">
+                      <span>Level {{ stage.pokemon.level || '?' }}</span>
+                    </v-chip>
+                  </div>
                 </router-link>
 
                 <!-- Ausgegraut wenn nicht in der Sammlung -->
@@ -61,6 +68,13 @@
                   ></v-img>
                   <div class="font-weight-bold mt-2 text-grey-darken-1">{{ stage.pokemon.name }}</div>
                   <div class="text-grey text-caption">#{{ stage.pokemon.pokedexNumber }}</div>
+                  
+                  <!-- Level Info (für Mobilgeräte) -->
+                  <div class="d-none d-flex-xs mt-2 text-caption text-grey-darken-1 align-center justify-center">
+                    <v-chip size="x-small" color="grey-lighten-3" class="text-caption">
+                      <span>Level {{ stage.pokemon.level || '?' }}</span>
+                    </v-chip>
+                  </div>
                   <v-chip
                     size="small"
                     color="grey-lighten-2" 
@@ -79,17 +93,33 @@
               </div>
               
               <!-- Evolution Arrow with condition -->
-              <div v-if="index < evolutionChain.stages.length - 1" class="d-flex flex-column align-center px-4">
-                <div class="text-caption text-grey-darken-1 text-center mt-2" style="max-width: 120px;">
-                  {{ getEvolutionCondition(evolutionChain.stages[index+1]) }}
+              <div v-if="index < evolutionChain.stages.length - 1" class="d-flex flex-column align-center px-4 evolution-arrow">
+                <!-- Desktop Version (horizontaler Pfeil) -->
+                <div class="d-none d-sm-flex flex-column align-center">
+                  <div class="text-caption text-grey-darken-1 text-center mt-2 evolution-condition" style="max-width: 120px;">
+                    {{ getEvolutionCondition(evolutionChain.stages[index+1]) }}
+                  </div>
+                  <v-icon 
+                    :color="dominantColor || 'rgba(0,0,0,0.5)'"
+                    size="large"
+                    class="mt-2"
+                  >
+                    mdi-arrow-right-bold
+                  </v-icon>
                 </div>
-                <v-icon 
-                  :color="dominantColor || 'rgba(0,0,0,0.5)'"
-                  size="large"
-                  class="mt-2"
-                >
-                  mdi-arrow-right-bold
-                </v-icon>
+                
+                <!-- Mobile Version (vertikaler Pfeil nach unten) -->
+                <div class="d-flex d-sm-none flex-column align-center my-2">
+                  <div class="text-caption text-grey-darken-1 text-center mb-2" style="max-width: 150px;">
+                    {{ getEvolutionCondition(evolutionChain.stages[index+1]) }}
+                  </div>
+                  <v-icon 
+                    :color="dominantColor || 'rgba(0,0,0,0.5)'"
+                    size="large"
+                  >
+                    mdi-arrow-down-bold
+                  </v-icon>
+                </div>
               </div>
 
               <!-- Verzweigungsentwicklungen anzeigen -->
@@ -135,7 +165,7 @@
                         class="evolution-custom-image"
                       ></v-img>
                       <div class="font-weight-bold mt-2">{{ branchStage.pokemon.name }}</div>
-                      <div class="text-grey text-caption">#{{ branchStage.pokedexNumber }}</div>
+                      <div class="text-grey text-caption">#{{ branchStage.pokemon.pokedexNumber }}</div>
                     </router-link>
 
                     <!-- Ausgegraut wenn nicht in der Sammlung -->
@@ -150,7 +180,7 @@
                         class="evolution-custom-greyed"
                       ></v-img>
                       <div class="font-weight-bold mt-2 text-grey-darken-1">{{ branchStage.pokemon.name }}</div>
-                      <div class="text-grey text-caption">#{{ branchStage.pokedexNumber }}</div>
+                      <div class="text-grey text-caption">#{{ branchStage.pokemon.pokedexNumber }}</div>
                       <v-chip
                         size="small"
                         color="grey-lighten-2" 
@@ -342,7 +372,7 @@ function handleMissingPokemonClick(pokemon: { name: string, pokedexNumber: strin
     transform: none;
   }
   
-  .evolution-arrow .v-icon {
+  .evolution-arrow-icon {
     transform: rotate(90deg);
     margin: 0.5rem 0;
   }
