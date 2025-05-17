@@ -70,17 +70,18 @@
         
         <!-- Filter Button zum Öffnen des Drawers -->
         <v-btn
-          class="ml-2 filter-btn"
-          :color="hasActiveFilters ? 'primary' : 'secondary'"
+          class="ml-2 filter-btn rounded-pill"
+          :color="hasActiveFilters ? '#705898' : '#705898'"
           :variant="hasActiveFilters ? 'elevated' : 'outlined'"
           @click="drawer = !drawer"
           elevation="2"
+          density="comfortable"
         >
           <v-icon start size="small">mdi-filter</v-icon>
           <span class="d-none d-sm-inline">Filter</span>
           <v-badge
             v-if="hasActiveFilters"
-            color="info"
+            color="white"
             content="!"
             location="top end"
             dot
@@ -157,8 +158,6 @@ import { API_ENDPOINTS, EXTERNAL_API } from '../utils/constants';
 
 // Importiere die Unterkomponenten
 import SearchBar from '@/components/home/SearchBar.vue';
-import TypeFilter from '@/components/home/TypeFilter.vue';
-import SortToggle from '@/components/home/SortToggle.vue';
 import NoResultsMessage from '@/components/home/NoResultsMessage.vue';
 import LoadingIndicator from '@/components/home/LoadingIndicator.vue';
 import PokemonCard from '@/components/pokemon/PokemonCard.vue';
