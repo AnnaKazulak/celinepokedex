@@ -253,6 +253,7 @@ import type { VForm } from 'vuetify';
 import { extractDominantColor } from '../../utils/colorUtils';
 import { API_ENDPOINTS, EXTERNAL_API, APP_CONFIG, TIMEOUTS, VALIDATION_RULES } from '../../utils/constants';
 import { debounce, capitalizeFirstLetter, cleanText, translatePokemonType } from '../../utils/helpers';
+import { generateRandomPokemonId } from '../../utils/pokemon-util';
 
 // Props und Emits
 const props = defineProps({
@@ -635,10 +636,8 @@ const fetchPokemonInfoByName = async (name: string) => {
 
 // Funktion zur Generierung einer zufälligen Pokédex-Nummer
 const generateRandomPokedexNumber = () => {
-  // Zufallszahl zwischen 1 und MAX_POKEDEX_NUMBER generieren
-  const randomNum = Math.floor(Math.random() * APP_CONFIG.MAX_POKEDEX_NUMBER) + 1;
-  // Format als 3-stellige Zahl (z.B. "001", "025", "150")
-  const formattedNumber = String(randomNum).padStart(3, '0');
+  // Nutze die spezialisierte Funktion aus dem pokemon-util
+  const formattedNumber = generateRandomPokemonId(APP_CONFIG.MAX_POKEDEX_NUMBER, APP_CONFIG.POKEDEX_RANGES);
   
   // Setze die generierte Nummer und hole Pokemon-Daten
   pokemon.pokedexNumber = formattedNumber;
@@ -816,7 +815,7 @@ watch([() => pokemon.name, () => pokemon.pokedexNumber, () => pokemon.type1],
       /^\d+$/.test(pokemon.pokedexNumber.trim()) &&
       pokemon.type1 !== null;
 
-    valid.value = hasRequiredFields;
+    valid.value = Boolean(hasRequiredFields);
   }, 
   { immediate: true }
 );

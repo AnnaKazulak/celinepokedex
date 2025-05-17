@@ -81,6 +81,7 @@ export interface PokemonFormData {
   evolvesFromId?: string | null; // Jetzt String
   evolutionTrigger?: string;
   evolutionCondition?: string;
+  inUserCollection?: boolean; // Hinzugefügt für Statusverfolgung in der UI
 }
 
 /**

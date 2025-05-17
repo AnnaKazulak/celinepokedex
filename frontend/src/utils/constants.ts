@@ -28,13 +28,32 @@ export const EXTERNAL_API = {
   SPRITE_URL: (id: number | string) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`
 };
 
+// Definition für Pokémon-Generationsbereiche
+export interface PokemonGenRange {
+  start: number;
+  end: number;
+}
+
 // Anwendungskonfigurationen
 export const APP_CONFIG = {
   DEFAULT_PAGE_SIZE: 12,
   MAX_DESCRIPTION_LENGTH: 150,
   DEFAULT_IMAGE_URL: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png',
   DEFAULT_COLOR: '#b20072',
-  MAX_POKEDEX_NUMBER: 898 // Maximale Pokédex-Nummer (Gen 8) - Für die Zufallsgenerierung
+  MAX_POKEDEX_NUMBER: 1010, // Aktualisiert auf neueste Generation (Gen 9) - Stand Mai 2025
+  
+  // Gültige Pokédex-Bereiche pro Generation für genauere Zufallsgenerierung
+  POKEDEX_RANGES: [
+    { start: 1, end: 151 },    // Generation 1
+    { start: 152, end: 251 },  // Generation 2
+    { start: 252, end: 386 },  // Generation 3
+    { start: 387, end: 493 },  // Generation 4
+    { start: 494, end: 649 },  // Generation 5
+    { start: 650, end: 721 },  // Generation 6
+    { start: 722, end: 809 },  // Generation 7
+    { start: 810, end: 905 },  // Generation 8
+    { start: 906, end: 1010 }  // Generation 9 (aktueller Stand)
+  ] as PokemonGenRange[]
 };
 
 // Timeouts und Verzögerungen (in Millisekunden)
