@@ -5,6 +5,7 @@
     :temporary="!isLargeScreen"
     width="300"
     class="filter-drawer"
+    elevation="4"
   >
     <v-card flat class="h-100 d-flex flex-column">
       <div class="d-flex justify-end pa-2 mr-5">
@@ -285,7 +286,9 @@ function resetFilters() {
 </script>
 
 <style scoped>
-
+.filter-drawer {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
 
 .filter-drawer :deep(.v-card-title) {
   font-weight: 500;
@@ -314,11 +317,6 @@ function resetFilters() {
 
 .apply-btn {
   color: #705898 ;
-}
-
-/* Styles für den Footer im Drawer */
-.footer-container {
-  border-top: 1px solid #e0e0e0;
 }
 
 .footer-container .v-btn {
