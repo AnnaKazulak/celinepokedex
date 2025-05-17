@@ -1,5 +1,5 @@
 <template>
-  <v-container :class="['pt-24 pb-5 px-2', {'content-with-drawer': drawer}]">
+  <v-container :class="['pt-24 pb-5 px-2', {'content-with-drawer': drawer && isLargeScreen}]">
     <!-- Header und Suchfeld -->
     <div class="search-container">
       <!-- Content Type Toggle as chip-group -->
@@ -109,6 +109,7 @@
       :sort-options="sortOptions"
       @filter-changed="handleFilterChanged"
       @reset-filters="resetFilters"
+      @screen-size-changed="handleScreenSizeChange"
     />
     
     <!-- Keine Ergebnisse Nachricht -->
@@ -153,7 +154,11 @@ import { eventBus } from '../utils/eventBus';
 import { PokemonType } from '../types/pokemon';
 import type { Pokemon, FantasyCharacter } from '../types/pokemon';
 import { API_ENDPOINTS, EXTERNAL_API } from '../utils/constants';
+
+// Importiere die Unterkomponenten
 import SearchBar from '@/components/home/SearchBar.vue';
+import TypeFilter from '@/components/home/TypeFilter.vue';
+import SortToggle from '@/components/home/SortToggle.vue';
 import NoResultsMessage from '@/components/home/NoResultsMessage.vue';
 import LoadingIndicator from '@/components/home/LoadingIndicator.vue';
 import PokemonCard from '@/components/pokemon/PokemonCard.vue';
@@ -204,8 +209,8 @@ function optimizeCloudinaryUrl(url: string, contentType: 'pokemon' | 'fantasy' =
     // For Pokemon cards - optimized for card view
     transformParams = 'w_400,h_400,c_pad,q_auto,f_auto/';
   } else {
-    // For Fantasy characters - keep the entire image visible without cropping
-    transformParams = 'w_400,c_scale,q_auto,f_auto/';
+    // For Fantasy characters - might have different aspect ratios
+    transformParams = 'w_400,h_500,c_fill,q_auto,f_auto/';
   }
   
   return `${parts[0]}/upload/${transformParams}${parts[1]}`;
@@ -224,6 +229,8 @@ const sortOptions = [
   { text: 'Älteste', value: 'oldestFirst' }
 ];
 
+// Bei Fantasy-Ansicht andere Sortieroptionen anzeigen
+const fantasyFilterVisible = computed(() => contentType.value === 'fantasy');
 
 const sortOptionIndex = ref(0); // Defaultwert ist 0 (Name)
 
@@ -725,7 +732,7 @@ onBeforeUnmount(() => {
 
 /* Mobile Anpassungen */
 @media (max-width: 600px) {
-  .search-wrapper {
+  .search-wrapper, .filter-container {
     padding: 0 8px;
   }
   
@@ -758,7 +765,7 @@ onBeforeUnmount(() => {
     max-width: 95%;
   }
 
-  .search-wrapper {
+  .search-wrapper, .filter-container {
     max-width: 90%;
   }
   
@@ -774,7 +781,7 @@ onBeforeUnmount(() => {
     max-width: 95%;
   }
   
-  .search-wrapper {
+  .search-wrapper, .filter-container {
     max-width: 70%;
   }
   
@@ -789,7 +796,7 @@ onBeforeUnmount(() => {
 
 /* Große Desktop-Anpassungen */
 @media (min-width: 1440px) {
-  .search-wrapper {
+  .search-wrapper, .filter-container {
     max-width: 60%;
   }
   
