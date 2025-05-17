@@ -732,7 +732,7 @@ onBeforeUnmount(() => {
 
 /* Mobile Anpassungen */
 @media (max-width: 600px) {
-  .search-wrapper, .filter-container {
+  .search-wrapper {
     padding: 0 8px;
   }
   
@@ -765,7 +765,7 @@ onBeforeUnmount(() => {
     max-width: 95%;
   }
 
-  .search-wrapper, .filter-container {
+  .search-wrapper {
     max-width: 90%;
   }
   
@@ -781,7 +781,7 @@ onBeforeUnmount(() => {
     max-width: 95%;
   }
   
-  .search-wrapper, .filter-container {
+  .search-wrapper {
     max-width: 70%;
   }
   
@@ -796,7 +796,7 @@ onBeforeUnmount(() => {
 
 /* Große Desktop-Anpassungen */
 @media (min-width: 1440px) {
-  .search-wrapper, .filter-container {
+  .search-wrapper {
     max-width: 60%;
   }
   
