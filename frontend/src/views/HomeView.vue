@@ -208,8 +208,8 @@ function optimizeCloudinaryUrl(url: string, contentType: 'pokemon' | 'fantasy' =
     // For Pokemon cards - optimized for card view
     transformParams = 'w_400,h_400,c_pad,q_auto,f_auto/';
   } else {
-    // For Fantasy characters - might have different aspect ratios
-    transformParams = 'w_400,h_500,c_fill,q_auto,f_auto/';
+    // For Fantasy characters - we use contain to ensure the image isn't cropped
+    transformParams = 'w_400,h_500,c_fit,q_auto,f_auto/';
   }
   
   return `${parts[0]}/upload/${transformParams}${parts[1]}`;
