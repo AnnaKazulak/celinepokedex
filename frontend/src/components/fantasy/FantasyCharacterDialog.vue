@@ -77,6 +77,7 @@
             :error="manualError"
             :base-animal="manualBaseAnimal"
             :element-type="manualElementType"
+            :is-public="manualIsPublic"
             :base-animal-options="baseAnimalOptions"
             :element-type-options="elementTypeOptions"
             @update:characterName="manualCharacterName = $event"
@@ -86,6 +87,7 @@
             @update:error="manualError = $event"
             @update:baseAnimal="manualBaseAnimal = $event"
             @update:elementType="manualElementType = $event"
+            @update:isPublic="manualIsPublic = $event"
             @save-character="saveManualCharacter"
           />
         </v-window-item>
@@ -199,6 +201,7 @@ const isManualSaving = ref(false);
 const manualError = ref('');
 const manualBaseAnimal = ref('');
 const manualElementType = ref('');
+const manualIsPublic = ref(true);
 
 // Generator variables
 const generatorBaseAnimal = ref('');
@@ -276,6 +279,7 @@ const resetManualForm = () => {
   manualError.value = '';
   manualBaseAnimal.value = '';
   manualElementType.value = '';
+  manualIsPublic.value = true;
 };
 
 const resetGeneratorForm = () => {
@@ -507,7 +511,7 @@ const saveManualCharacter = async () => {
       imageUrl: finalImageUrl,
       baseAnimal: manualBaseAnimal.value,
       elementType: manualElementType.value,
-      is_public: true,
+      is_public: manualIsPublic.value,
       description: manualCharacterDescription.value
     });
     

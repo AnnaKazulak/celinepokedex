@@ -47,6 +47,17 @@
             :rules="[v => !!v || 'Beschreibung wird benötigt']"
           ></v-textarea>
           
+          <!-- Public Character Checkbox -->
+          <v-checkbox
+            v-model="isPublic"
+            label="Öffentlich sichtbar"
+            hint="Legt fest, ob andere Benutzer diesen Charakter sehen können"
+            persistent-hint
+            density="compact"
+            class="mb-4"
+            @update:model-value="$emit('update:isPublic', isPublic)"
+          ></v-checkbox>
+          
           <div class="d-flex justify-center mt-4">
             <v-btn
               color="primary"
@@ -171,6 +182,7 @@ const props = defineProps<{
   elementType?: string;
   baseAnimalOptions?: string[];
   elementTypeOptions?: string[];
+  isPublic?: boolean;
 }>();
 
 // Emits
@@ -183,6 +195,7 @@ const emit = defineEmits<{
   'update:error': [value: string];
   'update:baseAnimal': [value: string];
   'update:elementType': [value: string];
+  'update:isPublic': [value: boolean];
 }>();
 
 // Local state
@@ -190,6 +203,7 @@ const characterName = ref(props.characterName);
 const characterDescription = ref(props.characterDescription);
 const baseAnimal = ref(props.baseAnimal || '');
 const elementType = ref(props.elementType || '');
+const isPublic = ref(props.isPublic !== undefined ? props.isPublic : true);
 const imageFile = ref<File | null>(null);
 const isDragging = ref(false);
 
@@ -222,6 +236,10 @@ watch(() => props.elementType, (newVal) => {
   if (newVal !== undefined) elementType.value = newVal;
 });
 
+watch(() => props.isPublic, (newVal) => {
+  if (newVal !== undefined) isPublic.value = newVal;
+});
+
 // Watch for local changes and update parent
 watch(characterName, (newVal) => {
   emit('update:characterName', newVal);
@@ -237,6 +255,10 @@ watch(baseAnimal, (newVal) => {
 
 watch(elementType, (newVal) => {
   emit('update:elementType', newVal);
+});
+
+watch(isPublic, (newVal) => {
+  emit('update:isPublic', newVal);
 });
 
 // Computed properties
