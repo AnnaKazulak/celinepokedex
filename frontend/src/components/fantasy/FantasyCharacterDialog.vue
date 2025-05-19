@@ -430,7 +430,9 @@ const saveCharacter = async () => {
       baseAnimal: selectedBaseAnimal.value || null,
       elementType: selectedElementType.value || null,
       prompt: prompt.value,
-      imageUrl: generatedImageUrl.value
+      imageUrl: generatedImageUrl.value,
+      is_public: true,
+      description: prompt.value
     });
 
     if (response.data) {

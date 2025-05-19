@@ -209,18 +209,20 @@ public class FantasyCharacterController {
     @PutMapping("/{id}")
     public ResponseEntity<FantasyCharacter> updateCharacter(
             @PathVariable Long id,
-            @RequestBody Map<String, String> payload) {
+            @RequestBody Map<String, Object> payload) {
         
         Optional<FantasyCharacter> existingCharacter = fantasyCharacterService.getFantasyCharacterById(id);
         if (existingCharacter.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         
-        String prompt = payload.get("prompt");
-        String imageUrl = payload.get("imageUrl");
-        String name = payload.get("name");
-        String baseAnimal = payload.get("baseAnimal");
-        String elementType = payload.get("elementType");
+        String prompt = (String) payload.get("prompt");
+        String imageUrl = (String) payload.get("imageUrl");
+        String name = (String) payload.get("name");
+        String baseAnimal = (String) payload.get("baseAnimal");
+        String elementType = (String) payload.get("elementType");
+        String description = (String) payload.getOrDefault("description", prompt);
+        Boolean isPublic = (Boolean) payload.getOrDefault("is_public", existingCharacter.get().getIsPublic());
         
         if (prompt == null || imageUrl == null) {
             return ResponseEntity.badRequest().build();
@@ -229,6 +231,8 @@ public class FantasyCharacterController {
         FantasyCharacter updatedCharacter = existingCharacter.get();
         updatedCharacter.setPrompt(prompt);
         updatedCharacter.setImageUrl(imageUrl);
+        updatedCharacter.setDescription(description);
+        updatedCharacter.setIsPublic(isPublic);
         
         // Name setzen, wenn vorhanden
         if (name != null) {

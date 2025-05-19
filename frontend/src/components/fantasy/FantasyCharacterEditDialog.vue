@@ -117,6 +117,18 @@
                 :disabled="isSaving"
               ></v-textarea>
             </div>
+
+            <!-- Public/Private Checkbox -->
+            <div class="mb-3">
+              <v-checkbox
+                v-model="editedIsPublic"
+                label="Öffentlich sichtbar"
+                hint="Legt fest, ob andere Benutzer diesen Charakter sehen können"
+                persistent-hint
+                density="compact"
+                :disabled="isSaving"
+              ></v-checkbox>
+            </div>
           </div>
           
           <div v-if="error" class="mt-4">
@@ -180,6 +192,7 @@ const editedName = ref<string>('');
 const editedPrompt = ref('');
 const editedBaseAnimal = ref('');
 const editedElementType = ref('');
+const editedIsPublic = ref(true);
 const error = ref('');
 const isSaving = ref(false);
 const imageFile = ref<File | null>(null);
@@ -210,6 +223,7 @@ watch(() => props.character, (newVal) => {
     editedPrompt.value = newVal.prompt || '';
     editedBaseAnimal.value = newVal.baseAnimal || '';
     editedElementType.value = newVal.elementType || '';
+    editedIsPublic.value = newVal.isPublic !== undefined ? newVal.isPublic : true;
   }
 });
 
@@ -225,6 +239,7 @@ onMounted(() => {
     editedPrompt.value = props.character.prompt || '';
     editedBaseAnimal.value = props.character.baseAnimal || '';
     editedElementType.value = props.character.elementType || '';
+    editedIsPublic.value = props.character.isPublic !== undefined ? props.character.isPublic : true;
   }
 });
 
@@ -279,7 +294,9 @@ const updateCharacter = async () => {
       prompt: editedPrompt.value,
       baseAnimal: editedBaseAnimal.value,
       elementType: editedElementType.value,
-      imageUrl: updatedImageUrl
+      imageUrl: updatedImageUrl,
+      is_public: editedIsPublic.value,
+      description: editedPrompt.value
     };
 
     const response = await axios.put(

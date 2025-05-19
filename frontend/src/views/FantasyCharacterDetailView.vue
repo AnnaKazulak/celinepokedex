@@ -160,6 +160,35 @@
                 <span class="text-body-1">{{ formatDate(character.createdAt) }}</span>
               </div>
             </v-col>
+            <v-col cols="12" sm="6">
+              <div class="d-flex flex-column mb-4">
+                <span class="text-caption font-weight-bold text-medium-emphasis mb-1">Status:</span>
+                <div class="d-flex align-center">
+                  <v-chip
+                    :color="character.isPublic ? 'success' : 'grey'"
+                    text-color="white"
+                    size="small"
+                    class="mr-2"
+                  >
+                    {{ character.isPublic ? 'Öffentlich' : 'Privat' }}
+                  </v-chip>
+                  <v-tooltip location="right">
+                    <template v-slot:activator="{ props }">
+                      <v-icon
+                        v-bind="props"
+                        size="small"
+                        color="grey-darken-1"
+                      >
+                        mdi-information-outline
+                      </v-icon>
+                    </template>
+                    {{ character.isPublic 
+                      ? 'Dieser Charakter ist für alle Benutzer sichtbar' 
+                      : 'Dieser Charakter ist nur für dich sichtbar' }}
+                  </v-tooltip>
+                </div>
+              </div>
+            </v-col>
           </v-row>
         </v-card-text>
       </v-card>

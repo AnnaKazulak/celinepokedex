@@ -33,10 +33,13 @@ export interface FantasyCharacter {
   id?: number; // ID from database
   name?: string; // Name of the fantasy character
   prompt: string; // User's description of the fantasy character
+  description?: string; // Descriptive text about the character
   imageUrl: string; // URL of the generated image
   createdAt?: string; // Creation date as ISO string
   elementType?: string; // Element type like FIRE, WATER, etc.
   baseAnimal?: string; // Base animal type like DEER, CAT, etc.
+  isPublic?: boolean; // Whether the character is publicly visible
+  dominantColor?: string; // Dominant color in the image
 }
 
 /**
