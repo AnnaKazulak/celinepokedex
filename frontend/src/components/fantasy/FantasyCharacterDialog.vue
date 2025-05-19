@@ -506,7 +506,9 @@ const saveManualCharacter = async () => {
       prompt: manualCharacterDescription.value,
       imageUrl: finalImageUrl,
       baseAnimal: manualBaseAnimal.value,
-      elementType: manualElementType.value
+      elementType: manualElementType.value,
+      is_public: true,
+      description: manualCharacterDescription.value
     });
     
     if (response.data) {

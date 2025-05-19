@@ -23,6 +23,14 @@ public class FantasyCharacter {
     private String baseAnimal;
     
     private String elementType;
+    
+    @Column(columnDefinition = "TEXT")
+    private String description;
+    
+    private String dominantColor;
+    
+    @Column(name = "is_public")
+    private Boolean isPublic = true;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -113,6 +121,30 @@ public class FantasyCharacter {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+    
+    public String getDescription() {
+        return description;
+    }
+    
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
+    public String getDominantColor() {
+        return dominantColor;
+    }
+    
+    public void setDominantColor(String dominantColor) {
+        this.dominantColor = dominantColor;
+    }
+    
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+    
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
 
     @Override
     public String toString() {
@@ -123,6 +155,8 @@ public class FantasyCharacter {
                 ", imageUrl='" + (imageUrl != null ? imageUrl.substring(0, Math.min(30, imageUrl.length())) + "..." : null) + '\'' +
                 ", baseAnimal='" + baseAnimal + '\'' +
                 ", elementType='" + elementType + '\'' +
+                ", description='" + description + '\'' +
+                ", isPublic=" + isPublic +
                 ", createdAt=" + createdAt +
                 '}';
     }
