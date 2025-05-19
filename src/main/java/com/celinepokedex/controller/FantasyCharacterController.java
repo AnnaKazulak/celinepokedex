@@ -65,12 +65,14 @@ public class FantasyCharacterController {
      * POST /api/characters/save
      */
     @PostMapping("/save")
-    public ResponseEntity<FantasyCharacter> saveCharacter(@RequestBody Map<String, String> payload) {
-        String prompt = payload.get("prompt");
-        String imageUrl = payload.get("imageUrl");
-        String name = payload.get("name");
-        String baseAnimal = payload.get("baseAnimal");
-        String elementType = payload.get("elementType");
+    public ResponseEntity<FantasyCharacter> saveCharacter(@RequestBody Map<String, Object> payload) {
+        String prompt = (String) payload.get("prompt");
+        String imageUrl = (String) payload.get("imageUrl");
+        String name = (String) payload.get("name");
+        String baseAnimal = (String) payload.get("baseAnimal");
+        String elementType = (String) payload.get("elementType");
+        String description = (String) payload.getOrDefault("description", prompt);
+        Boolean isPublic = (Boolean) payload.getOrDefault("is_public", true);
         
         if (prompt == null || imageUrl == null) {
             return ResponseEntity.badRequest().build();
@@ -78,19 +80,18 @@ public class FantasyCharacterController {
         
         FantasyCharacter character;
         
-        if (name != null && baseAnimal != null && elementType != null) {
-            // Create with all fields including baseAnimal and elementType
-            character = new FantasyCharacter(name, prompt, imageUrl, baseAnimal, elementType);
-        } else if (name != null) {
-            // Create with name
-            character = new FantasyCharacter(name, prompt, imageUrl);
-        } else {
-            // Create with basic fields only
-            character = new FantasyCharacter(prompt, imageUrl);
-        }
+        // Create with all fields including baseAnimal and elementType
+        character = new FantasyCharacter(name, prompt, imageUrl, baseAnimal, elementType);
+        character.setIsPublic(isPublic);
+        character.setDescription(description);
         
-        FantasyCharacter savedCharacter = fantasyCharacterService.saveFantasyCharacter(character);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedCharacter);
+        try {
+            FantasyCharacter savedCharacter = fantasyCharacterService.saveFantasyCharacter(character);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedCharacter);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**
