@@ -3,7 +3,6 @@ package com.celinepokedex.config;
 import com.celinepokedex.service.ImageMigrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.logging.Logger;
