@@ -39,26 +39,51 @@
       
       <!-- Desktop buttons -->
       <div class="d-none d-sm-flex">
+        <template v-if="isLoggedIn">
+          <v-btn
+            class="mr-2"
+            :class="{ 'text-white': isScrolled || isDetailPage }"
+            color="black"
+            :elevation="isScrolled || isDetailPage ? 2 : 1"
+            rounded="pill"
+            prepend-icon="mdi-magic-staff"
+            @click="showFantasyDialog = true"
+          >
+            Fantasy Character
+          </v-btn>
+          <v-btn
+            :class="{ 'text-white': isScrolled || isDetailPage }"
+            color="black"
+            :elevation="isScrolled || isDetailPage ? 2 : 1"
+            rounded="pill"
+            prepend-icon="mdi-plus"
+            @click="showDialog = true"
+          >
+            Pokémon
+          </v-btn>
+        </template>
+        
         <v-btn
-          class="mr-2"
+          v-if="!isLoggedIn"
           :class="{ 'text-white': isScrolled || isDetailPage }"
-          color="black"
+          color="primary"
           :elevation="isScrolled || isDetailPage ? 2 : 1"
           rounded="pill"
-          prepend-icon="mdi-magic-staff"
-          @click="showFantasyDialog = true"
+          prepend-icon="mdi-login"
+          @click="handleLogin"
         >
-          Fantasy Character
+          Login
         </v-btn>
         <v-btn
+          v-else
           :class="{ 'text-white': isScrolled || isDetailPage }"
-          color="black"
+          color="secondary"
           :elevation="isScrolled || isDetailPage ? 2 : 1"
           rounded="pill"
-          prepend-icon="mdi-plus"
-          @click="showDialog = true"
+          prepend-icon="mdi-logout"
+          @click="handleLogout"
         >
-          Pokémon
+          Logout
         </v-btn>
       </div>
       
@@ -79,16 +104,31 @@
             </v-btn>
           </template>
           <v-list>
-            <v-list-item @click="showFantasyDialog = true">
+            <template v-if="isLoggedIn">
+              <v-list-item @click="showFantasyDialog = true">
+                <v-list-item-title>
+                  <v-icon start>mdi-magic-staff</v-icon>
+                  Fantasy Character
+                </v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="showDialog = true">
+                <v-list-item-title>
+                  <v-icon start>mdi-plus</v-icon>
+                  Pokémon
+                </v-list-item-title>
+              </v-list-item>
+              <v-divider></v-divider>
+            </template>
+            <v-list-item v-if="!isLoggedIn" @click="handleLogin">
               <v-list-item-title>
-                <v-icon start>mdi-magic-staff</v-icon>
-                Fantasy Character
+                <v-icon start>mdi-login</v-icon>
+                Login
               </v-list-item-title>
             </v-list-item>
-            <v-list-item @click="showDialog = true">
+            <v-list-item v-else @click="handleLogout">
               <v-list-item-title>
-                <v-icon start>mdi-plus</v-icon>
-                Pokémon
+                <v-icon start>mdi-logout</v-icon>
+                Logout
               </v-list-item-title>
             </v-list-item>
           </v-list>
@@ -104,6 +144,127 @@
     <FantasyCharacterDialog
       v-model:dialog="showFantasyDialog"
     />
+    
+    <!-- Login Dialog -->
+    <v-dialog v-model="showLoginDialog" max-width="450">
+      <v-card class="login-card">
+        <v-img
+          height="80"
+          class="login-header-image"
+          :src="'/src/assets/celinepokedex-logo-1.jpg'"
+          gradient="to top, rgba(0,0,0,.4), rgba(0,0,0,.1)"
+          cover
+        >
+          <div class="d-flex fill-height align-center justify-center">
+            <v-card-title class="text-white text-h4 font-weight-bold">
+              {{ isRegistering ? 'Register' : 'Login' }}
+            </v-card-title>
+          </div>
+        </v-img>
+        
+        <v-card-text class="pt-4">
+          <v-form @submit.prevent="isRegistering ? handleRegister() : submitLogin()" ref="formValidator">
+            <v-text-field
+              v-model="loginForm.username"
+              label="Username"
+              name="username"
+              autocomplete="username"
+              variant="outlined"
+              required
+              :rules="[v => !!v || 'Username is required']"
+              prepend-inner-icon="mdi-account"
+              class="mb-2"
+            ></v-text-field>
+            
+            <v-text-field
+              v-model="loginForm.password"
+              label="Password"
+              name="password"
+              autocomplete="current-password"
+              variant="outlined"
+              :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+              @click:append-inner="showPassword = !showPassword"
+              :type="showPassword ? 'text' : 'password'"
+              required
+              :rules="[v => !!v || 'Password is required']"
+              prepend-inner-icon="mdi-lock"
+              class="mb-2"
+            ></v-text-field>
+            
+            <v-expand-transition>
+              <v-text-field
+                v-if="isRegistering"
+                v-model="loginForm.confirmPassword"
+                label="Confirm Password"
+                name="confirmPassword"
+                variant="outlined"
+                :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                @click:append-inner="showPassword = !showPassword"
+                :type="showPassword ? 'text' : 'password'"
+                required
+                :rules="[
+                  v => !!v || 'Please confirm your password',
+                  v => v === loginForm.password || 'Passwords do not match'
+                ]"
+                prepend-inner-icon="mdi-lock-check"
+                class="mb-2"
+              ></v-text-field>
+            </v-expand-transition>
+            
+            <div class="d-flex align-center justify-space-between mt-2">
+              <v-checkbox 
+                v-model="rememberMe" 
+                label="Remember me" 
+                color="primary"
+                hide-details
+                density="compact"
+              ></v-checkbox>
+              
+              <v-btn 
+                variant="text" 
+                size="small" 
+                color="primary" 
+                @click="toggleRegistration"
+                :disabled="isLoading"
+                class="text-body-2"
+              >
+                {{ isRegistering ? 'Have an account?' : 'Need an account?' }}
+              </v-btn>
+            </div>
+            
+            <v-alert
+              v-if="loginError"
+              type="error"
+              class="mt-4 mb-2"
+              variant="tonal"
+              density="compact"
+            >
+              {{ loginError }}
+            </v-alert>
+          </v-form>
+        </v-card-text>
+        
+        <v-card-actions class="pb-4 px-4">
+          <v-spacer></v-spacer>
+          <v-btn 
+            color="grey-darken-1" 
+            variant="text" 
+            @click="cancelLogin"
+            :disabled="isLoading"
+          >
+            Cancel
+          </v-btn>
+          <v-btn 
+            color="primary" 
+            @click="isRegistering ? handleRegister() : submitLogin()" 
+            :loading="isLoading"
+            variant="elevated"
+          >
+            {{ isRegistering ? 'Register' : 'Login' }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -115,6 +276,207 @@ import FantasyCharacterDialog from './fantasy/FantasyCharacterDialog.vue';
 import type { Pokemon } from '../types/pokemon';
 import { POKEMON_COLORS } from '../utils/constants';
 import { eventBus } from '../utils/eventBus';
+
+// Auth state
+const isLoggedIn = ref(false);
+const showLoginDialog = ref(false);
+const loginForm = ref({
+  username: '',
+  password: '',
+  confirmPassword: ''
+});
+const loginError = ref('');
+const showPassword = ref(false);
+const isRegistering = ref(false);
+const rememberMe = ref(false);
+const isLoading = ref(false);
+const formValidator = ref<null | any>(null); // Renamed from loginForm to formValidator
+
+// Toggle between login and registration forms
+function toggleRegistration() {
+  isRegistering.value = !isRegistering.value;
+  loginError.value = '';
+  loginForm.value = { username: '', password: '', confirmPassword: '' };
+}
+
+// Clean form and close dialog
+function cancelLogin() {
+  showLoginDialog.value = false;
+  loginForm.value = { username: '', password: '', confirmPassword: '' };
+  loginError.value = '';
+  isRegistering.value = false;
+}
+
+// Login/Logout handlers
+function handleLogin() {
+  showLoginDialog.value = true;
+  loginError.value = '';
+  isRegistering.value = false;
+}
+
+function handleLogout() {
+  isLoggedIn.value = false;
+  // Handle secure logout
+  if (rememberMe.value) {
+    // Just remove the session marker but keep username for convenience
+    localStorage.removeItem('userSession');
+  } else {
+    // Clear all auth data
+    localStorage.removeItem('userSession');
+    localStorage.removeItem('username');
+  }
+  console.log('User logged out');
+  eventBus.emit('user-logged-out');
+}
+
+// Registration handler
+async function handleRegister() {
+  if (!loginForm.value.username || !loginForm.value.password) {
+    loginError.value = 'Please fill in all required fields';
+    return;
+  }
+
+  if (loginForm.value.password !== loginForm.value.confirmPassword) {
+    loginError.value = 'Passwords do not match';
+    return;
+  }
+
+  isLoading.value = true;
+  
+  try {
+    // Simulate API call with delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Check if username is already taken (in a real app, this would be an API call)
+    // For demo purposes, only 'admin' is considered taken if not the current user
+    if (loginForm.value.username === 'admin' && localStorage.getItem('username') !== 'admin') {
+      throw new Error('Username already exists');
+    }
+    
+    // Store user info - in a real app this would be handled by a secure backend
+    // We'll use a simplified secure approach with localStorage
+    const hashedPassword = await hashPassword(loginForm.value.password);
+    
+    // Store registration
+    localStorage.setItem('username', loginForm.value.username);
+    localStorage.setItem('hashedPassword', hashedPassword);
+    
+    // Auto login after successful registration
+    isLoggedIn.value = true;
+    createSession(rememberMe.value);
+    
+    // Close dialog and reset form
+    showLoginDialog.value = false;
+    loginForm.value = { username: '', password: '', confirmPassword: '' };
+    
+    eventBus.emit('user-registered-and-logged-in');
+    console.log('User registered and logged in successfully');
+    
+  } catch (error) {
+    loginError.value = error instanceof Error ? error.message : 'Registration failed';
+    console.error('Registration error:', error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// Create a session token and store it
+function createSession(remember = false) {
+  // Create a simple session token (in a real app would be JWT or similar)
+  const sessionToken = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+  
+  if (remember) {
+    // Long-lived session with more persistent storage
+    localStorage.setItem('userSession', sessionToken);
+    localStorage.setItem('username', loginForm.value.username);
+  } else {
+    // Session storage only (cleared when browser is closed)
+    sessionStorage.setItem('userSession', sessionToken);
+    localStorage.setItem('username', loginForm.value.username);
+  }
+}
+
+// Simple password hashing simulation
+// In a real app, this would be done server-side with proper algorithms
+async function hashPassword(password: string): Promise<string> {
+  // We're using Web Crypto API to create a simple hash
+  // This is still not secure for production but better than plaintext
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password + 'celinepokedex-salt');
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+}
+
+async function submitLogin() {
+  // Simple validation
+  if (!loginForm.value.username || !loginForm.value.password) {
+    loginError.value = 'Please enter both username and password';
+    return;
+  }
+  
+  isLoading.value = true;
+  
+  try {
+    // Add a slight delay to simulate server request
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    // For demo purposes, allow both the hardcoded admin login and any registered users
+    const storedUsername = localStorage.getItem('username');
+    
+    if (loginForm.value.username === 'admin' && loginForm.value.password === 'admin123') {
+      // Special case for demo admin account
+      isLoggedIn.value = true;
+      localStorage.setItem('username', 'admin');
+      createSession(rememberMe.value);
+      
+      showLoginDialog.value = false;
+      loginForm.value = { username: '', password: '', confirmPassword: '' };
+      console.log('Admin logged in successfully');
+      eventBus.emit('user-logged-in');
+    } 
+    else if (storedUsername === loginForm.value.username) {
+      // Registered user login - verify password hash
+      const storedHash = localStorage.getItem('hashedPassword');
+      const inputHash = await hashPassword(loginForm.value.password);
+      
+      if (storedHash === inputHash) {
+        isLoggedIn.value = true;
+        createSession(rememberMe.value);
+        
+        showLoginDialog.value = false;
+        loginForm.value = { username: '', password: '', confirmPassword: '' };
+        console.log('User logged in successfully');
+        eventBus.emit('user-logged-in');
+      } else {
+        throw new Error('Invalid password');
+      }
+    } 
+    else {
+      throw new Error('User not found');
+    }
+  } catch (error) {
+    loginError.value = error instanceof Error ? error.message : 'Invalid username or password';
+    console.log('Login failed:', loginError.value);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// Check if user is logged in on component mount (from localStorage)
+function checkLoginStatus() {
+  // Check for active session in either localStorage (remember me) or sessionStorage
+  const sessionToken = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+  
+  if (sessionToken) {
+    // Session exists, user is considered logged in
+    isLoggedIn.value = true;
+    console.log('User already logged in from previous session');
+  } else {
+    isLoggedIn.value = false;
+  }
+}
 
 // Zustand für die Dialoge
 const showDialog = ref(false);
@@ -351,6 +713,7 @@ const checkScreenSize = () => {
 
 // Event-Listener beim Mounten hinzufügen
 onMounted(() => {
+  checkLoginStatus();
   window.addEventListener('scroll', handleScroll);
   window.addEventListener('resize', checkScreenSize);
   eventBus.on('register-pokemon-color', handleRegisterPokemonColor);
@@ -414,6 +777,16 @@ const handlePokemonCreated = (newPokemon: Pokemon) => {
 .navbar-container {
   position: relative;
   z-index: 100;
+}
+
+/* Login form styling */
+.login-card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.login-header-image {
+  position: relative;
 }
 
 /* Mobile responsive adjustments */
