@@ -64,35 +64,40 @@ public class FantasyCharacterController {
      * Save a fantasy character
      * POST /api/characters/save
      */
-    @PostMapping("/save")
-    public ResponseEntity<FantasyCharacter> saveCharacter(@RequestBody Map<String, Object> payload) {
-        String prompt = (String) payload.get("prompt");
-        String imageUrl = (String) payload.get("imageUrl");
-        String name = (String) payload.get("name");
-        String baseAnimal = (String) payload.get("baseAnimal");
-        String elementType = (String) payload.get("elementType");
-        String description = (String) payload.getOrDefault("description", prompt);
-        Boolean isPublic = (Boolean) payload.getOrDefault("is_public", true);
-        
-        if (prompt == null || imageUrl == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        
-        FantasyCharacter character;
-        
-        // Create with all fields including baseAnimal and elementType
-        character = new FantasyCharacter(name, prompt, imageUrl, baseAnimal, elementType);
-        character.setIsPublic(isPublic);
-        character.setDescription(description);
-        
-        try {
-            FantasyCharacter savedCharacter = fantasyCharacterService.saveFantasyCharacter(character);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedCharacter);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+@PostMapping("/save")
+public ResponseEntity<FantasyCharacter> saveCharacter(@RequestBody Map<String, Object> payload) {
+    String prompt = (String) payload.get("prompt");
+    String imageUrl = (String) payload.get("imageUrl");
+    String name = (String) payload.get("name");
+    String baseAnimal = (String) payload.get("baseAnimal");
+    String elementType = (String) payload.get("elementType");
+    String description = (String) payload.getOrDefault("description", prompt);
+    Boolean isPublic = (Boolean) payload.getOrDefault("is_public", true);
+
+    if (prompt == null || imageUrl == null) {
+        return ResponseEntity.badRequest().build();
     }
+
+    // Erzeuge das Objekt mit vorhandenen Konstruktor und setze die Eigenschaften
+    FantasyCharacter character = new FantasyCharacter();
+    character.setName(name);
+    character.setPrompt(prompt);
+    character.setImageUrl(imageUrl);
+    character.setBaseAnimal(baseAnimal);
+    character.setElementType(elementType);
+    character.setIsPublic(isPublic);
+    character.setDescription(description);
+    character.setCreatedBy("admin");
+    character.setCreatedByRole("ADMIN");
+
+    try {
+        FantasyCharacter savedCharacter = fantasyCharacterService.saveFantasyCharacter(character);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedCharacter);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+}
 
     /**
      * Search fantasy characters by prompt
