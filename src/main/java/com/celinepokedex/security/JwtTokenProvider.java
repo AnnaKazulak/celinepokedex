@@ -19,17 +19,22 @@ public class JwtTokenProvider {
     private final long jwtExpirationInMs = 86400000; // 24 hours
     
     public String generateToken(String username, String role) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role);
-        
-        return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
-                .signWith(key)
-                .compact();
+    Map<String, Object> claims = new HashMap<>();
+    // IMMER mit ROLE_ prefix – falls nicht schon vorhanden
+    if (role != null && !role.startsWith("ROLE_")) {
+        role = "ROLE_" + role.toUpperCase();
     }
+    claims.put("role", role);
+
+    return Jwts.builder()
+            .setClaims(claims)
+            .setSubject(username)
+            .setIssuedAt(new Date(System.currentTimeMillis()))
+            .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
+            .signWith(key)
+            .compact();
+}
+
     
     public boolean validateToken(String token) {
         try {

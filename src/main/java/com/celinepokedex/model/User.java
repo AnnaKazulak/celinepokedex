@@ -49,6 +49,11 @@ public class User {
     }
     
     public void setRole(String role) {
+    if (role != null && !role.startsWith("ROLE_")) {
+        this.role = "ROLE_" + role.toUpperCase();
+    } else {
         this.role = role;
     }
+}
+
 }

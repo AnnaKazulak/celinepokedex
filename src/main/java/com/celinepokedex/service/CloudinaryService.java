@@ -2,7 +2,7 @@ package com.celinepokedex.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import org.springframework.beans.factory.annotation.Value;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -17,11 +17,18 @@ public class CloudinaryService {
     
     private final Cloudinary cloudinary;
 
-    public CloudinaryService(
-            @Value("${cloudinary.cloud-name}") String cloudName,
-            @Value("${cloudinary.api-key}") String apiKey,
-            @Value("${cloudinary.api-secret}") String apiSecret) {
-        
+    public CloudinaryService() {
+        // .env laden
+        Dotenv dotenv = Dotenv.load();
+
+        String cloudName = dotenv.get("CLOUDINARY_CLOUD_NAME");
+        String apiKey = dotenv.get("CLOUDINARY_API_KEY");
+        String apiSecret = dotenv.get("CLOUDINARY_API_SECRET");
+
+        if (cloudName == null || apiKey == null || apiSecret == null) {
+            throw new IllegalStateException("Cloudinary-Umgebungsvariablen fehlen! Prüfe deine .env-Datei.");
+        }
+
         this.cloudinary = new Cloudinary(ObjectUtils.asMap(
             "cloud_name", cloudName,
             "api_key", apiKey,
