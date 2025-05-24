@@ -192,13 +192,13 @@
         >
           <div class="d-flex fill-height align-center justify-center">
             <v-card-title class="text-white text-h4 font-weight-bold">
-              {{ isRegistering ? 'Register' : 'Login' }}
+              Login
             </v-card-title>
           </div>
         </v-img>
         
         <v-card-text class="pt-4">
-          <v-form @submit.prevent="isRegistering ? handleRegister() : submitLogin()" ref="formValidator">
+          <v-form @submit.prevent="submitLogin()" ref="formValidator">
             <v-text-field
               v-model="loginForm.username"
               label="Username"
@@ -226,26 +226,6 @@
               class="mb-2"
             ></v-text-field>
             
-            <v-expand-transition>
-              <v-text-field
-                v-if="isRegistering"
-                v-model="loginForm.confirmPassword"
-                label="Confirm Password"
-                name="confirmPassword"
-                variant="outlined"
-                :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-                @click:append-inner="showPassword = !showPassword"
-                :type="showPassword ? 'text' : 'password'"
-                required
-                :rules="[
-                  v => !!v || 'Please confirm your password',
-                  v => v === loginForm.password || 'Passwords do not match'
-                ]"
-                prepend-inner-icon="mdi-lock-check"
-                class="mb-2"
-              ></v-text-field>
-            </v-expand-transition>
-            
             <div class="d-flex align-center justify-space-between mt-2">
               <v-checkbox 
                 v-model="rememberMe" 
@@ -254,17 +234,6 @@
                 hide-details
                 density="compact"
               ></v-checkbox>
-              
-              <v-btn 
-                variant="text" 
-                size="small" 
-                color="primary" 
-                @click="toggleRegistration"
-                :disabled="isLoading"
-                class="text-body-2"
-              >
-                {{ isRegistering ? 'Have an account?' : 'Need an account?' }}
-              </v-btn>
             </div>
             
             <v-alert
@@ -291,11 +260,11 @@
           </v-btn>
           <v-btn 
             color="primary" 
-            @click="isRegistering ? handleRegister() : submitLogin()" 
+            @click="submitLogin()" 
             :loading="isLoading"
             variant="elevated"
           >
-            {{ isRegistering ? 'Register' : 'Login' }}
+            Login
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -311,6 +280,8 @@ import FantasyCharacterDialog from './fantasy/FantasyCharacterDialog.vue';
 import type { Pokemon } from '../types/pokemon';
 import { POKEMON_COLORS } from '../utils/constants';
 import { eventBus } from '../utils/eventBus';
+import axiosInstance from '../utils/axiosConfig';
+
 
 // Define fantasy character interface
 interface FantasyCharacter {
@@ -332,8 +303,9 @@ declare global {
 // Constants for storage keys to avoid typos and make changes easier
 const STORAGE_KEYS = {
   USER_SESSION: 'celinepokedex_user_session',
-  REGISTERED_USERS: 'celinepokedex_registered_users',
+  REGISTERED_USERS: 'celinepokedex_registered_users', 
 }
+
 
 // Auth state
 const isLoggedIn = ref(false);
@@ -342,12 +314,10 @@ const currentUsername = ref('');
 const showLoginDialog = ref(false);
 const loginForm = ref({
   username: '',
-  password: '',
-  confirmPassword: ''
+  password: ''
 });
 const loginError = ref('');
 const showPassword = ref(false);
-const isRegistering = ref(false);
 const rememberMe = ref(false);
 const isLoading = ref(false);
 const formValidator = ref<null | any>(null);
@@ -359,26 +329,17 @@ const showFantasyDialog = ref(false);
 // Route für Prüfung, ob wir auf der Detailseite sind
 const route = useRoute();
 
-// Toggle between login and registration forms
-function toggleRegistration() {
-  isRegistering.value = !isRegistering.value;
-  loginError.value = '';
-  loginForm.value = { username: '', password: '', confirmPassword: '' };
-}
-
 // Clean form and close dialog
 function cancelLogin() {
   showLoginDialog.value = false;
-  loginForm.value = { username: '', password: '', confirmPassword: '' };
+  loginForm.value = { username: '', password: '' };
   loginError.value = '';
-  isRegistering.value = false;
 }
 
 // Login/Logout handlers
 function handleLogin() {
   showLoginDialog.value = true;
   loginError.value = '';
-  isRegistering.value = false;
 }
 
 function handleLogout() {
@@ -394,100 +355,7 @@ function handleLogout() {
   eventBus.emit('user-logged-out');
 }
 
-// Suppress network errors for fantasy characters
-function setupNetworkErrorHandling() {
-  // Listen for ERR_CONNECTION_REFUSED and similar errors
-  window.addEventListener('error', (event) => {
-    if (event.message && event.message.includes('Network Error')) {
-      console.warn('Network error caught - this is expected if backend is not running');
-      event.preventDefault();
-    }
-  });
-  
-  // Prevent console errors from showing in the console
-  const originalConsoleError = console.error;
-  console.error = function(...args: any[]) {
-    // Ignore network errors for API calls
-    if (
-      args[0] && 
-      typeof args[0] === 'string' && 
-      (args[0].includes('api/characters') || args[0].includes('Error loading'))
-    ) {
-      console.warn('API error suppressed:', args[0]);
-      return;
-    }
-    originalConsoleError.apply(console, args);
-  };
-}
-
-// Mock fantasy data for when the API is unreachable
-function setupMockFantasyData() {
-  // Define mock fantasy data
-  const mockData: FantasyCharacter[] = [
-    {
-      id: 1,
-      name: "Gandalf",
-      image: "https://placehold.co/200x200/gray/white?text=Gandalf",
-      description: "A wizard is never late, nor is he early. He arrives precisely when he means to.",
-      type: "Wizard"
-    },
-    {
-      id: 2,
-      name: "Aragorn",
-      image: "https://placehold.co/200x200/darkgreen/white?text=Aragorn",
-      description: "The rightful King of Gondor.",
-      type: "Ranger"
-    }
-  ];
-  
-  // Assign mock data to the window object
-  window.mockFantasyData = mockData;
-  
-  // Store original fetch function
-  const originalFetch = window.fetch;
-  
-  // Override fetch for API calls to fantasy characters
-  window.fetch = function(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : String(input);
-    
-    if (url.includes('/api/characters') || url.includes('/api/fantasy')) {
-      console.log('Intercepting API request to fantasy characters, returning mock data');
-      
-      // Create a mock Response object
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(window.mockFantasyData || mockData)
-      } as Response);
-    }
-    
-    // For all other requests, use the original fetch
-    return originalFetch.call(window, input, init);
-  };
-}
-
-// Secure password handling - avoids password manager conflicts
-async function secureHash(password: string): Promise<string> {
-  try {
-    // Use Web Crypto API - no need to change this part
-    const msgUint8 = new TextEncoder().encode(password + '_celinepokedex_salt');
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  } catch (error) {
-    console.error('Hash failed, using fallback method');
-    // Fallback for browsers not supporting crypto - no need to change this part
-    let hash = 0;
-    for (let i = 0; i < password.length; i++) {
-      const char = password.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    return hash.toString(36);
-  }
-}
-
-// Login handler with role checks - no need to change this part
+// Login handler with backend API request
 async function submitLogin() {
   if (!loginForm.value.username || !loginForm.value.password) {
     loginError.value = 'Please enter both username and password';
@@ -497,134 +365,49 @@ async function submitLogin() {
   isLoading.value = true;
   
   try {
-    await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
+    // Send login request to backend
+    const response = await axiosInstance.post('/auth/login', {
+      username: loginForm.value.username,
+      password: loginForm.value.password
+    });
     
-    // Admin login with hardcoded credentials
-    if (loginForm.value.username === 'admin' && loginForm.value.password === 'admin123') {
+    // Process response from backend
+    if (response.data && response.data.token) {
+      // Create session data
       const sessionData = {
-        username: 'admin',
-        role: 'admin',
+        username: response.data.username || loginForm.value.username,
+        role: response.data.role || 'admin', // Default to admin as per requirements
+        token: response.data.token,
         timestamp: Date.now()
       };
       
+      // Store in localStorage or sessionStorage based on rememberMe
       if (rememberMe.value) {
         localStorage.setItem(STORAGE_KEYS.USER_SESSION, JSON.stringify(sessionData));
       } else {
         sessionStorage.setItem(STORAGE_KEYS.USER_SESSION, JSON.stringify(sessionData));
       }
       
+      // Update reactive state
       isLoggedIn.value = true;
-      isAdmin.value = true;
-      currentUsername.value = 'admin';
+      isAdmin.value = sessionData.role === 'admin';
+      currentUsername.value = sessionData.username;
       
+      // Close dialog and reset form
       showLoginDialog.value = false;
-      loginForm.value = { username: '', password: '', confirmPassword: '' };
-      console.log('Admin login successful');
-      return;
-    }
-    
-    // Regular user login
-    const users = JSON.parse(localStorage.getItem(STORAGE_KEYS.REGISTERED_USERS) || '{}');
-    const userRecord = users[loginForm.value.username];
-    
-    if (!userRecord) {
-      throw new Error('User not found. Please register first.');
-    }
-    
-    const inputHash = await secureHash(loginForm.value.password);
-    if (inputHash !== userRecord.passwordHash) {
-      throw new Error('Invalid password');
-    }
-    
-    // Login successful for regular user
-    const sessionData = {
-      username: loginForm.value.username,
-      role: 'user',
-      timestamp: Date.now()
-    };
-    
-    if (rememberMe.value) {
-      localStorage.setItem(STORAGE_KEYS.USER_SESSION, JSON.stringify(sessionData));
+      loginForm.value = { username: '', password: '' };
+      console.log('Login successful');
     } else {
-      sessionStorage.setItem(STORAGE_KEYS.USER_SESSION, JSON.stringify(sessionData));
+      throw new Error('Invalid response from server');
     }
-    
-    isLoggedIn.value = true;
-    isAdmin.value = false;
-    currentUsername.value = loginForm.value.username;
-    
-    showLoginDialog.value = false;
-    loginForm.value = { username: '', password: '', confirmPassword: '' };
-    console.log('User login successful');
-    
-  } catch (error) {
-    loginError.value = error instanceof Error ? error.message : 'Login failed';
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-// Registration handler - no need to change this part
-async function handleRegister() {
-  if (!loginForm.value.username || !loginForm.value.password) {
-    loginError.value = 'Please fill in all required fields';
-    return;
-  }
-  
-  if (loginForm.value.password !== loginForm.value.confirmPassword) {
-    loginError.value = 'Passwords do not match';
-    return;
-  }
-  
-  isLoading.value = true;
-  
-  try {
-    await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
-    
-    if (loginForm.value.username === 'admin') {
-      throw new Error('Username "admin" is reserved');
-    }
-    
-    // Get existing users or initialize empty object
-    const users = JSON.parse(localStorage.getItem(STORAGE_KEYS.REGISTERED_USERS) || '{}');
-    
-    if (users[loginForm.value.username]) {
-      throw new Error('Username already exists');
-    }
-    
-    // Create new user record
-    const passwordHash = await secureHash(loginForm.value.password);
-    users[loginForm.value.username] = {
-      passwordHash,
-      createdAt: new Date().toISOString()
-    };
-    
-    // Save updated user records
-    localStorage.setItem(STORAGE_KEYS.REGISTERED_USERS, JSON.stringify(users));
-    
-    // Log the user in automatically
-    const sessionData = {
-      username: loginForm.value.username,
-      role: 'user',
-      timestamp: Date.now()
-    };
-    
-    if (rememberMe.value) {
-      localStorage.setItem(STORAGE_KEYS.USER_SESSION, JSON.stringify(sessionData));
+  } catch (error: any) {
+    // Handle login errors
+    console.error('Login error:', error);
+    if (error.response && error.response.data && error.response.data.message) {
+      loginError.value = error.response.data.message;
     } else {
-      sessionStorage.setItem(STORAGE_KEYS.USER_SESSION, JSON.stringify(sessionData));
+      loginError.value = error.message || 'Login failed. Please try again.';
     }
-    
-    isLoggedIn.value = true;
-    isAdmin.value = false;
-    currentUsername.value = loginForm.value.username;
-    
-    showLoginDialog.value = false;
-    loginForm.value = { username: '', password: '', confirmPassword: '' };
-    console.log('Registration successful');
-    
-  } catch (error) {
-    loginError.value = error instanceof Error ? error.message : 'Registration failed';
   } finally {
     isLoading.value = false;
   }
@@ -639,7 +422,7 @@ function checkLoginStatus() {
     'null'
   );
   
-  if (sessionData) {
+  if (sessionData && sessionData.token) {
     isLoggedIn.value = true;
     isAdmin.value = sessionData.role === 'admin';
     currentUsername.value = sessionData.username;
@@ -649,8 +432,8 @@ function checkLoginStatus() {
 
 // Initialize user storage if needed
 function initializeUserStorage() {
-  if (!localStorage.getItem(STORAGE_KEYS.REGISTERED_USERS)) {
-    localStorage.setItem(STORAGE_KEYS.REGISTERED_USERS, '{}');
+  if (!localStorage.getItem('celinepokedex_registered_users')) {
+    localStorage.setItem('celinepokedex_registered_users', '{}');
     console.log('User storage initialized');
   }
 }
@@ -692,18 +475,6 @@ watch(
     }
   }
 );
-
-// Extra handler for home view specific full reset
-eventBus.on('home-view-mounted', () => {
-  // Reset all dynamic colors
-  detailPageColor.value = '';
-  activeColor.value = '';
-  
-  // Force refresh of scroll handler after DOM is fully ready
-  setTimeout(() => {
-    handleScroll();
-  }, 300);
-});
 
 // Liste aller Pokémon-Farben und ihre DOM-Elemente
 const pokemonColors = ref<Map<string | number, { color: string; element: HTMLElement | null }>>(new Map());
@@ -801,7 +572,7 @@ watch(() => route.name,
   { immediate: true }
 );
 
-// Event handler for direct reset from home view
+// Extra handler for home view specific full reset
 eventBus.on('home-view-mounted', () => {
   resetNavbarColors();
 });
@@ -881,48 +652,21 @@ const checkScreenSize = () => {
   isMobileView.value = window.innerWidth <= 768;
 };
 
-// Event-Listener beim Mounten hinzufügen
-onMounted(() => {
-  try {
-    // Setup error handling first to catch any network errors
-    setupNetworkErrorHandling();
-    setupMockFantasyData();
-  } catch (e) {
-    console.warn('Error setting up network error handling:', e);
-  }
+// Handle session expired event
+function handleSessionExpired(data: { message: string }) {
+  // Reset login state
+  isLoggedIn.value = false;
+  isAdmin.value = false;
+  currentUsername.value = '';
   
-  // Initialize authentication system
-  initializeUserStorage();
-  checkLoginStatus();
+  // Set error message for login dialog
+  loginError.value = data.message;
   
-  // Initialize registered users storage if not exists
-  if (!localStorage.getItem('celinepokedex_registered_users')) {
-    localStorage.setItem('celinepokedex_registered_users', '{}');
-  }
+  // Show login dialog
+  showLoginDialog.value = true;
   
-  window.addEventListener('scroll', handleScroll);
-  window.addEventListener('resize', checkScreenSize);
-  eventBus.on('register-pokemon-color', handleRegisterPokemonColor);
-  eventBus.on('register-fantasy-color', handleRegisterFantasyColor);
-  eventBus.on('detail-page-color-change', handleDetailPageColorChange);
-  
-  // New direct reset handler that forces a complete navbar state reset
-  eventBus.on('force-navbar-reset', forceNavbarReset);
-
-  // Initial prüfen
-  checkScreenSize();
-  handleScroll();
-});
-
-// Event-Listener beim Unmounten entfernen
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', handleScroll);
-  window.removeEventListener('resize', checkScreenSize);
-  eventBus.off('register-pokemon-color', handleRegisterPokemonColor);
-  eventBus.off('register-fantasy-color', handleRegisterFantasyColor);
-  eventBus.off('detail-page-color-change', handleDetailPageColorChange);
-  eventBus.off('force-navbar-reset', forceNavbarReset);
-});
+  console.log('Session expired, showing login dialog');
+}
 
 // Direct forceful reset of navbar that guarantees color updates
 function forceNavbarReset() {
@@ -956,6 +700,45 @@ const handlePokemonCreated = (newPokemon: Pokemon) => {
   
   // Eine Erfolgsmeldung könnte hier angezeigt werden
 }
+
+// Event-Listener beim Mounten hinzufügen
+onMounted(() => {
+  // Initialize authentication system
+  initializeUserStorage();
+  checkLoginStatus();
+  
+  // Initialize registered users storage if not exists
+  if (!localStorage.getItem('celinepokedex_registered_users')) {
+    localStorage.setItem('celinepokedex_registered_users', '{}');
+  }
+  
+  window.addEventListener('scroll', handleScroll);
+  window.addEventListener('resize', checkScreenSize);
+  eventBus.on('register-pokemon-color', handleRegisterPokemonColor);
+  eventBus.on('register-fantasy-color', handleRegisterFantasyColor);
+  eventBus.on('detail-page-color-change', handleDetailPageColorChange);
+  
+  // New direct reset handler that forces a complete navbar state reset
+  eventBus.on('force-navbar-reset', forceNavbarReset);
+  
+  // Listen for session expired events from axios interceptor
+  eventBus.on('session-expired', handleSessionExpired);
+
+  // Initial prüfen
+  checkScreenSize();
+  handleScroll();
+});
+
+// Event-Listener beim Unmounten entfernen
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener('resize', checkScreenSize);
+  eventBus.off('register-pokemon-color', handleRegisterPokemonColor);
+  eventBus.off('register-fantasy-color', handleRegisterFantasyColor);
+  eventBus.off('detail-page-color-change', handleDetailPageColorChange);
+  eventBus.off('force-navbar-reset', forceNavbarReset);
+  eventBus.off('session-expired', handleSessionExpired);
+});
 </script>
 
 <style scoped>

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { TIMEOUTS } from './constants';
+import { eventBus } from './eventBus';
 
 // Create a custom axios instance with increased timeouts
 const axiosInstance = axios.create({
@@ -18,6 +19,19 @@ axiosInstance.interceptors.request.use(
     if (config.url?.includes('/images/generate')) {
       config.timeout = TIMEOUTS.IMAGE_GENERATION_TIMEOUT; // Use the specific image generation timeout
     }
+    
+    // Check for JWT token in localStorage or sessionStorage
+    const userSession = JSON.parse(
+      localStorage.getItem('celinepokedex_user_session') || 
+      sessionStorage.getItem('celinepokedex_user_session') || 
+      'null'
+    );
+    
+    // If token exists, add it to the Authorization header
+    if (userSession && userSession.token) {
+      config.headers.Authorization = `Bearer ${userSession.token}`;
+    }
+    
     return config;
   },
   error => {
@@ -31,8 +45,21 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   error => {
-    // Handle timeout errors specifically
-    if (error.code === 'ECONNABORTED' || (error.response && error.response.status === 504)) {
+    // Handle 401 Unauthorized errors - session expired or invalid token
+    if (error.response && error.response.status === 401) {
+      // Clear user session from storage
+      localStorage.removeItem('celinepokedex_user_session');
+      sessionStorage.removeItem('celinepokedex_user_session');
+      
+      // Emit event for the app to handle login status update
+      eventBus.emit('session-expired', {
+        message: 'Session abgelaufen. Bitte neu einloggen.'
+      });
+      
+      console.warn('401 Unauthorized: Session expired or invalid token');
+    }
+    // Handle timeout errors specifically (keep existing functionality)
+    else if (error.code === 'ECONNABORTED' || (error.response && error.response.status === 504)) {
       console.warn('Request timed out or gateway timeout occurred');
     }
     return Promise.reject(error);
